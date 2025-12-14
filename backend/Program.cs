@@ -75,11 +75,27 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors();
 
+// Development authentication bypass (only in Development mode)
+if (app.Environment.IsDevelopment())
+{
+    var bypassAuth = app.Configuration.GetValue<bool>("Development:BypassAuthentication");
+    if (bypassAuth)
+    {
+        app.UseMiddleware<DevelopmentAuthMiddleware>();
+    }
+}
+
 // Only use authentication if Firebase is configured
 if (!string.IsNullOrEmpty(firebaseProjectId) && firebaseProjectId != "your-firebase-project-id")
 {
     app.UseAuthentication();
     app.UseAuthorization();
+    app.UseMiddleware<UserEnsurerMiddleware>();
+}
+else if (app.Environment.IsDevelopment())
+{
+    // If Firebase isn't configured but we're in dev mode, still use UserEnsurer
+    // to create the dev user in the database
     app.UseMiddleware<UserEnsurerMiddleware>();
 }
 
@@ -304,6 +320,56 @@ app.MapGet("/api/uploads/presign-download", async (Guid recipeId, ApplicationDbC
 .WithName("PresignDownload")
 .WithOpenApi();
 
+// User profile endpoints
+app.MapGet("/api/user/profile", async (ApplicationDbContext db, ClaimsPrincipal user) =>
+{
+    var userId = GetUserId(user);
+    if (userId == null) return Results.Unauthorized();
+
+    var userProfile = await db.Users.FindAsync(userId.Value);
+    if (userProfile == null) return Results.NotFound();
+
+    return Results.Ok(new
+    {
+        userProfile.Id,
+        userProfile.Email,
+        userProfile.DisplayName
+    });
+})
+.WithName("GetUserProfile")
+.WithOpenApi();
+
+app.MapPut("/api/user/profile", async (UpdateUserProfileRequest request, ApplicationDbContext db, ClaimsPrincipal user) =>
+{
+    var userId = GetUserId(user);
+    if (userId == null) return Results.Unauthorized();
+
+    var userProfile = await db.Users.FindAsync(userId.Value);
+    if (userProfile == null) return Results.NotFound();
+
+    // Update allowed fields
+    if (!string.IsNullOrWhiteSpace(request.Email))
+    {
+        userProfile.Email = request.Email;
+    }
+    
+    if (!string.IsNullOrWhiteSpace(request.DisplayName))
+    {
+        userProfile.DisplayName = request.DisplayName;
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        userProfile.Id,
+        userProfile.Email,
+        userProfile.DisplayName
+    });
+})
+.WithName("UpdateUserProfile")
+.WithOpenApi();
+
 app.Run();
 
 // Helper method
@@ -323,3 +389,4 @@ static Guid? GetUserId(ClaimsPrincipal user)
 record CreateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content);
 record UpdateRecipeRequest(string Title, RecipeType Type, string? Url, string? Content);
 record PresignUploadRequest(string FileName, string ContentType);
+record UpdateUserProfileRequest(string? Email, string? DisplayName);

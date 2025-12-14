@@ -1,25 +1,36 @@
+﻿using System;
+using System.Collections.Generic;
+
 namespace RecipeManager.Api.Models;
 
 public enum RecipeType
 {
-    Link,
-    Document,
-    Manual
+    Manual = 0,
+    Link = 1,
+    Upload = 2
 }
 
-public class Recipe
+public partial class Recipe
 {
     public Guid Id { get; set; }
+
     public Guid UserId { get; set; }
-    public required string Title { get; set; }
+
+    public string Title { get; set; } = null!;
+
     public RecipeType Type { get; set; }
+
     public string? Url { get; set; }
+
     public string? StorageKey { get; set; }
+
     public string? Content { get; set; }
+
     public DateTime CreatedAt { get; set; }
+
     public DateTime UpdatedAt { get; set; }
-    
-    // Navigation properties
-    public User User { get; set; } = null!;
-    public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
+
+    public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
+
+    public virtual User User { get; set; } = null!;
 }

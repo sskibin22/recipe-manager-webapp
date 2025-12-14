@@ -107,4 +107,15 @@ export const uploadsApi = {
   uploadToPresignedUrl,
 };
 
+// User Profile API
+export const getUserProfile = async () => {
+  const response = await apiClient.get('/api/user/profile');
+  return response.data;
+};
+
+export const updateUserProfile = async (profileData) => {
+  const response = await apiClient.put('/api/user/profile', profileData);
+  return response.data;
+};
+
 export default apiClient;

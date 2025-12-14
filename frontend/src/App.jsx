@@ -5,6 +5,7 @@ import { setTokenGetter } from './services/api';
 import Landing from './pages/Landing';
 import AuthCallback from './pages/AuthCallback';
 import RecipeDetail from './pages/RecipeDetail';
+import AccountSettings from './pages/AccountSettings';
 
 function App() {
   const { getToken } = useAuth();
@@ -19,6 +20,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/recipe/:id" element={<RecipeDetail />} />
+        <Route path="/settings" element={<AccountSettings />} />
       </Routes>
     </div>
   );

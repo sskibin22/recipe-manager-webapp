@@ -5,6 +5,9 @@ import {
   signInWithPopup,
   signInWithEmailLink,
   sendSignInLinkToEmail,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
   GoogleAuthProvider,
   GithubAuthProvider,
   onAuthStateChanged,
@@ -35,7 +38,24 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [idToken, setIdToken] = useState(null);
 
+  // Development mode bypass
+  const isDevelopment = import.meta.env.DEV;
+  const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === 'true';
+
   useEffect(() => {
+    // Development auth bypass
+    if (isDevelopment && bypassAuth) {
+      setUser({
+        uid: 'dev-user-001',
+        email: 'dev@localhost.com',
+        displayName: 'Dev User',
+        photoURL: null
+      });
+      setIdToken('dev-token');
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const token = await firebaseUser.getIdToken();
@@ -76,6 +96,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signInWithEmail = async (email, password) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error('Email sign-in error:', error);
+      throw error;
+    }
+  };
+
+  const signUpWithEmail = async (email, password, displayName) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Update the user's profile with the display name (e.g., "John Doe")
+      if (displayName) {
+        await updateProfile(userCredential.user, {
+          displayName: displayName
+        });
+      }
+    } catch (error) {
+      console.error('Email sign-up error:', error);
+      throw error;
+    }
+  };
+
   const sendEmailLink = async (email) => {
     const actionCodeSettings = {
       url: window.location.origin + '/auth/callback',
@@ -107,8 +151,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
+    // Development mode bypass
+    if (isDevelopment && bypassAuth) {
+      setUser(null);
+      setIdToken(null);
+      return;
+    }
+
     try {
       await firebaseSignOut(auth);
+    // Development mode bypass
+    if (isDevelopment && bypassAuth) {
+      return 'dev-token';
+    }
+
     } catch (error) {
       console.error('Sign-out error:', error);
       throw error;
@@ -128,6 +184,8 @@ export const AuthProvider = ({ children }) => {
     idToken,
     signInWithGoogle,
     signInWithGithub,
+    signInWithEmail,
+    signUpWithEmail,
     sendEmailLink,
     completeEmailSignIn,
     signOut,

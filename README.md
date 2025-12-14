@@ -94,12 +94,20 @@ The frontend will be available at `http://localhost:5173`.
 2. Create a new project or use existing
 3. Enable Authentication:
    - Go to Authentication > Sign-in method
-   - Enable Google and GitHub providers
-   - Enable Email/Password (for magic links)
+   - **Enable Email/Password** - This allows users to sign up with email and password
+   - Enable Google provider (optional)
+   - Enable GitHub provider (optional)
 4. Get your Firebase configuration:
    - Go to Project Settings > General
    - Under "Your apps", add a web app
    - Copy the config values to your `.env.local`
+
+### Email/Password Authentication
+The app now supports traditional email/password sign-in alongside Google OAuth:
+- Users can create an account with email and password
+- Users can sign in with their email and password
+- Passwords must be at least 6 characters
+- Firebase handles password hashing and security
 
 ## Cloudflare R2 Setup (Optional for File Uploads)
 
@@ -200,7 +208,8 @@ All endpoints except `/health` require a valid Firebase JWT token in the `Author
 
 ## Features
 
-- ✅ User authentication (Google, GitHub OAuth + Email magic links)
+- ✅ User authentication (Email/Password, Google OAuth)
+- ✅ User registration with email and password
 - ✅ Create recipes from external links
 - ✅ Upload recipe documents
 - ✅ Manually create recipes
@@ -209,6 +218,7 @@ All endpoints except `/health` require a valid Firebase JWT token in the `Author
 - ✅ Responsive design with Tailwind CSS
 - ✅ Real-time auth state management
 - ✅ Secure file uploads to R2
+- ✅ Development authentication bypass for local testing
 
 ## Troubleshooting
 
