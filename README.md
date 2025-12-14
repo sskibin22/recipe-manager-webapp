@@ -1,6 +1,6 @@
 # Recipe Manager Web Application
 
-A full-stack web application for managing personal recipe collections. Users can save recipes from external links, upload recipe documents, or manually create recipes.
+A full-stack web application for managing personal recipe collections. Users can save recipes from external links, upload recipe documents, or manually create recipes. Recipes can also be favorited and organized.
 
 ## Tech Stack
 
