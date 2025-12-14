@@ -1,0 +1,325 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { renderWithProviders } from '../test/testUtils';
+
+// Mock modules before importing components
+vi.mock('../services/api', () => ({
+  recipesApi: {
+    create: vi.fn(),
+  },
+  uploadsApi: {
+    getPresignedUploadUrl: vi.fn(),
+    uploadToPresignedUrl: vi.fn(),
+  },
+}));
+
+vi.mock('../contexts/AuthContext', () => ({
+  useAuth: vi.fn(() => ({
+    user: {
+      uid: 'test-user-123',
+      email: 'test@example.com',
+      getIdToken: async () => 'mock-token',
+    },
+  })),
+}));
+
+// Import after mocking
+import RecipeForm from './RecipeForm';
+import * as api from '../services/api';
+
+describe('RecipeForm', () => {
+  const mockOnClose = vi.fn();
+  const mockOnSuccess = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should render form with title', () => {
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    expect(screen.getByText('Add New Recipe')).toBeInTheDocument();
+  });
+
+  it('should render title input field', () => {
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    expect(titleInput).toBeInTheDocument();
+  });
+
+  it('should render recipe type radio buttons', () => {
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    expect(screen.getByLabelText(/^Link$/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Document$/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Manual$/)).toBeInTheDocument();
+  });
+
+  it('should default to link type', () => {
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const linkRadio = screen.getByLabelText(/^Link$/);
+    expect(linkRadio).toBeChecked();
+  });
+
+  it('should show URL field for link type', () => {
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    expect(screen.getByLabelText(/Recipe URL/i)).toBeInTheDocument();
+  });
+
+  it('should show file upload field when document type is selected', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const documentRadio = screen.getByLabelText(/^Document$/);
+    await user.click(documentRadio);
+    
+    expect(screen.getByLabelText(/Upload Document/i)).toBeInTheDocument();
+  });
+
+  it('should show content textarea when manual type is selected', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const manualRadio = screen.getByLabelText(/^Manual$/);
+    await user.click(manualRadio);
+    
+    expect(screen.getByLabelText(/Recipe Content/i)).toBeInTheDocument();
+  });
+
+  it('should show error when title is empty on submit', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    expect(await screen.findByText('Title is required')).toBeInTheDocument();
+  });
+
+  it('should show error when URL is empty for link type', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, 'Test Recipe');
+    
+    const urlInput = screen.getByLabelText(/Recipe URL/i);
+    await user.clear(urlInput);
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    expect(await screen.findByText('URL is required for link recipes')).toBeInTheDocument();
+  });
+
+  it('should show error when file is missing for document type', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, 'Test Recipe');
+    
+    const documentRadio = screen.getByLabelText(/^Document$/);
+    await user.click(documentRadio);
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    expect(await screen.findByText('File is required for document recipes')).toBeInTheDocument();
+  });
+
+  it('should show error when content is empty for manual type', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, 'Test Recipe');
+    
+    const manualRadio = screen.getByLabelText(/^Manual$/);
+    await user.click(manualRadio);
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    expect(await screen.findByText('Content is required for manual recipes')).toBeInTheDocument();
+  });
+
+  it('should submit link recipe with valid data', async () => {
+    const user = userEvent.setup();
+    api.recipesApi.create.mockResolvedValue({ id: '123', title: 'Test Recipe' });
+    
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, 'Test Recipe');
+    
+    const urlInput = screen.getByLabelText(/Recipe URL/i);
+    await user.type(urlInput, 'https://example.com/recipe');
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    await waitFor(() => {
+      expect(api.recipesApi.create).toHaveBeenCalledWith({
+        title: 'Test Recipe',
+        type: 'link',
+        url: 'https://example.com/recipe',
+      });
+    });
+  });
+
+  it('should submit manual recipe with valid data', async () => {
+    const user = userEvent.setup();
+    api.recipesApi.create.mockResolvedValue({ id: '123', title: 'Test Recipe' });
+    
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, 'Test Recipe');
+    
+    const manualRadio = screen.getByLabelText(/^Manual$/);
+    await user.click(manualRadio);
+    
+    const contentInput = screen.getByLabelText(/Recipe Content/i);
+    await user.type(contentInput, 'Test content');
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    await waitFor(() => {
+      expect(api.recipesApi.create).toHaveBeenCalledWith({
+        title: 'Test Recipe',
+        type: 'manual',
+        content: 'Test content',
+      });
+    });
+  });
+
+  it('should call onSuccess after successful submission', async () => {
+    const user = userEvent.setup();
+    api.recipesApi.create.mockResolvedValue({ id: '123', title: 'Test Recipe' });
+    
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, 'Test Recipe');
+    
+    const urlInput = screen.getByLabelText(/Recipe URL/i);
+    await user.type(urlInput, 'https://example.com/recipe');
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    await waitFor(() => {
+      expect(mockOnSuccess).toHaveBeenCalled();
+    });
+  });
+
+  it('should call onClose when cancel button is clicked', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const cancelButton = screen.getByText('Cancel');
+    await user.click(cancelButton);
+    
+    expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  it('should reset form after successful submission', async () => {
+    const user = userEvent.setup();
+    api.recipesApi.create.mockResolvedValue({ id: '123', title: 'Test Recipe' });
+    
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, 'Test Recipe');
+    
+    const urlInput = screen.getByLabelText(/Recipe URL/i);
+    await user.type(urlInput, 'https://example.com/recipe');
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    await waitFor(() => {
+      expect(titleInput).toHaveValue('');
+      expect(urlInput).toHaveValue('');
+    });
+  });
+
+  it('should disable submit button while uploading', async () => {
+    const user = userEvent.setup();
+    api.uploadsApi.getPresignedUploadUrl.mockResolvedValue({
+      uploadUrl: 'https://upload.example.com',
+      key: 'test-key',
+    });
+    api.uploadsApi.uploadToPresignedUrl.mockImplementation(() => 
+      new Promise(resolve => setTimeout(resolve, 100))
+    );
+    
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, 'Test Recipe');
+    
+    const documentRadio = screen.getByLabelText(/^Document$/);
+    await user.click(documentRadio);
+    
+    const fileInput = screen.getByLabelText(/Upload Document/i);
+    const file = new File(['test'], 'test.pdf', { type: 'application/pdf' });
+    await user.upload(fileInput, file);
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    // Button should show uploading state
+    await waitFor(() => {
+      expect(screen.getByText(/Uploading.../)).toBeInTheDocument();
+    });
+  });
+
+  it('should trim whitespace from title', async () => {
+    const user = userEvent.setup();
+    api.recipesApi.create.mockResolvedValue({ id: '123', title: 'Test Recipe' });
+    
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, '  Test Recipe  ');
+    
+    const urlInput = screen.getByLabelText(/Recipe URL/i);
+    await user.type(urlInput, 'https://example.com/recipe');
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    await waitFor(() => {
+      expect(api.recipesApi.create).toHaveBeenCalled();
+      const callArgs = api.recipesApi.create.mock.calls[0][0];
+      expect(callArgs.title).toBe('Test Recipe');
+    });
+  });
+
+  it('should handle API error gracefully', async () => {
+    const user = userEvent.setup();
+    api.recipesApi.create.mockRejectedValue({
+      response: { data: { message: 'Server error' } }
+    });
+    
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, 'Test Recipe');
+    
+    const urlInput = screen.getByLabelText(/Recipe URL/i);
+    await user.type(urlInput, 'https://example.com/recipe');
+    
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+    
+    expect(await screen.findByText(/Server error/)).toBeInTheDocument();
+  });
+});
