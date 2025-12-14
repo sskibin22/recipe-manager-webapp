@@ -1,0 +1,154 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import RecipeCard from './RecipeCard';
+import { renderWithProviders, mockRecipe } from '../test/testUtils';
+import * as api from '../services/api';
+
+// Mock the API module
+vi.mock('../services/api', () => ({
+  recipesApi: {
+    addFavorite: vi.fn(),
+    removeFavorite: vi.fn(),
+  },
+}));
+
+describe('RecipeCard', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should render recipe title', () => {
+    renderWithProviders(<RecipeCard recipe={mockRecipe} />);
+    
+    expect(screen.getByText('Test Recipe')).toBeInTheDocument();
+  });
+
+  it('should display recipe type', () => {
+    renderWithProviders(<RecipeCard recipe={mockRecipe} />);
+    
+    expect(screen.getByText(/manual/i)).toBeInTheDocument();
+  });
+
+  it('should display creation date', () => {
+    renderWithProviders(<RecipeCard recipe={mockRecipe} />);
+    
+    expect(screen.getByText(/Added/i)).toBeInTheDocument();
+  });
+
+  it('should render link to recipe detail page', () => {
+    renderWithProviders(<RecipeCard recipe={mockRecipe} />);
+    
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', `/recipe/${mockRecipe.id}`);
+  });
+
+  it('should display URL for link type recipes', () => {
+    const linkRecipe = {
+      ...mockRecipe,
+      type: 'link',
+      url: 'https://example.com/recipe',
+    };
+    
+    renderWithProviders(<RecipeCard recipe={linkRecipe} />);
+    
+    expect(screen.getByText('https://example.com/recipe')).toBeInTheDocument();
+  });
+
+  it('should display content preview for manual type recipes', () => {
+    const manualRecipe = {
+      ...mockRecipe,
+      type: 'manual',
+      content: 'Test content for manual recipe',
+    };
+    
+    renderWithProviders(<RecipeCard recipe={manualRecipe} />);
+    
+    expect(screen.getByText('Test content for manual recipe')).toBeInTheDocument();
+  });
+
+  it('should show filled star icon when recipe is favorited', () => {
+    const favoriteRecipe = { ...mockRecipe, isFavorite: true };
+    renderWithProviders(<RecipeCard recipe={favoriteRecipe} />);
+    
+    const favoriteButton = screen.getByLabelText(/Remove from favorites/i);
+    expect(favoriteButton).toBeInTheDocument();
+  });
+
+  it('should show empty star icon when recipe is not favorited', () => {
+    const nonFavoriteRecipe = { ...mockRecipe, isFavorite: false };
+    renderWithProviders(<RecipeCard recipe={nonFavoriteRecipe} />);
+    
+    const favoriteButton = screen.getByLabelText(/Add to favorites/i);
+    expect(favoriteButton).toBeInTheDocument();
+  });
+
+  it('should call addFavorite when clicking unfavorited star', async () => {
+    const nonFavoriteRecipe = { ...mockRecipe, isFavorite: false };
+    api.recipesApi.addFavorite.mockResolvedValue({});
+    
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeCard recipe={nonFavoriteRecipe} />);
+    
+    const favoriteButton = screen.getByLabelText(/Add to favorites/i);
+    await user.click(favoriteButton);
+    
+    // Verify optimistic update happened
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Remove from favorites/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should call removeFavorite when clicking favorited star', async () => {
+    const favoriteRecipe = { ...mockRecipe, isFavorite: true };
+    api.recipesApi.removeFavorite.mockResolvedValue({});
+    
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeCard recipe={favoriteRecipe} />);
+    
+    const favoriteButton = screen.getByLabelText(/Remove from favorites/i);
+    await user.click(favoriteButton);
+    
+    // Verify optimistic update happened
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Add to favorites/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should toggle favorite state optimistically', async () => {
+    const nonFavoriteRecipe = { ...mockRecipe, isFavorite: false };
+    api.recipesApi.addFavorite.mockResolvedValue({});
+    
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeCard recipe={nonFavoriteRecipe} />);
+    
+    const favoriteButton = screen.getByLabelText(/Add to favorites/i);
+    await user.click(favoriteButton);
+    
+    // Button should change immediately (optimistic update)
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Remove from favorites/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should display correct icon for link type', () => {
+    const linkRecipe = { ...mockRecipe, type: 'link' };
+    renderWithProviders(<RecipeCard recipe={linkRecipe} />);
+    
+    expect(screen.getByText(/link/i)).toBeInTheDocument();
+  });
+
+  it('should display correct icon for document type', () => {
+    const documentRecipe = { ...mockRecipe, type: 'document' };
+    renderWithProviders(<RecipeCard recipe={documentRecipe} />);
+    
+    expect(screen.getByText(/document/i)).toBeInTheDocument();
+  });
+
+  it('should display correct icon for manual type', () => {
+    const manualRecipe = { ...mockRecipe, type: 'manual' };
+    renderWithProviders(<RecipeCard recipe={manualRecipe} />);
+    
+    expect(screen.getByText(/manual/i)).toBeInTheDocument();
+  });
+});
