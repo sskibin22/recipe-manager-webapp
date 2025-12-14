@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { recipesApi, uploadsApi } from '../services/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-const RecipeForm = ({ isOpen, onClose }) => {
+const RecipeForm = ({ onClose, onSuccess }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [recipeType, setRecipeType] = useState('link');
@@ -19,7 +19,7 @@ const RecipeForm = ({ isOpen, onClose }) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recipes'] });
       resetForm();
-      onClose();
+      if (onSuccess) onSuccess();
     },
     onError: (err) => {
       setError(err.response?.data?.message || 'Failed to create recipe');
@@ -86,8 +86,6 @@ const RecipeForm = ({ isOpen, onClose }) => {
       setError(err.message || 'Failed to create recipe');
     }
   };
-
-  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

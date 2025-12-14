@@ -186,6 +186,25 @@ npm run format
 - **Issue**: JWT validation fails with 401 Unauthorized
   - **Solution**: Verify Firebase project ID and audience match in backend configuration; check token expiry
 
+- **Issue**: `dotnet run` fails with "Couldn't find a project to run"
+  - **Solution**: Use full project path: `dotnet run --project C:\src\Projects\RecipeManager\recipe-manager-webapp\backend\RecipeManager.Api.csproj`
+  - **Note**: PowerShell working directory may not persist correctly between terminal commands; always use absolute paths or the `--project` flag
+
+- **Issue**: Hot reload (`dotnet watch`) doesn't pick up configuration changes
+  - **Solution**: Some changes (like JSON serialization options, middleware configuration) require full restart. Stop the server and use `dotnet run --project <full-path-to-csproj>` instead of `dotnet watch run`
+
+- **Issue**: "A possible object cycle was detected" JSON serialization error when creating/updating entities
+  - **Solution**: Return anonymous DTOs instead of full Entity Framework entities from API endpoints to avoid circular reference issues with navigation properties. Example:
+    ```csharp
+    return Results.Created($"/api/recipes/{recipe.Id}", new
+    {
+        recipe.Id,
+        recipe.Title,
+        recipe.Type,
+        // ... other properties (exclude navigation properties)
+    });
+    ```
+
 - **Issue**: Playwright tests fail to start or browsers not found
   - **Solution**: Run `npx playwright install` to install required browser binaries; ensure both backend and frontend are running for E2E tests
 

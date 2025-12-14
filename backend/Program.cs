@@ -6,8 +6,15 @@ using RecipeManager.Api.Middleware;
 using RecipeManager.Api.Models;
 using RecipeManager.Api.Services;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure JSON options for case-insensitive enum parsing
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 // Add services to the container
 builder.Services.AddEndpointsApiExplorer();
@@ -103,7 +110,18 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
     db.Recipes.Add(recipe);
     await db.SaveChangesAsync();
 
-    return Results.Created($"/api/recipes/{recipe.Id}", recipe);
+    return Results.Created($"/api/recipes/{recipe.Id}", new
+    {
+        recipe.Id,
+        recipe.Title,
+        recipe.Type,
+        recipe.Url,
+        recipe.StorageKey,
+        recipe.Content,
+        recipe.CreatedAt,
+        recipe.UpdatedAt,
+        IsFavorite = false
+    });
 })
 .WithName("CreateRecipe")
 .WithOpenApi();
