@@ -370,12 +370,7 @@ app.MapPut("/api/user/profile", async (UpdateUserProfileRequest request, Applica
 .WithName("UpdateUserProfile")
 .WithOpenApi();
 
-app.Run();
-
-// Make Program accessible to tests
-public partial class Program { }
-
-// Helper method
+// Helper method (must be before app.Run())
 static Guid? GetUserId(ClaimsPrincipal user)
 {
     // Check for the db_user_id claim added by middleware
@@ -388,8 +383,13 @@ static Guid? GetUserId(ClaimsPrincipal user)
     return null;
 }
 
-// Request/Response DTOs
+app.Run();
+
+// Request/Response DTOs (after app.Run to avoid CS8803 error)
 record CreateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content);
 record UpdateRecipeRequest(string Title, RecipeType Type, string? Url, string? Content);
 record PresignUploadRequest(string FileName, string ContentType);
 record UpdateUserProfileRequest(string? Email, string? DisplayName);
+
+// Make Program accessible to tests
+public partial class Program { }

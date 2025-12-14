@@ -1,0 +1,63 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using RecipeManager.Api.Data;
+using RecipeManager.Api.Services;
+using Moq;
+
+namespace RecipeManager.Api.Tests;
+
+public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+{
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.ConfigureServices(services =>
+        {
+            // Remove the existing DbContext configuration
+            var descriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
+            if (descriptor != null)
+            {
+                services.Remove(descriptor);
+            }
+
+            // Add DbContext using in-memory database for testing
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseInMemoryDatabase("TestDatabase");
+            });
+
+            // Mock IStorageService
+            var mockStorageService = new Mock<IStorageService>();
+            mockStorageService
+                .Setup(s => s.GetPresignedUploadUrlAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync("https://test-upload-url.com/test");
+            mockStorageService
+                .Setup(s => s.GetPresignedDownloadUrlAsync(It.IsAny<string>()))
+                .ReturnsAsync("https://test-download-url.com/test");
+
+            // Remove existing IStorageService registration
+            var storageDescriptor = services.SingleOrDefault(
+                d => d.ServiceType == typeof(IStorageService));
+            if (storageDescriptor != null)
+            {
+                services.Remove(storageDescriptor);
+            }
+
+            services.AddSingleton(mockStorageService.Object);
+
+            // Build the service provider to seed the database
+            var sp = services.BuildServiceProvider();
+
+            using var scope = sp.CreateScope();
+            var scopedServices = scope.ServiceProvider;
+            var db = scopedServices.GetRequiredService<ApplicationDbContext>();
+
+            // Ensure the database is created
+            db.Database.EnsureCreated();
+        });
+
+        builder.UseEnvironment("Development");
+    }
+}
