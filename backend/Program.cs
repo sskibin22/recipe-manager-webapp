@@ -372,6 +372,9 @@ app.MapPut("/api/user/profile", async (UpdateUserProfileRequest request, Applica
 
 app.Run();
 
+// Make Program accessible to tests
+public partial class Program { }
+
 // Helper method
 static Guid? GetUserId(ClaimsPrincipal user)
 {
