@@ -25,7 +25,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add CORS
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
     ?? new[] { "http://localhost:5173" };
 builder.Services.AddCors(options =>
 {
@@ -332,9 +332,9 @@ app.MapPost("/api/uploads/presign", async (PresignUploadRequest request, IStorag
         var fileExtension = Path.GetExtension(request.FileName).ToLowerInvariant();
         if (string.IsNullOrWhiteSpace(fileExtension) || !allowedExtensions.Contains(fileExtension))
         {
-            return Results.BadRequest(new 
-            { 
-                message = "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG" 
+            return Results.BadRequest(new
+            {
+                message = "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG"
             });
         }
     }
@@ -397,7 +397,7 @@ app.MapPut("/api/user/profile", async (UpdateUserProfileRequest request, Applica
     {
         userProfile.Email = request.Email;
     }
-    
+
     if (!string.IsNullOrWhiteSpace(request.DisplayName))
     {
         userProfile.DisplayName = request.DisplayName;
@@ -424,7 +424,7 @@ static Guid? GetUserId(ClaimsPrincipal user)
     {
         return userId;
     }
-    
+
     return null;
 }
 

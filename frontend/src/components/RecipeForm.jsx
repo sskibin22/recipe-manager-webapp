@@ -61,7 +61,8 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     
     // If MIME type check fails or is empty, check by file extension
     if (!isValidType || !file.type) {
-      const fileExtension = file.name.toLowerCase().match(/\.[^.]+$/)?.[0] || '';
+      const fileName = file.name.toLowerCase();
+      const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
       const allowedExtensions = Object.values(ALLOWED_FILE_TYPES).flat();
       isValidType = allowedExtensions.includes(fileExtension);
     }

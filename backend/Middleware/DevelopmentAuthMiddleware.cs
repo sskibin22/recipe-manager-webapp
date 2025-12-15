@@ -26,7 +26,7 @@ public class DevelopmentAuthMiddleware
     {
         // Only bypass auth in Development environment when explicitly enabled
         var bypassAuth = _configuration.GetValue<bool>("Development:BypassAuthentication");
-        
+
         if (_environment.IsDevelopment() && bypassAuth && !context.User.Identity!.IsAuthenticated)
         {
             var authSub = _configuration["Development:TestUser:AuthSub"] ?? "dev-user-001";
