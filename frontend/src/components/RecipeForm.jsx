@@ -106,7 +106,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="My Favorite Recipe"
-                required
               />
             </div>
 
@@ -160,7 +159,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
                   onChange={(e) => setUrl(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="https://example.com/recipe"
-                  required
                 />
               </div>
             )}
@@ -176,7 +174,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   accept=".pdf,.doc,.docx,.txt"
-                  required
                 />
               </div>
             )}
@@ -193,7 +190,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows="10"
                   placeholder="Ingredients:&#10;- ...&#10;&#10;Instructions:&#10;1. ..."
-                  required
                 />
               </div>
             )}

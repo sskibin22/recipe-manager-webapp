@@ -5,13 +5,29 @@ using Microsoft.Extensions.DependencyInjection;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.Services;
 using Moq;
+using Microsoft.Extensions.Configuration;
 
 namespace RecipeManager.Api.Tests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly string _dbName = $"TestDatabase_{Guid.NewGuid()}";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            // Override configuration to enable development authentication bypass
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Development:BypassAuthentication"] = "true",
+                ["Development:TestUser:AuthSub"] = "test-auth-sub",
+                ["Development:TestUser:Email"] = "test@example.com",
+                ["Development:TestUser:DisplayName"] = "Test User",
+                ["Firebase:ProjectId"] = "", // Disable Firebase auth for tests
+            });
+        });
+
         builder.ConfigureServices(services =>
         {
             // Remove the existing DbContext configuration
@@ -22,10 +38,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(descriptor);
             }
 
-            // Add DbContext using in-memory database for testing
+            // Add DbContext using in-memory database for testing with unique name
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseInMemoryDatabase("TestDatabase");
+                options.UseInMemoryDatabase(_dbName);
             });
 
             // Mock IStorageService

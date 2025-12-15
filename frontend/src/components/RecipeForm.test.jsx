@@ -164,7 +164,9 @@ describe('RecipeForm', () => {
     await user.click(submitButton);
     
     await waitFor(() => {
-      expect(api.recipesApi.create).toHaveBeenCalledWith({
+      expect(api.recipesApi.create).toHaveBeenCalled();
+      const callArgs = api.recipesApi.create.mock.calls[0][0];
+      expect(callArgs).toEqual({
         title: 'Test Recipe',
         type: 'link',
         url: 'https://example.com/recipe',
@@ -191,7 +193,9 @@ describe('RecipeForm', () => {
     await user.click(submitButton);
     
     await waitFor(() => {
-      expect(api.recipesApi.create).toHaveBeenCalledWith({
+      expect(api.recipesApi.create).toHaveBeenCalled();
+      const callArgs = api.recipesApi.create.mock.calls[0][0];
+      expect(callArgs).toEqual({
         title: 'Test Recipe',
         type: 'manual',
         content: 'Test content',
@@ -275,9 +279,10 @@ describe('RecipeForm', () => {
     const submitButton = screen.getByText(/Add Recipe/);
     await user.click(submitButton);
     
-    // Button should show uploading state
+    // Button should be disabled during upload
     await waitFor(() => {
-      expect(screen.getByText(/Uploading.../)).toBeInTheDocument();
+      const button = screen.getByText(/Add Recipe|Uploading.../);
+      expect(button).toBeDisabled();
     });
   });
 

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.Models;
@@ -26,21 +27,29 @@ public class RecipeEndpointsTests
         var scope = _factory.Services.CreateScope();
         _db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         
-        // Create test user
-        _testUserId = Guid.NewGuid();
-        var testUser = new User
+        // The test user will be created automatically by UserEnsurerMiddleware
+        // with the AuthSub configured in CustomWebApplicationFactory
+        // We need to find or wait for it to be created
+        var testUser = _db.Users.FirstOrDefault(u => u.AuthSub == "test-auth-sub");
+        if (testUser != null)
         {
-            Id = _testUserId,
-            AuthSub = "test-auth-sub",
-            Email = "test@example.com",
-            DisplayName = "Test User",
-            CreatedAt = DateTime.UtcNow
-        };
-        _db.Users.Add(testUser);
-        _db.SaveChanges();
-
-        // Add test claim header for development authentication bypass
-        _client.DefaultRequestHeaders.Add("X-Test-User-Id", _testUserId.ToString());
+            _testUserId = testUser.Id;
+        }
+        else
+        {
+            // Create test user if it doesn't exist yet
+            _testUserId = Guid.NewGuid();
+            testUser = new User
+            {
+                Id = _testUserId,
+                AuthSub = "test-auth-sub",
+                Email = "test@example.com",
+                DisplayName = "Test User",
+                CreatedAt = DateTime.UtcNow
+            };
+            _db.Users.Add(testUser);
+            _db.SaveChanges();
+        }
     }
 
     [TearDown]
@@ -81,7 +90,7 @@ public class RecipeEndpointsTests
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var recipe = await response.Content.ReadFromJsonAsync<dynamic>();
-        recipe.Should().NotBeNull();
+        Assert.That(recipe, Is.Not.Null);
     }
 
     [Test]
@@ -219,6 +228,9 @@ public class RecipeEndpointsTests
         };
         _db.Recipes.Add(recipe);
         await _db.SaveChangesAsync();
+        
+        // Detach to avoid tracking conflicts
+        _db.Entry(recipe).State = EntityState.Detached;
 
         var updateRequest = new
         {
@@ -250,6 +262,9 @@ public class RecipeEndpointsTests
         };
         _db.Recipes.Add(recipe);
         await _db.SaveChangesAsync();
+        
+        // Detach the recipe so we can query fresh from the database
+        _db.Entry(recipe).State = EntityState.Detached;
 
         // Act
         var response = await _client.DeleteAsync($"/api/recipes/{recipe.Id}");
@@ -257,7 +272,7 @@ public class RecipeEndpointsTests
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        // Verify deletion
+        // Verify deletion - query fresh from database
         var deletedRecipe = await _db.Recipes.FindAsync(recipe.Id);
         deletedRecipe.Should().BeNull();
     }
@@ -278,6 +293,9 @@ public class RecipeEndpointsTests
         };
         _db.Recipes.Add(recipe);
         await _db.SaveChangesAsync();
+        
+        // Detach to avoid tracking conflicts
+        _db.Entry(recipe).State = EntityState.Detached;
 
         // Act
         var response = await _client.PostAsync($"/api/recipes/{recipe.Id}/favorite", null);

@@ -220,7 +220,17 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
 
     await db.SaveChangesAsync();
 
-    return Results.Ok(recipe);
+    return Results.Ok(new
+    {
+        recipe.Id,
+        recipe.Title,
+        recipe.Type,
+        recipe.Url,
+        recipe.StorageKey,
+        recipe.Content,
+        recipe.CreatedAt,
+        recipe.UpdatedAt
+    });
 })
 .WithName("UpdateRecipe")
 .WithOpenApi();
@@ -265,7 +275,12 @@ app.MapPost("/api/recipes/{id:guid}/favorite", async (Guid id, ApplicationDbCont
     db.Favorites.Add(favorite);
     await db.SaveChangesAsync();
 
-    return Results.Created($"/api/recipes/{id}/favorite", favorite);
+    return Results.Created($"/api/recipes/{id}/favorite", new
+    {
+        favorite.UserId,
+        favorite.RecipeId,
+        favorite.CreatedAt
+    });
 })
 .WithName("AddFavorite")
 .WithOpenApi();

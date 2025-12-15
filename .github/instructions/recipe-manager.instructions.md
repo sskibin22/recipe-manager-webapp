@@ -211,6 +211,15 @@ npm run format
 - **Issue**: Playwright tests time out waiting for localhost
   - **Solution**: Verify backend is running on expected port (5000/5001); check `baseURL` in `playwright.config.js` matches actual dev server URL
 
+- **Issue**: Tests fail or behave unexpectedly after making code changes
+  - **Solution**: ALWAYS run `dotnet clean` followed by `dotnet build` after making code changes, especially changes to entities, DTOs, or API endpoints. Build artifacts can become stale and cause mysterious test failures
+  - **Note**: This is particularly important when:
+    - Modifying entity models or adding/removing properties
+    - Changing API endpoint signatures or return types
+    - Updating middleware or configuration
+    - Fixing serialization issues (e.g., circular references)
+  - **Best Practice**: Make it a habit to run `dotnet clean; dotnet build` before running tests after any code changes
+
 ## Project Layout
 
 ### Repository Structure
