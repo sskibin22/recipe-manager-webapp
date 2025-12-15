@@ -349,9 +349,11 @@ npm run format
 
 ### Validation Steps for Changes
 
+**CRITICAL**: After making ANY changes to the codebase, ALWAYS run and verify that all unit tests pass before considering the work complete. This is a mandatory step for all code changes.
+
 1. **Backend Changes**:
    - Run `dotnet build` - must succeed
-   - Run `dotnet test` - all tests must pass
+   - **Run `dotnet test` - ALL tests MUST pass (mandatory for every backend change)**
    - Run `dotnet format --verify-no-changes` - no formatting issues
    - If schema changed, create migration: `dotnet ef migrations add <MigrationName>`
    - Test endpoints via Swagger UI or VS Code REST Client
@@ -359,7 +361,7 @@ npm run format
 2. **Frontend Changes**:
    - Run `npm run build` - must succeed
    - Run `npm run lint` - no linting errors
-   - Run `npm run test` - unit tests pass
+   - **Run `npm run test` - ALL unit tests MUST pass (mandatory for every frontend change)**
    - Run `npm run test:e2e` - E2E tests pass (requires backend running)
    - Verify in browser at `http://localhost:5173`
    - Test auth flow, recipe CRUD, search, favorites
@@ -422,6 +424,8 @@ npm run format
 - Check environment variables are set correctly for both backend and frontend
 - Use `dotnet format` for backend code formatting
 - Use `npm run lint` for frontend code linting
+- **Run `dotnet test` in `/backend` directory after ANY backend code changes to verify all unit tests pass**
+- **Run `npm run test` in `/frontend` directory after ANY frontend code changes to verify all unit tests pass**
 - Run `npm run test:e2e` to validate E2E flows after significant changes
 
 **Playwright E2E Testing Guidelines**:
