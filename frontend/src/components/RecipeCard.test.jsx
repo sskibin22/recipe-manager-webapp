@@ -151,4 +151,98 @@ describe('RecipeCard', () => {
     
     expect(screen.getByText(/manual/i)).toBeInTheDocument();
   });
+
+  it('should disable favorite button during mutation', async () => {
+    const nonFavoriteRecipe = { ...mockRecipe, isFavorite: false };
+    
+    let resolvePromise;
+    // Mock a slow API response that we control
+    api.recipesApi.addFavorite.mockImplementation(() => 
+      new Promise(resolve => {
+        resolvePromise = () => resolve({});
+      })
+    );
+    
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeCard recipe={nonFavoriteRecipe} />);
+    
+    const favoriteButton = screen.getByLabelText(/Add to favorites/i);
+    
+    // Click and don't wait for completion
+    const clickPromise = user.click(favoriteButton);
+    
+    // Button should be disabled during mutation
+    await waitFor(() => {
+      expect(favoriteButton).toBeDisabled();
+    });
+    
+    // Resolve the promise to clean up
+    if (resolvePromise) {
+      resolvePromise();
+    }
+    await clickPromise;
+  });
+
+  it('should show spinner during mutation', async () => {
+    const nonFavoriteRecipe = { ...mockRecipe, isFavorite: false };
+    
+    let resolvePromise;
+    // Mock a slow API response that we control
+    api.recipesApi.addFavorite.mockImplementation(() => 
+      new Promise(resolve => {
+        resolvePromise = () => resolve({});
+      })
+    );
+    
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeCard recipe={nonFavoriteRecipe} />);
+    
+    const favoriteButton = screen.getByLabelText(/Add to favorites/i);
+    
+    // Click and don't wait for completion
+    const clickPromise = user.click(favoriteButton);
+    
+    // Spinner should be visible
+    await waitFor(() => {
+      const spinner = favoriteButton.querySelector('.animate-spin');
+      expect(spinner).toBeInTheDocument();
+    });
+    
+    // Resolve the promise to clean up
+    if (resolvePromise) {
+      resolvePromise();
+    }
+    await clickPromise;
+  });
+
+  it('should apply opacity styles when pending', async () => {
+    const nonFavoriteRecipe = { ...mockRecipe, isFavorite: false };
+    
+    let resolvePromise;
+    // Mock a slow API response that we control
+    api.recipesApi.addFavorite.mockImplementation(() => 
+      new Promise(resolve => {
+        resolvePromise = () => resolve({});
+      })
+    );
+    
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeCard recipe={nonFavoriteRecipe} />);
+    
+    const favoriteButton = screen.getByLabelText(/Add to favorites/i);
+    
+    // Click and don't wait for completion
+    const clickPromise = user.click(favoriteButton);
+    
+    // Button should have opacity class
+    await waitFor(() => {
+      expect(favoriteButton).toHaveClass('opacity-50');
+    });
+    
+    // Resolve the promise to clean up
+    if (resolvePromise) {
+      resolvePromise();
+    }
+    await clickPromise;
+  });
 });
