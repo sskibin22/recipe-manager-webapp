@@ -283,12 +283,12 @@ test.describe('Recipe Edit Functionality', () => {
       // Submit the form
       await page.locator('button:has-text("Add Recipe")').click();
       
-      // Wait for recipe to be created
-      await page.waitForTimeout(2000);
+      // Wait for modal to close or recipe to appear in list
+      await expect(page.locator('button:has-text("Add Recipe")')).toBeVisible({ timeout: 5000 });
     }
     
     // Find and click on a document-type recipe
-    const documentRecipes = page.locator('[class*="document"], [data-type="document"], article, div').filter({ hasText: 'Test Document Recipe' }).first();
+    const documentRecipes = page.locator('text=Test Document Recipe').first();
     const docCount = await documentRecipes.count();
     
     if (docCount > 0) {
@@ -314,13 +314,11 @@ test.describe('Recipe Edit Functionality', () => {
 
   test('should allow replacing document in edit mode', async ({ page }) => {
     // Navigate to a document recipe (assuming one exists from previous test)
-    const documentRecipes = page.locator('a[href*="/recipe/"]').filter({ hasText: 'Test Document Recipe' }).or(
-      page.locator('[class*="document"]').first()
-    );
+    const documentRecipes = page.locator('text=Test Document Recipe').first();
     const docCount = await documentRecipes.count();
     
     if (docCount > 0) {
-      await documentRecipes.first().click();
+      await documentRecipes.click();
       await page.waitForURL(/\/recipe\//);
       
       const editButton = page.locator('button:has-text("Edit Recipe")');

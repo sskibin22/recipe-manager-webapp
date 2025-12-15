@@ -128,7 +128,8 @@ export default function RecipeDetail() {
     
     if (!selectedFile) {
       setFile(null);
-      setValidationErrors({ ...validationErrors, file: '' });
+      const { file, ...rest } = validationErrors;
+      setValidationErrors(rest);
       return;
     }
 
@@ -142,7 +143,8 @@ export default function RecipeDetail() {
     }
 
     setFile(selectedFile);
-    setValidationErrors({ ...validationErrors, file: '' });
+    const { file, ...rest } = validationErrors;
+    setValidationErrors(rest);
   };
 
   const validateForm = () => {
@@ -179,16 +181,16 @@ export default function RecipeDetail() {
       return;
     }
     
-    try {
-      let updateData = {
-        title: editedTitle,
-        type: recipe.type,
-        url: recipe.type.toLowerCase() === 'link' ? editedUrl : recipe.url,
-        content: recipe.type.toLowerCase() === 'manual' ? editedContent : recipe.content,
-      };
+    let updateData = {
+      title: editedTitle,
+      type: recipe.type,
+      url: recipe.type.toLowerCase() === 'link' ? editedUrl : recipe.url,
+      content: recipe.type.toLowerCase() === 'manual' ? editedContent : recipe.content,
+    };
 
-      // Handle document upload if user selected a new file
-      if (recipe.type.toLowerCase() === 'document' && file) {
+    // Handle document upload if user selected a new file
+    if (recipe.type.toLowerCase() === 'document' && file) {
+      try {
         setUploading(true);
         
         // Get presigned upload URL
@@ -199,13 +201,15 @@ export default function RecipeDetail() {
 
         updateData.storageKey = presignData.key;
         setUploading(false);
+      } catch (err) {
+        setUploading(false);
+        setValidationErrors({ ...validationErrors, file: err.message || 'Failed to upload file' });
+        return; // Don't proceed with mutation if upload failed
       }
-
-      updateMutation.mutate(updateData);
-    } catch (err) {
-      setUploading(false);
-      setValidationErrors({ ...validationErrors, file: err.message || 'Failed to upload file' });
     }
+
+    // Mutation has its own error handling via onError callback
+    updateMutation.mutate(updateData);
   };
 
   if (isLoading) {
