@@ -247,6 +247,47 @@ public class RecipeEndpointsTests
     }
 
     [Test]
+    public async Task UpdateRecipe_WithNewStorageKey_UpdatesDocument()
+    {
+        // Arrange
+        var recipe = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Document Recipe",
+            Type = RecipeType.Document,
+            StorageKey = "users/test/old-file.pdf",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _db.Recipes.Add(recipe);
+        await _db.SaveChangesAsync();
+        
+        // Detach to avoid tracking conflicts
+        _db.Entry(recipe).State = EntityState.Detached;
+
+        var newStorageKey = "users/test/new-file.pdf";
+        var updateRequest = new
+        {
+            title = "Updated Document Recipe",
+            type = "Document",
+            storageKey = newStorageKey
+        };
+
+        // Act
+        var response = await _client.PutAsJsonAsync($"/api/recipes/{recipe.Id}", updateRequest);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        
+        // Verify the storage key was updated
+        var updatedRecipe = await _db.Recipes.FindAsync(recipe.Id);
+        updatedRecipe.Should().NotBeNull();
+        updatedRecipe!.StorageKey.Should().Be(newStorageKey);
+        updatedRecipe.Title.Should().Be("Updated Document Recipe");
+    }
+
+    [Test]
     public async Task DeleteRecipe_WithValidId_ReturnsNoContent()
     {
         // Arrange
