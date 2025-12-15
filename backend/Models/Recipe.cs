@@ -7,7 +7,7 @@ public enum RecipeType
 {
     Manual = 0,
     Link = 1,
-    Upload = 2
+    Document = 2
 }
 
 public partial class Recipe
@@ -25,6 +25,10 @@ public partial class Recipe
     public string? StorageKey { get; set; }
 
     public string? Content { get; set; }
+
+    public byte[]? FileContent { get; set; }
+
+    public string? FileContentType { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

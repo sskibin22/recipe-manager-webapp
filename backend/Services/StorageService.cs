@@ -1,6 +1,7 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.Runtime;
+using Microsoft.AspNetCore.Http;
 
 namespace RecipeManager.Api.Services;
 
@@ -9,10 +10,12 @@ public class StorageService : IStorageService
     private readonly IConfiguration _configuration;
     private readonly IAmazonS3? _s3Client;
     private readonly string _bucketName;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public StorageService(IConfiguration configuration)
+    public StorageService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
     {
         _configuration = configuration;
+        _httpContextAccessor = httpContextAccessor;
 
         var accountId = _configuration["R2:AccountId"];
         var accessKeyId = _configuration["R2:AccessKeyId"];
@@ -41,7 +44,11 @@ public class StorageService : IStorageService
         if (_s3Client == null)
         {
             // Return a placeholder URL if R2 is not configured (for local development)
-            return $"http://localhost:5000/placeholder-upload/{key}";
+            var httpContext = _httpContextAccessor.HttpContext;
+            var baseUrl = httpContext != null 
+                ? $"{httpContext.Request.Scheme}://{httpContext.Request.Host}"
+                : "http://localhost:5172"; // Fallback to default dev port
+            return $"{baseUrl}/placeholder-upload/{key}";
         }
 
         var request = new GetPreSignedUrlRequest
@@ -61,7 +68,11 @@ public class StorageService : IStorageService
         if (_s3Client == null)
         {
             // Return a placeholder URL if R2 is not configured (for local development)
-            return $"http://localhost:5000/placeholder-download/{key}";
+            var httpContext = _httpContextAccessor.HttpContext;
+            var baseUrl = httpContext != null 
+                ? $"{httpContext.Request.Scheme}://{httpContext.Request.Host}"
+                : "http://localhost:5172"; // Fallback to default dev port
+            return $"{baseUrl}/placeholder-download/{key}";
         }
 
         var request = new GetPreSignedUrlRequest

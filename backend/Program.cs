@@ -61,7 +61,9 @@ if (!string.IsNullOrEmpty(firebaseProjectId) && firebaseProjectId != "your-fireb
 }
 
 // Add services
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddSingleton<Dictionary<string, (byte[] content, string contentType)>>();
 
 var app = builder.Build();
 
@@ -105,7 +107,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = Dat
    .WithOpenApi();
 
 // Recipe endpoints
-app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user) =>
+app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache) =>
 {
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
@@ -122,6 +124,18 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
         CreatedAt = DateTime.UtcNow,
         UpdatedAt = DateTime.UtcNow
     };
+
+    // If this is a document upload and the file is in the cache, save it to the database
+    if (request.Type == RecipeType.Document && !string.IsNullOrEmpty(request.StorageKey))
+    {
+        if (fileCache.TryGetValue(request.StorageKey, out var fileData))
+        {
+            recipe.FileContent = fileData.content;
+            recipe.FileContentType = fileData.contentType;
+            // Remove from cache after saving
+            fileCache.Remove(request.StorageKey);
+        }
+    }
 
     db.Recipes.Add(recipe);
     await db.SaveChangesAsync();
@@ -343,7 +357,7 @@ app.MapPost("/api/uploads/presign", async (PresignUploadRequest request, IStorag
     var storageKey = $"users/{userId}/{Guid.NewGuid()}/{request.FileName}";
     var presignedUrl = await storageService.GetPresignedUploadUrlAsync(storageKey, request.ContentType);
 
-    return Results.Ok(new { presignedUrl, storageKey });
+    return Results.Ok(new { uploadUrl = presignedUrl, key = storageKey });
 })
 .WithName("PresignUpload")
 .WithOpenApi();
@@ -365,6 +379,46 @@ app.MapGet("/api/uploads/presign-download", async (Guid recipeId, ApplicationDbC
 })
 .WithName("PresignDownload")
 .WithOpenApi();
+
+// Development-only placeholder endpoints for file uploads when R2 is not configured
+if (app.Environment.IsDevelopment())
+{
+    app.MapPut("/placeholder-upload/{*key}", async (HttpRequest request, string key, Dictionary<string, (byte[] content, string contentType)> fileCache) =>
+    {
+        // Read the uploaded file content
+        using var memoryStream = new MemoryStream();
+        await request.Body.CopyToAsync(memoryStream);
+        var fileContent = memoryStream.ToArray();
+        
+        var contentType = request.ContentType ?? "application/octet-stream";
+        
+        // Store in cache for later retrieval when recipe is created
+        fileCache[key] = (fileContent, contentType);
+        
+        return Results.Ok(new { message = "File uploaded successfully (development mode)", size = fileContent.Length });
+    })
+    .WithName("PlaceholderUpload")
+    .WithOpenApi()
+    .AllowAnonymous();
+
+    app.MapGet("/placeholder-download/{*key}", async (string key, ApplicationDbContext db, ClaimsPrincipal user) =>
+    {
+        var userId = GetUserId(user);
+        if (userId == null) return Results.Unauthorized();
+        
+        // Find the recipe with this storage key
+        var recipe = await db.Recipes
+            .FirstOrDefaultAsync(r => r.StorageKey == key && r.UserId == userId.Value);
+        
+        if (recipe == null || recipe.FileContent == null)
+            return Results.NotFound();
+        
+        // Return the file content
+        return Results.File(recipe.FileContent, recipe.FileContentType ?? "application/octet-stream");
+    })
+    .WithName("PlaceholderDownload")
+    .WithOpenApi();
+}
 
 // User profile endpoints
 app.MapGet("/api/user/profile", async (ApplicationDbContext db, ClaimsPrincipal user) =>
