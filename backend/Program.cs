@@ -25,7 +25,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add CORS
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
     ?? new[] { "http://localhost:5173" };
 builder.Services.AddCors(options =>
 {
@@ -309,6 +309,37 @@ app.MapPost("/api/uploads/presign", async (PresignUploadRequest request, IStorag
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
 
+    // Validate file type by content type and extension
+    var allowedContentTypes = new HashSet<string>
+    {
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "text/plain",
+        "image/jpeg",
+        "image/png"
+    };
+
+    var allowedExtensions = new HashSet<string>
+    {
+        ".pdf", ".doc", ".docx", ".txt", ".jpg", ".jpeg", ".png"
+    };
+
+    // Validate content type
+    var contentTypeLower = request.ContentType?.ToLowerInvariant() ?? string.Empty;
+    if (string.IsNullOrWhiteSpace(contentTypeLower) || !allowedContentTypes.Contains(contentTypeLower))
+    {
+        // If content type is invalid, check file extension as fallback
+        var fileExtension = Path.GetExtension(request.FileName).ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(fileExtension) || !allowedExtensions.Contains(fileExtension))
+        {
+            return Results.BadRequest(new
+            {
+                message = "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG"
+            });
+        }
+    }
+
     var storageKey = $"users/{userId}/{Guid.NewGuid()}/{request.FileName}";
     var presignedUrl = await storageService.GetPresignedUploadUrlAsync(storageKey, request.ContentType);
 
@@ -367,7 +398,7 @@ app.MapPut("/api/user/profile", async (UpdateUserProfileRequest request, Applica
     {
         userProfile.Email = request.Email;
     }
-    
+
     if (!string.IsNullOrWhiteSpace(request.DisplayName))
     {
         userProfile.DisplayName = request.DisplayName;
@@ -394,7 +425,7 @@ static Guid? GetUserId(ClaimsPrincipal user)
     {
         return userId;
     }
-    
+
     return null;
 }
 

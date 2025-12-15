@@ -3,6 +3,17 @@ import { useAuth } from '../contexts/AuthContext';
 import { recipesApi, uploadsApi } from '../services/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+// File validation constants
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+const ALLOWED_FILE_TYPES = {
+  'application/pdf': ['.pdf'],
+  'application/msword': ['.doc'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+  'text/plain': ['.txt'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+};
+
 const RecipeForm = ({ onClose, onSuccess }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -33,6 +44,60 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     setFile(null);
     setError('');
     setRecipeType('link');
+  };
+
+  const validateFile = (file) => {
+    if (!file) {
+      return 'No file selected';
+    }
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      return `File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB (selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
+    }
+
+    // Check file type by MIME type first
+    let isValidType = Object.keys(ALLOWED_FILE_TYPES).includes(file.type);
+    
+    // If MIME type check fails or is empty, check by file extension
+    if (!isValidType || !file.type) {
+      const fileName = file.name.toLowerCase();
+      const dotIndex = fileName.lastIndexOf('.');
+      if (dotIndex === -1) {
+        return 'Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG';
+      }
+      const fileExtension = fileName.substring(dotIndex);
+      const allowedExtensions = Object.values(ALLOWED_FILE_TYPES).flat();
+      isValidType = allowedExtensions.includes(fileExtension);
+    }
+    
+    if (!isValidType) {
+      return 'Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG';
+    }
+
+    return null; // Valid file
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files?.[0] || null;
+    
+    if (!selectedFile) {
+      setFile(null);
+      setError('');
+      return;
+    }
+
+    const validationError = validateFile(selectedFile);
+    if (validationError) {
+      setError(validationError);
+      setFile(null);
+      // Clear the input
+      e.target.value = '';
+      return;
+    }
+
+    setFile(selectedFile);
+    setError('');
   };
 
   const handleSubmit = async (e) => {
@@ -168,13 +233,21 @@ const RecipeForm = ({ onClose, onSuccess }) => {
                 <label htmlFor="file" className="block text-sm font-medium mb-1">
                   Upload Document *
                 </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Max file size: 10MB. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG
+                </p>
                 <input
                   type="file"
                   id="file"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  onChange={handleFileChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  accept=".pdf,.doc,.docx,.txt"
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
                 />
+                {file && (
+                  <p className="text-xs text-green-600 mt-1">
+                    Selected: {file.name} ({(file.size / (1024 * 1024)).toFixed(2)}MB)
+                  </p>
+                )}
               </div>
             )}
 
