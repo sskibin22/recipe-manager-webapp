@@ -55,10 +55,6 @@ test.describe('Recipe Link Display', () => {
       const href = await recipeLink.getAttribute('href');
       expect(href).toBeTruthy();
       expect(href).not.toBe('#');
-      
-      // Verify the link would open in new tab (we don't actually click it to avoid navigation)
-      // Instead, we verify the attributes are correct
-      console.log(`✓ Link recipe URL is properly configured with href: ${href}`);
     }
   });
   
@@ -90,7 +86,7 @@ test.describe('Recipe Link Display', () => {
       
       // Blue color should be present (rgb format in computed styles)
       // Tailwind's blue-600 is rgb(37, 99, 235)
-      console.log(`Link color: ${color}`);
+      // Note: Exact color may vary slightly based on browser rendering
       
       // Verify it's a link element
       const tagName = await recipeLink.evaluate(el => el.tagName);
