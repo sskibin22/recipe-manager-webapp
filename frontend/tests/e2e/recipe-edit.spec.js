@@ -256,6 +256,112 @@ test.describe('Recipe Edit Functionality', () => {
     }
   });
 
+  test('should show file input for document recipes in edit mode', async ({ page }) => {
+    // First create a document recipe if needed
+    const addButton = page.locator('button:has-text("Add Recipe")');
+    if (await addButton.count() > 0) {
+      await addButton.click();
+      
+      // Fill in title
+      await page.locator('input[id="title"]').fill('Test Document Recipe');
+      
+      // Select document type
+      await page.locator('input[type="radio"][value="document"]').click();
+      
+      // Create a test file (small text file)
+      const testFileContent = 'Test recipe content for E2E test';
+      const buffer = Buffer.from(testFileContent);
+      const fileInput = page.locator('input[type="file"]');
+      
+      // Upload test file
+      await fileInput.setInputFiles({
+        name: 'test-recipe.txt',
+        mimeType: 'text/plain',
+        buffer: buffer,
+      });
+      
+      // Submit the form
+      await page.locator('button:has-text("Add Recipe")').click();
+      
+      // Wait for modal to close or recipe to appear in list
+      await expect(page.locator('button:has-text("Add Recipe")')).toBeVisible({ timeout: 5000 });
+    }
+    
+    // Find and click on a document-type recipe
+    const documentRecipes = page.locator('text=Test Document Recipe').first();
+    const docCount = await documentRecipes.count();
+    
+    if (docCount > 0) {
+      await documentRecipes.click();
+      await page.waitForURL(/\/recipe\//);
+      
+      const editButton = page.locator('button:has-text("Edit Recipe")');
+      if (await editButton.count() > 0) {
+        await editButton.click();
+        
+        // Should show file input
+        const fileInput = page.locator('input[type="file"]');
+        await expect(fileInput).toBeVisible();
+        
+        // Should show replace document text
+        await expect(page.locator('text=Replace document')).toBeVisible();
+        
+        // Should show current document download button
+        await expect(page.locator('text=Current document:')).toBeVisible();
+      }
+    }
+  });
+
+  test('should allow replacing document in edit mode', async ({ page }) => {
+    // Navigate to a document recipe (assuming one exists from previous test)
+    const documentRecipes = page.locator('text=Test Document Recipe').first();
+    const docCount = await documentRecipes.count();
+    
+    if (docCount > 0) {
+      await documentRecipes.click();
+      await page.waitForURL(/\/recipe\//);
+      
+      const editButton = page.locator('button:has-text("Edit Recipe")');
+      if (await editButton.count() > 0) {
+        await editButton.click();
+        
+        // Select a new file
+        const fileInput = page.locator('input[type="file"]');
+        if (await fileInput.count() > 0) {
+          const newFileContent = 'Updated recipe content for E2E test';
+          const buffer = Buffer.from(newFileContent);
+          
+          await fileInput.setInputFiles({
+            name: 'updated-recipe.txt',
+            mimeType: 'text/plain',
+            buffer: buffer,
+          });
+          
+          // Should show selected file name
+          await expect(page.locator('text=updated-recipe.txt')).toBeVisible();
+          
+          // Save changes
+          await page.locator('button:has-text("Save Changes")').click();
+          
+          // Should show uploading state
+          const uploadingText = page.locator('text=Uploading');
+          if (await uploadingText.count() > 0) {
+            await expect(uploadingText).toBeVisible();
+          }
+          
+          // Wait for save to complete
+          await expect(page.locator('button:has-text("Edit Recipe")')).toBeVisible({ timeout: 15000 });
+          
+          // Should show success message
+          const successMessage = page.locator('text=Recipe updated successfully');
+          if (await successMessage.count() > 0) {
+            await expect(successMessage).toBeVisible();
+          }
+        }
+      }
+    }
+  });
+
   test('should hide favorite button in edit mode', async ({ page }) => {
     const recipeLinks = page.locator('a[href*="/recipe/"]');
     const linkCount = await recipeLinks.count();

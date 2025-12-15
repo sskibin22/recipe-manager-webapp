@@ -3,6 +3,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recipesApi, uploadsApi } from '../services/api';
 import { useState } from 'react';
 
+// File validation constants (matching RecipeForm)
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+const ALLOWED_FILE_TYPES = {
+  'application/pdf': ['.pdf'],
+  'application/msword': ['.doc'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+  'text/plain': ['.txt'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+};
+
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -12,6 +23,8 @@ export default function RecipeDetail() {
   const [editedUrl, setEditedUrl] = useState('');
   const [editedContent, setEditedContent] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const { data: recipe, isLoading, error } = useQuery({
     queryKey: ['recipe', id],
@@ -68,12 +81,70 @@ export default function RecipeDetail() {
     setEditedUrl(recipe.url || '');
     setEditedContent(recipe.content || '');
     setValidationErrors({});
+    setFile(null);
     setIsEditMode(true);
   };
 
   const handleCancelEdit = () => {
     setIsEditMode(false);
     setValidationErrors({});
+    setFile(null);
+  };
+
+  const validateFile = (file) => {
+    if (!file) {
+      return 'No file selected';
+    }
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      return `File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB (selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
+    }
+
+    // Check file type by MIME type first
+    let isValidType = Object.keys(ALLOWED_FILE_TYPES).includes(file.type);
+    
+    // If MIME type check fails or is empty, check by file extension
+    if (!isValidType || !file.type) {
+      const fileName = file.name.toLowerCase();
+      const dotIndex = fileName.lastIndexOf('.');
+      if (dotIndex === -1) {
+        return 'Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG';
+      }
+      const fileExtension = fileName.substring(dotIndex);
+      const allowedExtensions = Object.values(ALLOWED_FILE_TYPES).flat();
+      isValidType = allowedExtensions.includes(fileExtension);
+    }
+    
+    if (!isValidType) {
+      return 'Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG';
+    }
+
+    return null; // Valid file
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files?.[0] || null;
+    
+    if (!selectedFile) {
+      setFile(null);
+      const { file, ...rest } = validationErrors;
+      setValidationErrors(rest);
+      return;
+    }
+
+    const validationError = validateFile(selectedFile);
+    if (validationError) {
+      setValidationErrors({ ...validationErrors, file: validationError });
+      setFile(null);
+      // Clear the input
+      e.target.value = '';
+      return;
+    }
+
+    setFile(selectedFile);
+    const { file, ...rest } = validationErrors;
+    setValidationErrors(rest);
   };
 
   const validateForm = () => {
@@ -102,7 +173,7 @@ export default function RecipeDetail() {
     return errors;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = validateForm();
     
     if (Object.keys(errors).length > 0) {
@@ -110,13 +181,34 @@ export default function RecipeDetail() {
       return;
     }
     
-    const updateData = {
+    let updateData = {
       title: editedTitle,
       type: recipe.type,
       url: recipe.type.toLowerCase() === 'link' ? editedUrl : recipe.url,
       content: recipe.type.toLowerCase() === 'manual' ? editedContent : recipe.content,
     };
-    
+
+    // Handle document upload if user selected a new file
+    if (recipe.type.toLowerCase() === 'document' && file) {
+      try {
+        setUploading(true);
+        
+        // Get presigned upload URL
+        const presignData = await uploadsApi.getPresignedUploadUrl(file.name, file.type);
+
+        // Upload file to R2
+        await uploadsApi.uploadToPresignedUrl(presignData.uploadUrl, file);
+
+        updateData.storageKey = presignData.key;
+        setUploading(false);
+      } catch (err) {
+        setUploading(false);
+        setValidationErrors({ ...validationErrors, file: err.message || 'Failed to upload file' });
+        return; // Don't proceed with mutation if upload failed
+      }
+    }
+
+    // Mutation has its own error handling via onError callback
     updateMutation.mutate(updateData);
   };
 
@@ -265,18 +357,59 @@ export default function RecipeDetail() {
               </div>
             )}
 
-            {recipe.type.toLowerCase() === 'document' && recipe.storageKey && (
+            {recipe.type.toLowerCase() === 'document' && (
               <div>
                 <h2 className="text-lg font-semibold mb-3 text-gray-700">Recipe Document</h2>
-                <button
-                  onClick={handleDownload}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Download Document
-                </button>
+                {isEditMode ? (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Replace document (optional)
+                    </p>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Max file size: 10MB. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG
+                    </p>
+                    <input
+                      type="file"
+                      id="file"
+                      onChange={handleFileChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                    />
+                    {file && (
+                      <p className="text-xs text-green-600 mt-1">
+                        Selected: {file.name} ({(file.size / (1024 * 1024)).toFixed(2)}MB)
+                      </p>
+                    )}
+                    {validationErrors.file && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.file}</p>
+                    )}
+                    {recipe.storageKey && (
+                      <div className="mt-3">
+                        <p className="text-sm text-gray-600 mb-2">Current document:</p>
+                        <button
+                          type="button"
+                          onClick={handleDownload}
+                          className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors flex items-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Download Current Document
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : recipe.storageKey ? (
+                  <button
+                    onClick={handleDownload}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download Document
+                  </button>
+                ) : null}
               </div>
             )}
 
@@ -315,16 +448,21 @@ export default function RecipeDetail() {
                 <button
                   onClick={handleCancelEdit}
                   className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors"
-                  disabled={updateMutation.isPending}
+                  disabled={updateMutation.isPending || uploading}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-                  disabled={updateMutation.isPending}
+                  disabled={updateMutation.isPending || uploading}
                 >
-                  {updateMutation.isPending ? (
+                  {uploading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Uploading...
+                    </>
+                  ) : updateMutation.isPending ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                       Saving...

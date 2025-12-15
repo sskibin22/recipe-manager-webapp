@@ -218,7 +218,7 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
 .WithName("GetRecipe")
 .WithOpenApi();
 
-app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user) =>
+app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache) =>
 {
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
@@ -231,6 +231,21 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
     recipe.Url = request.Url;
     recipe.Content = request.Content;
     recipe.UpdatedAt = DateTime.UtcNow;
+
+    // Handle document replacement if a new storage key is provided
+    if (!string.IsNullOrEmpty(request.StorageKey))
+    {
+        recipe.StorageKey = request.StorageKey;
+        
+        // If this is a document upload and the file is in the cache, save it to the database
+        if (request.Type == RecipeType.Document && fileCache.TryGetValue(request.StorageKey, out var fileData))
+        {
+            recipe.FileContent = fileData.content;
+            recipe.FileContentType = fileData.contentType;
+            // Remove from cache after saving
+            fileCache.Remove(request.StorageKey);
+        }
+    }
 
     await db.SaveChangesAsync();
 
@@ -487,7 +502,7 @@ app.Run();
 
 // Request/Response DTOs (after app.Run to avoid CS8803 error)
 record CreateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content);
-record UpdateRecipeRequest(string Title, RecipeType Type, string? Url, string? Content);
+record UpdateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content);
 record PresignUploadRequest(string FileName, string ContentType);
 record UpdateUserProfileRequest(string? Email, string? DisplayName);
 
