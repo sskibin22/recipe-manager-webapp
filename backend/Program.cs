@@ -326,7 +326,8 @@ app.MapPost("/api/uploads/presign", async (PresignUploadRequest request, IStorag
     };
 
     // Validate content type
-    if (string.IsNullOrWhiteSpace(request.ContentType) || !allowedContentTypes.Contains(request.ContentType.ToLowerInvariant()))
+    var contentTypeLower = request.ContentType?.ToLowerInvariant() ?? string.Empty;
+    if (string.IsNullOrWhiteSpace(contentTypeLower) || !allowedContentTypes.Contains(contentTypeLower))
     {
         // If content type is invalid, check file extension as fallback
         var fileExtension = Path.GetExtension(request.FileName).ToLowerInvariant();

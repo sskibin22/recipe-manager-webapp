@@ -62,7 +62,11 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     // If MIME type check fails or is empty, check by file extension
     if (!isValidType || !file.type) {
       const fileName = file.name.toLowerCase();
-      const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+      const dotIndex = fileName.lastIndexOf('.');
+      if (dotIndex === -1) {
+        return 'Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG';
+      }
+      const fileExtension = fileName.substring(dotIndex);
       const allowedExtensions = Object.values(ALLOWED_FILE_TYPES).flat();
       isValidType = allowedExtensions.includes(fileExtension);
     }
