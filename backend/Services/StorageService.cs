@@ -13,15 +13,15 @@ public class StorageService : IStorageService
     public StorageService(IConfiguration configuration)
     {
         _configuration = configuration;
-        
+
         var accountId = _configuration["R2:AccountId"];
         var accessKeyId = _configuration["R2:AccessKeyId"];
         var secretAccessKey = _configuration["R2:SecretAccessKey"];
         _bucketName = _configuration["R2:BucketName"] ?? "";
 
         // Only initialize S3 client if R2 is configured
-        if (!string.IsNullOrEmpty(accountId) && 
-            !string.IsNullOrEmpty(accessKeyId) && 
+        if (!string.IsNullOrEmpty(accountId) &&
+            !string.IsNullOrEmpty(accessKeyId) &&
             !string.IsNullOrEmpty(secretAccessKey) &&
             accountId != "your-r2-account-id")
         {

@@ -327,4 +327,79 @@ describe('RecipeForm', () => {
     
     expect(await screen.findByText(/Server error/)).toBeInTheDocument();
   });
+
+  // File validation tests
+  it('should show error when file exceeds max size (10MB)', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const documentRadio = screen.getByLabelText(/^Document$/);
+    await user.click(documentRadio);
+    
+    const fileInput = screen.getByLabelText(/Upload Document/i);
+    // Create a file larger than 10MB (10 * 1024 * 1024 bytes)
+    const largeFile = new File(['x'.repeat(11 * 1024 * 1024)], 'large.pdf', { 
+      type: 'application/pdf' 
+    });
+    
+    await user.upload(fileInput, largeFile);
+    
+    expect(await screen.findByText(/File size must be less than 10MB/)).toBeInTheDocument();
+  });
+
+  it('should accept valid PDF file', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const documentRadio = screen.getByLabelText(/^Document$/);
+    await user.click(documentRadio);
+    
+    const fileInput = screen.getByLabelText(/Upload Document/i);
+    const validFile = new File(['test content'], 'test.pdf', { type: 'application/pdf' });
+    
+    await user.upload(fileInput, validFile);
+    
+    // Should show file info and no error
+    expect(await screen.findByText(/Selected: test.pdf/)).toBeInTheDocument();
+    expect(screen.queryByText(/File size must be less than/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Invalid file type/)).not.toBeInTheDocument();
+  });
+
+  it('should accept valid image file (JPEG)', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const documentRadio = screen.getByLabelText(/^Document$/);
+    await user.click(documentRadio);
+    
+    const fileInput = screen.getByLabelText(/Upload Document/i);
+    const validFile = new File(['image data'], 'recipe.jpg', { type: 'image/jpeg' });
+    
+    await user.upload(fileInput, validFile);
+    
+    expect(await screen.findByText(/Selected: recipe.jpg/)).toBeInTheDocument();
+    expect(screen.queryByText(/Invalid file type/)).not.toBeInTheDocument();
+  });
+
+  it('should show file size hint in UI', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const documentRadio = screen.getByLabelText(/^Document$/);
+    await user.click(documentRadio);
+    
+    expect(screen.getByText(/Max file size: 10MB/)).toBeInTheDocument();
+    expect(screen.getByText(/Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG/)).toBeInTheDocument();
+  });
+
+  it('should have accept attribute with correct file types', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+    
+    const documentRadio = screen.getByLabelText(/^Document$/);
+    await user.click(documentRadio);
+    
+    const fileInput = screen.getByLabelText(/Upload Document/i);
+    expect(fileInput).toHaveAttribute('accept', '.pdf,.doc,.docx,.txt,.jpg,.jpeg,.png');
+  });
 });
