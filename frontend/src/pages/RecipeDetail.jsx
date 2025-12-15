@@ -127,7 +127,7 @@ export default function RecipeDetail() {
           </div>
 
           <div className="p-6">
-            {recipe.type === 'link' && recipe.url && (
+            {recipe.type.toLowerCase() === 'link' && recipe.url && (
               <div>
                 <h2 className="text-lg font-semibold mb-3 text-gray-700">Recipe Link</h2>
                 <a
@@ -141,7 +141,7 @@ export default function RecipeDetail() {
               </div>
             )}
 
-            {recipe.type === 'document' && recipe.storageKey && (
+            {recipe.type.toLowerCase() === 'document' && recipe.storageKey && (
               <div>
                 <h2 className="text-lg font-semibold mb-3 text-gray-700">Recipe Document</h2>
                 <button
@@ -156,7 +156,7 @@ export default function RecipeDetail() {
               </div>
             )}
 
-            {recipe.type === 'manual' && recipe.content && (
+            {recipe.type.toLowerCase() === 'manual' && recipe.content && (
               <div>
                 <h2 className="text-lg font-semibold mb-3 text-gray-700">Recipe</h2>
                 <div className="prose max-w-none">

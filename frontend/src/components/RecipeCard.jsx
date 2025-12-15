@@ -29,7 +29,8 @@ const RecipeCard = ({ recipe }) => {
   });
 
   const getRecipeTypeIcon = () => {
-    switch (recipe.type) {
+    const type = recipe.type.toLowerCase();
+    switch (type) {
       case 'link':
         return (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,12 +95,12 @@ const RecipeCard = ({ recipe }) => {
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{recipe.title}</h3>
 
         {/* Recipe URL Preview (for link type) */}
-        {recipe.type === 'link' && recipe.url && (
+        {recipe.type.toLowerCase() === 'link' && recipe.url && (
           <p className="text-sm text-gray-500 truncate">{recipe.url}</p>
         )}
 
         {/* Content Preview (for manual type) */}
-        {recipe.type === 'manual' && recipe.content && (
+        {recipe.type.toLowerCase() === 'manual' && recipe.content && (
           <p className="text-sm text-gray-600 line-clamp-3">{recipe.content}</p>
         )}
 
