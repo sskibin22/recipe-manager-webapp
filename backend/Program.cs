@@ -214,7 +214,7 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
 .WithName("CreateRecipe")
 .WithOpenApi();
 
-app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user, string? q) =>
+app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user, IStorageService storageService, ILogger<Program> logger, string? q) =>
 {
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
@@ -230,7 +230,15 @@ app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user,
 
     var recipes = await query
         .OrderByDescending(r => r.CreatedAt)
-        .Select(r => new
+        .ToListAsync();
+
+    // Convert storage keys to presigned URLs for preview images
+    var recipeDtos = new List<object>();
+    foreach (var r in recipes)
+    {
+        var previewImageUrl = await GetPreviewImageUrlAsync(r.PreviewImageUrl, storageService, logger);
+
+        recipeDtos.Add(new
         {
             r.Id,
             r.Title,
@@ -238,22 +246,22 @@ app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user,
             r.Url,
             r.StorageKey,
             r.Content,
-            r.PreviewImageUrl,
+            PreviewImageUrl = previewImageUrl,
             r.Description,
             r.SiteName,
             r.CreatedAt,
             r.UpdatedAt,
             r.FileContentType,
             IsFavorite = r.Favorites.Any(f => f.UserId == userId.Value)
-        })
-        .ToListAsync();
+        });
+    }
 
-    return Results.Ok(recipes);
+    return Results.Ok(recipeDtos);
 })
 .WithName("GetRecipes")
 .WithOpenApi();
 
-app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, ClaimsPrincipal user) =>
+app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, ClaimsPrincipal user, IStorageService storageService, ILogger<Program> logger) =>
 {
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
@@ -271,6 +279,9 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
         fileContentBase64 = Convert.ToBase64String(recipe.FileContent);
     }
 
+    // Convert storage key to presigned URL for preview image if needed
+    var previewImageUrl = await GetPreviewImageUrlAsync(recipe.PreviewImageUrl, storageService, logger);
+
     return Results.Ok(new
     {
         recipe.Id,
@@ -279,7 +290,7 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
         recipe.Url,
         recipe.StorageKey,
         recipe.Content,
-        recipe.PreviewImageUrl,
+        PreviewImageUrl = previewImageUrl,
         recipe.Description,
         recipe.SiteName,
         recipe.CreatedAt,
@@ -585,6 +596,27 @@ static Guid? GetUserId(ClaimsPrincipal user)
     }
 
     return null;
+}
+
+// Helper method to convert storage keys to presigned URLs with error handling
+static async Task<string?> GetPreviewImageUrlAsync(string? previewImageUrl, IStorageService storageService, ILogger logger)
+{
+    // If PreviewImageUrl is a storage key (not an external URL), generate presigned download URL
+    if (!string.IsNullOrEmpty(previewImageUrl) && !previewImageUrl.StartsWith("http://") && !previewImageUrl.StartsWith("https://"))
+    {
+        try
+        {
+            return await storageService.GetPresignedDownloadUrlAsync(previewImageUrl);
+        }
+        catch (Exception ex)
+        {
+            // Log the error but don't fail the request - placeholder will be shown
+            logger.LogWarning(ex, "Failed to generate presigned download URL for preview image: {StorageKey}", previewImageUrl);
+            return null;
+        }
+    }
+
+    return previewImageUrl;
 }
 
 app.Run();

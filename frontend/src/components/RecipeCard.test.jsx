@@ -254,4 +254,42 @@ describe("RecipeCard", () => {
     }
     await clickPromise;
   });
+
+  it("should display placeholder image when previewImageUrl is null", () => {
+    const recipeWithoutImage = { ...mockRecipe, previewImageUrl: null };
+    renderWithProviders(<RecipeCard recipe={recipeWithoutImage} />);
+
+    const image = screen.getByAltText(mockRecipe.title);
+    expect(image).toHaveAttribute("src", "/recipe-placeholder.svg");
+  });
+
+  it("should display placeholder image when previewImageUrl is empty", () => {
+    const recipeWithoutImage = { ...mockRecipe, previewImageUrl: "" };
+    renderWithProviders(<RecipeCard recipe={recipeWithoutImage} />);
+
+    const image = screen.getByAltText(mockRecipe.title);
+    expect(image).toHaveAttribute("src", "/recipe-placeholder.svg");
+  });
+
+  it("should display actual image when previewImageUrl is provided", () => {
+    const recipeWithImage = {
+      ...mockRecipe,
+      previewImageUrl: "https://example.com/image.jpg",
+    };
+    renderWithProviders(<RecipeCard recipe={recipeWithImage} />);
+
+    const image = screen.getByAltText(mockRecipe.title);
+    expect(image).toHaveAttribute("src", "https://example.com/image.jpg");
+  });
+
+  it("should always render image container for consistent layout", () => {
+    const recipeWithoutImage = { ...mockRecipe, previewImageUrl: null };
+    const { container } = renderWithProviders(
+      <RecipeCard recipe={recipeWithoutImage} />,
+    );
+
+    // Check that the image container div exists
+    const imageContainer = container.querySelector(".h-48");
+    expect(imageContainer).toBeInTheDocument();
+  });
 });

@@ -15,6 +15,15 @@ const ALLOWED_FILE_TYPES = {
   "image/png": [".png"],
 };
 
+const ALLOWED_IMAGE_TYPES = {
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
+  "image/gif": [".gif"],
+  "image/webp": [".webp"],
+};
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB for images
+
 const RecipeForm = ({ onClose, onSuccess }) => {
   const queryClient = useQueryClient();
   const [recipeType, setRecipeType] = useState("link");
@@ -22,6 +31,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
   const [url, setUrl] = useState("");
   const [content, setContent] = useState("");
   const [file, setFile] = useState(null);
+  const [displayImageFile, setDisplayImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
@@ -51,6 +61,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     setUrl("");
     setContent("");
     setFile(null);
+    setDisplayImageFile(null);
     setError("");
     setRecipeType("link");
     setMetadata(null);
@@ -125,36 +136,54 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     };
   }, [url, recipeType, title, description, previewImageUrl, siteName]);
 
-  const validateFile = (file) => {
+  const validateFileGeneric = (file, maxSize, allowedTypes, typeDescription) => {
     if (!file) {
       return "No file selected";
     }
 
     // Check file size
-    if (file.size > MAX_FILE_SIZE) {
-      return `File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB (selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
+    if (file.size > maxSize) {
+      return `File size must be less than ${maxSize / (1024 * 1024)}MB (selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
     }
 
     // Check file type by MIME type first
-    let isValidType = Object.keys(ALLOWED_FILE_TYPES).includes(file.type);
+    let isValidType = Object.keys(allowedTypes).includes(file.type);
 
     // If MIME type check fails or is empty, check by file extension
     if (!isValidType || !file.type) {
       const fileName = file.name.toLowerCase();
       const dotIndex = fileName.lastIndexOf(".");
       if (dotIndex === -1) {
-        return "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG";
+        return `Invalid file type. Allowed types: ${typeDescription}`;
       }
       const fileExtension = fileName.substring(dotIndex);
-      const allowedExtensions = Object.values(ALLOWED_FILE_TYPES).flat();
+      const allowedExtensions = Object.values(allowedTypes).flat();
       isValidType = allowedExtensions.includes(fileExtension);
     }
 
     if (!isValidType) {
-      return "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG";
+      return `Invalid file type. Allowed types: ${typeDescription}`;
     }
 
     return null; // Valid file
+  };
+
+  const validateFile = (file) => {
+    return validateFileGeneric(
+      file,
+      MAX_FILE_SIZE,
+      ALLOWED_FILE_TYPES,
+      "PDF, DOC, DOCX, TXT, JPG, PNG"
+    );
+  };
+
+  const validateImageFile = (file) => {
+    return validateFileGeneric(
+      file,
+      MAX_IMAGE_SIZE,
+      ALLOWED_IMAGE_TYPES,
+      "JPG, PNG, GIF, WEBP"
+    );
   };
 
   const handleFileChange = (e) => {
@@ -177,6 +206,44 @@ const RecipeForm = ({ onClose, onSuccess }) => {
 
     setFile(selectedFile);
     setError("");
+  };
+
+  const handleDisplayImageChange = (e) => {
+    const selectedFile = e.target.files?.[0] || null;
+
+    if (!selectedFile) {
+      setDisplayImageFile(null);
+      setError("");
+      return;
+    }
+
+    const validationError = validateImageFile(selectedFile);
+    if (validationError) {
+      setError(validationError);
+      setDisplayImageFile(null);
+      // Clear the input
+      e.target.value = "";
+      return;
+    }
+
+    setDisplayImageFile(selectedFile);
+    setError("");
+  };
+
+  const generateImageFilename = (file) => {
+    return `image-${Date.now()}-${file.name}`;
+  };
+
+  const uploadDisplayImage = async (imageFile) => {
+    const imagePresignData = await uploadsApi.getPresignedUploadUrl(
+      generateImageFilename(imageFile),
+      imageFile.type,
+    );
+    await uploadsApi.uploadToPresignedUrl(
+      imagePresignData.uploadUrl,
+      imageFile,
+    );
+    return imagePresignData.key;
   };
 
   const handleSubmit = async (e) => {
@@ -212,7 +279,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
 
         setUploading(true);
 
-        // Get presigned upload URL
+        // Get presigned upload URL for document
         const presignData = await uploadsApi.getPresignedUploadUrl(
           file.name,
           file.type,
@@ -222,6 +289,12 @@ const RecipeForm = ({ onClose, onSuccess }) => {
         await uploadsApi.uploadToPresignedUrl(presignData.uploadUrl, file);
 
         recipeData.storageKey = presignData.key;
+
+        // Upload display image if provided
+        if (displayImageFile) {
+          recipeData.previewImageUrl = await uploadDisplayImage(displayImageFile);
+        }
+
         setUploading(false);
       } else if (recipeType === "manual") {
         if (!content.trim()) {
@@ -229,6 +302,13 @@ const RecipeForm = ({ onClose, onSuccess }) => {
           return;
         }
         recipeData.content = content.trim();
+
+        // Upload display image if provided
+        if (displayImageFile) {
+          setUploading(true);
+          recipeData.previewImageUrl = await uploadDisplayImage(displayImageFile);
+          setUploading(false);
+        }
       }
 
       createRecipeMutation.mutate(recipeData);
@@ -403,50 +483,104 @@ const RecipeForm = ({ onClose, onSuccess }) => {
             )}
 
             {recipeType === "document" && (
-              <div className="mb-4">
-                <label
-                  htmlFor="file"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Upload Document *
-                </label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Max file size: 10MB. Allowed types: PDF, DOC, DOCX, TXT, JPG,
-                  PNG
-                </p>
-                <input
-                  type="file"
-                  id="file"
-                  onChange={handleFileChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-                />
-                {file && (
-                  <p className="text-xs text-green-600 mt-1">
-                    Selected: {file.name} (
-                    {(file.size / (1024 * 1024)).toFixed(2)}MB)
+              <>
+                <div className="mb-4">
+                  <label
+                    htmlFor="file"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Upload Document *
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Max file size: 10MB. Allowed types: PDF, DOC, DOCX, TXT, JPG,
+                    PNG
                   </p>
-                )}
-              </div>
+                  <input
+                    type="file"
+                    id="file"
+                    onChange={handleFileChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                  />
+                  {file && (
+                    <p className="text-xs text-green-600 mt-1">
+                      Selected: {file.name} (
+                      {(file.size / (1024 * 1024)).toFixed(2)}MB)
+                    </p>
+                  )}
+                </div>
+
+                <div className="mb-4">
+                  <label
+                    htmlFor="displayImage"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Display Image (Optional)
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Max file size: 5MB. Allowed types: JPG, PNG, GIF, WEBP
+                  </p>
+                  <input
+                    type="file"
+                    id="displayImage"
+                    onChange={handleDisplayImageChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    accept=".jpg,.jpeg,.png,.gif,.webp"
+                  />
+                  {displayImageFile && (
+                    <p className="text-xs text-green-600 mt-1">
+                      Selected: {displayImageFile.name} (
+                      {(displayImageFile.size / (1024 * 1024)).toFixed(2)}MB)
+                    </p>
+                  )}
+                </div>
+              </>
             )}
 
             {recipeType === "manual" && (
-              <div className="mb-4">
-                <label
-                  htmlFor="content"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Recipe Content *
-                </label>
-                <textarea
-                  id="content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows="10"
-                  placeholder="Ingredients:&#10;- ...&#10;&#10;Instructions:&#10;1. ..."
-                />
-              </div>
+              <>
+                <div className="mb-4">
+                  <label
+                    htmlFor="content"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Recipe Content *
+                  </label>
+                  <textarea
+                    id="content"
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="10"
+                    placeholder="Ingredients:&#10;- ...&#10;&#10;Instructions:&#10;1. ..."
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label
+                    htmlFor="displayImage"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Display Image (Optional)
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Max file size: 5MB. Allowed types: JPG, PNG, GIF, WEBP
+                  </p>
+                  <input
+                    type="file"
+                    id="displayImage"
+                    onChange={handleDisplayImageChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    accept=".jpg,.jpeg,.png,.gif,.webp"
+                  />
+                  {displayImageFile && (
+                    <p className="text-xs text-green-600 mt-1">
+                      Selected: {displayImageFile.name} (
+                      {(displayImageFile.size / (1024 * 1024)).toFixed(2)}MB)
+                    </p>
+                  )}
+                </div>
+              </>
             )}
 
             {/* Error Message */}
