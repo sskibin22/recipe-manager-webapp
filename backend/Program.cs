@@ -140,6 +140,13 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
     db.Recipes.Add(recipe);
     await db.SaveChangesAsync();
 
+    // Convert FileContent to base64 for document recipes
+    string? fileContentBase64 = null;
+    if (recipe.Type == RecipeType.Document && recipe.FileContent != null)
+    {
+        fileContentBase64 = Convert.ToBase64String(recipe.FileContent);
+    }
+
     return Results.Created($"/api/recipes/{recipe.Id}", new
     {
         recipe.Id,
@@ -150,6 +157,8 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
         recipe.Content,
         recipe.CreatedAt,
         recipe.UpdatedAt,
+        FileContent = fileContentBase64,
+        FileContentType = recipe.FileContentType,
         IsFavorite = false
     });
 })
@@ -182,6 +191,7 @@ app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user,
             r.Content,
             r.CreatedAt,
             r.UpdatedAt,
+            r.FileContentType,
             IsFavorite = r.Favorites.Any(f => f.UserId == userId.Value)
         })
         .ToListAsync();
@@ -202,6 +212,13 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
 
     if (recipe == null) return Results.NotFound();
 
+    // Convert FileContent to base64 for document recipes
+    string? fileContentBase64 = null;
+    if (recipe.Type == RecipeType.Document && recipe.FileContent != null)
+    {
+        fileContentBase64 = Convert.ToBase64String(recipe.FileContent);
+    }
+
     return Results.Ok(new
     {
         recipe.Id,
@@ -212,6 +229,8 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
         recipe.Content,
         recipe.CreatedAt,
         recipe.UpdatedAt,
+        FileContent = fileContentBase64,
+        FileContentType = recipe.FileContentType,
         IsFavorite = recipe.Favorites.Any(f => f.UserId == userId.Value)
     });
 })
@@ -249,6 +268,13 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
 
     await db.SaveChangesAsync();
 
+    // Convert FileContent to base64 for document recipes
+    string? fileContentBase64 = null;
+    if (recipe.Type == RecipeType.Document && recipe.FileContent != null)
+    {
+        fileContentBase64 = Convert.ToBase64String(recipe.FileContent);
+    }
+
     return Results.Ok(new
     {
         recipe.Id,
@@ -258,7 +284,9 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
         recipe.StorageKey,
         recipe.Content,
         recipe.CreatedAt,
-        recipe.UpdatedAt
+        recipe.UpdatedAt,
+        FileContent = fileContentBase64,
+        FileContentType = recipe.FileContentType
     });
 })
 .WithName("UpdateRecipe")
