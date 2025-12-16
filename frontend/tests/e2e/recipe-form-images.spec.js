@@ -127,7 +127,9 @@ test.describe('Recipe Form Image Upload', () => {
     
     const fileInput = page.locator('input[type="file"]#displayImage');
     const acceptAttr = await fileInput.getAttribute('accept');
-    expect(acceptAttr).toMatch(/\.(jpg|jpeg|png|gif|webp)/i);
+    // Accept attribute format: '.jpg,.jpeg,.png,.gif,.webp'
+    expect(acceptAttr).toContain('.jpg');
+    expect(acceptAttr).toContain('.png');
   });
 
   test('form should show selected image file name for manual recipe', async ({ page }) => {
@@ -179,6 +181,8 @@ test.describe('Recipe Form Image Upload', () => {
     expect(docAccept).toContain('.pdf');
     
     const imgAccept = await imageInput.getAttribute('accept');
-    expect(imgAccept).toMatch(/\.(jpg|jpeg|png|gif|webp)/i);
+    // Accept attribute format: '.jpg,.jpeg,.png,.gif,.webp'
+    expect(imgAccept).toContain('.jpg');
+    expect(imgAccept).toContain('.png');
   });
 });
