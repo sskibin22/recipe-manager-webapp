@@ -126,7 +126,8 @@ test.describe('Recipe Form Image Upload', () => {
     // For now, we just verify the form structure is correct
     
     const fileInput = page.locator('input[type="file"]#displayImage');
-    await expect(fileInput).toHaveAttribute('accept', /\.jpg.*\.png.*\.gif.*\.webp/i);
+    const acceptAttr = await fileInput.getAttribute('accept');
+    expect(acceptAttr).toMatch(/\.(jpg|jpeg|png|gif|webp)/i);
   });
 
   test('form should show selected image file name for manual recipe', async ({ page }) => {
@@ -178,6 +179,6 @@ test.describe('Recipe Form Image Upload', () => {
     expect(docAccept).toContain('.pdf');
     
     const imgAccept = await imageInput.getAttribute('accept');
-    expect(imgAccept).toMatch(/\.jpg.*\.png.*\.gif.*\.webp/);
+    expect(imgAccept).toMatch(/\.(jpg|jpeg|png|gif|webp)/i);
   });
 });
