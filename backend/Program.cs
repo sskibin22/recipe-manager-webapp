@@ -150,7 +150,7 @@ app.MapPost("/api/recipes/fetch-metadata", async (FetchMetadataRequest request, 
 .WithOpenApi();
 
 // Recipe endpoints
-app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache) =>
+app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache, IStorageService storageService, ILogger<Program> logger) =>
 {
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
@@ -183,6 +183,18 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
         }
     }
 
+    // If preview image URL is provided and the file is in the cache, save it to the database
+    if (!string.IsNullOrEmpty(request.PreviewImageUrl))
+    {
+        if (fileCache.TryGetValue(request.PreviewImageUrl, out var imageData))
+        {
+            recipe.PreviewImageContent = imageData.content;
+            recipe.PreviewImageContentType = imageData.contentType;
+            // Remove from cache after saving
+            fileCache.Remove(request.PreviewImageUrl);
+        }
+    }
+
     db.Recipes.Add(recipe);
     await db.SaveChangesAsync();
 
@@ -193,6 +205,19 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
         fileContentBase64 = Convert.ToBase64String(recipe.FileContent);
     }
 
+    // Convert PreviewImageContent to base64 data URL if stored in database
+    string? previewImageUrl = null;
+    if (recipe.PreviewImageContent != null && !string.IsNullOrEmpty(recipe.PreviewImageContentType))
+    {
+        var base64Image = Convert.ToBase64String(recipe.PreviewImageContent);
+        previewImageUrl = $"data:{recipe.PreviewImageContentType};base64,{base64Image}";
+    }
+    else
+    {
+        // Otherwise, convert storage key to presigned URL for preview image
+        previewImageUrl = await GetPreviewImageUrlAsync(recipe.PreviewImageUrl, storageService, logger);
+    }
+
     return Results.Created($"/api/recipes/{recipe.Id}", new
     {
         recipe.Id,
@@ -201,7 +226,7 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
         recipe.Url,
         recipe.StorageKey,
         recipe.Content,
-        recipe.PreviewImageUrl,
+        previewImageUrl = previewImageUrl,
         recipe.Description,
         recipe.SiteName,
         recipe.CreatedAt,
@@ -232,11 +257,20 @@ app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user,
         .OrderByDescending(r => r.CreatedAt)
         .ToListAsync();
 
-    // Convert storage keys to presigned URLs for preview images
+    // Convert preview images to base64 data URLs if stored in database, or presigned URLs if in storage
     var recipeDtos = new List<object>();
     foreach (var r in recipes)
     {
-        var previewImageUrl = await GetPreviewImageUrlAsync(r.PreviewImageUrl, storageService, logger);
+        string? previewImageUrl = null;
+        if (r.PreviewImageContent != null && !string.IsNullOrEmpty(r.PreviewImageContentType))
+        {
+            var base64Image = Convert.ToBase64String(r.PreviewImageContent);
+            previewImageUrl = $"data:{r.PreviewImageContentType};base64,{base64Image}";
+        }
+        else
+        {
+            previewImageUrl = await GetPreviewImageUrlAsync(r.PreviewImageUrl, storageService, logger);
+        }
 
         recipeDtos.Add(new
         {
@@ -279,8 +313,18 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
         fileContentBase64 = Convert.ToBase64String(recipe.FileContent);
     }
 
-    // Convert storage key to presigned URL for preview image if needed
-    var previewImageUrl = await GetPreviewImageUrlAsync(recipe.PreviewImageUrl, storageService, logger);
+    // Convert PreviewImageContent to base64 data URL if stored in database
+    string? previewImageUrl = null;
+    if (recipe.PreviewImageContent != null && !string.IsNullOrEmpty(recipe.PreviewImageContentType))
+    {
+        var base64Image = Convert.ToBase64String(recipe.PreviewImageContent);
+        previewImageUrl = $"data:{recipe.PreviewImageContentType};base64,{base64Image}";
+    }
+    else
+    {
+        // Otherwise, convert storage key to presigned URL for preview image if needed
+        previewImageUrl = await GetPreviewImageUrlAsync(recipe.PreviewImageUrl, storageService, logger);
+    }
 
     return Results.Ok(new
     {
@@ -303,7 +347,7 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
 .WithName("GetRecipe")
 .WithOpenApi();
 
-app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache) =>
+app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache, IStorageService storageService, ILogger<Program> logger) =>
 {
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
@@ -335,6 +379,21 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
         }
     }
 
+    // Handle preview image update
+    if (!string.IsNullOrEmpty(request.PreviewImageUrl))
+    {
+        recipe.PreviewImageUrl = request.PreviewImageUrl;
+        
+        // If the preview image is in the cache, save it to the database
+        if (fileCache.TryGetValue(request.PreviewImageUrl, out var imageData))
+        {
+            recipe.PreviewImageContent = imageData.content;
+            recipe.PreviewImageContentType = imageData.contentType;
+            // Remove from cache after saving
+            fileCache.Remove(request.PreviewImageUrl);
+        }
+    }
+
     await db.SaveChangesAsync();
 
     // Convert FileContent to base64 for document recipes
@@ -342,6 +401,19 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
     if (recipe.Type == RecipeType.Document && recipe.FileContent != null)
     {
         fileContentBase64 = Convert.ToBase64String(recipe.FileContent);
+    }
+
+    // Convert PreviewImageContent to base64 data URL if stored in database
+    string? previewImageUrl = null;
+    if (recipe.PreviewImageContent != null && !string.IsNullOrEmpty(recipe.PreviewImageContentType))
+    {
+        var base64Image = Convert.ToBase64String(recipe.PreviewImageContent);
+        previewImageUrl = $"data:{recipe.PreviewImageContentType};base64,{base64Image}";
+    }
+    else
+    {
+        // Otherwise, convert storage key to presigned URL for preview image
+        previewImageUrl = await GetPreviewImageUrlAsync(recipe.PreviewImageUrl, storageService, logger);
     }
 
     return Results.Ok(new
@@ -352,7 +424,7 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
         recipe.Url,
         recipe.StorageKey,
         recipe.Content,
-        recipe.PreviewImageUrl,
+        previewImageUrl = previewImageUrl,
         recipe.Description,
         recipe.SiteName,
         recipe.CreatedAt,
@@ -521,15 +593,26 @@ if (app.Environment.IsDevelopment())
         var userId = GetUserId(user);
         if (userId == null) return Results.Unauthorized();
 
-        // Find the recipe with this storage key
+        // Find the recipe with this preview image key or storage key
         var recipe = await db.Recipes
-            .FirstOrDefaultAsync(r => r.StorageKey == key && r.UserId == userId.Value);
+            .FirstOrDefaultAsync(r => (r.PreviewImageUrl == key || r.StorageKey == key) && r.UserId == userId.Value);
 
-        if (recipe == null || recipe.FileContent == null)
+        if (recipe == null)
             return Results.NotFound();
 
-        // Return the file content
-        return Results.File(recipe.FileContent, recipe.FileContentType ?? "application/octet-stream");
+        // If looking for preview image
+        if (recipe.PreviewImageUrl == key && recipe.PreviewImageContent != null)
+        {
+            return Results.File(recipe.PreviewImageContent, recipe.PreviewImageContentType ?? "image/jpeg");
+        }
+
+        // If looking for document storage
+        if (recipe.StorageKey == key && recipe.FileContent != null)
+        {
+            return Results.File(recipe.FileContent, recipe.FileContentType ?? "application/octet-stream");
+        }
+
+        return Results.NotFound();
     })
     .WithName("PlaceholderDownload")
     .WithOpenApi();

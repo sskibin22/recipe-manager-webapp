@@ -30,6 +30,10 @@ public partial class Recipe
 
     public string? FileContentType { get; set; }
 
+    public byte[]? PreviewImageContent { get; set; }
+
+    public string? PreviewImageContentType { get; set; }
+
     public string? PreviewImageUrl { get; set; }
 
     public string? Description { get; set; }
