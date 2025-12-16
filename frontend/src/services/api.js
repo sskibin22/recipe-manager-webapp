@@ -66,6 +66,12 @@ export const removeFavorite = async (recipeId) => {
   await apiClient.delete(`/api/recipes/${recipeId}/favorite`);
 };
 
+// Metadata API
+export const fetchMetadata = async (url) => {
+  const response = await apiClient.post('/api/recipes/fetch-metadata', { url });
+  return response.data;
+};
+
 // Upload API
 export const getPresignedUploadUrl = async (fileName, contentType) => {
   const response = await apiClient.post('/api/uploads/presign', {
@@ -99,6 +105,7 @@ export const recipesApi = {
   delete: deleteRecipe,
   addFavorite,
   removeFavorite,
+  fetchMetadata,
 };
 
 export const uploadsApi = {

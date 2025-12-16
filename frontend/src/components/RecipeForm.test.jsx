@@ -170,6 +170,9 @@ describe('RecipeForm', () => {
         title: 'Test Recipe',
         type: 'link',
         url: 'https://example.com/recipe',
+        previewImageUrl: null,
+        description: null,
+        siteName: null,
       });
     });
   });
@@ -199,6 +202,9 @@ describe('RecipeForm', () => {
         title: 'Test Recipe',
         type: 'manual',
         content: 'Test content',
+        previewImageUrl: null,
+        description: null,
+        siteName: null,
       });
     });
   });

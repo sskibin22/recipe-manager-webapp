@@ -64,17 +64,39 @@ const RecipeCard = ({ recipe }) => {
       to={`/recipe/${recipe.id}`}
       className="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden"
     >
+      {/* Preview Image */}
+      {recipe.previewImageUrl && (
+        <div className="w-full h-48 bg-gray-200 overflow-hidden">
+          <img
+            src={recipe.previewImageUrl}
+            alt={recipe.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => {
+              // Hide image if it fails to load
+              e.target.style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+
       <div className="p-4">
         {/* Header with Type Icon and Favorite Button */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2 text-gray-600">
             {getRecipeTypeIcon()}
             <span className="text-xs uppercase tracking-wide">{recipe.type}</span>
+            {recipe.siteName && (
+              <>
+                <span className="text-xs text-gray-400">•</span>
+                <span className="text-xs text-gray-500 truncate max-w-[150px]">{recipe.siteName}</span>
+              </>
+            )}
           </div>
           <button
             onClick={handleFavoriteClick}
             disabled={toggleFavoriteMutation.isPending}
-            className={`transition-colors ${
+            className={`transition-colors flex-shrink-0 ${
               isFavorite ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-500'
             } ${toggleFavoriteMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
@@ -94,13 +116,18 @@ const RecipeCard = ({ recipe }) => {
         {/* Title */}
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{recipe.title}</h3>
 
-        {/* Recipe URL Preview (for link type) */}
-        {recipe.type.toLowerCase() === 'link' && recipe.url && (
+        {/* Description (if available) */}
+        {recipe.description && (
+          <p className="text-sm text-gray-600 line-clamp-2 mb-2">{recipe.description}</p>
+        )}
+
+        {/* Recipe URL Preview (for link type without description) */}
+        {recipe.type.toLowerCase() === 'link' && recipe.url && !recipe.description && (
           <p className="text-sm text-gray-500 truncate">{recipe.url}</p>
         )}
 
-        {/* Content Preview (for manual type) */}
-        {recipe.type.toLowerCase() === 'manual' && recipe.content && (
+        {/* Content Preview (for manual type without description) */}
+        {recipe.type.toLowerCase() === 'manual' && recipe.content && !recipe.description && (
           <p className="text-sm text-gray-600 line-clamp-3">{recipe.content}</p>
         )}
 
