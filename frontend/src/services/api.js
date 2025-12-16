@@ -1,11 +1,12 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
@@ -27,13 +28,13 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Recipe API
-export const fetchRecipes = async (searchQuery = '') => {
+export const fetchRecipes = async (searchQuery = "") => {
   const params = searchQuery ? { q: searchQuery } : {};
-  const response = await apiClient.get('/api/recipes', { params });
+  const response = await apiClient.get("/api/recipes", { params });
   return response.data;
 };
 
@@ -43,7 +44,7 @@ export const fetchRecipe = async (id) => {
 };
 
 export const createRecipe = async (recipeData) => {
-  const response = await apiClient.post('/api/recipes', recipeData);
+  const response = await apiClient.post("/api/recipes", recipeData);
   return response.data;
 };
 
@@ -68,13 +69,13 @@ export const removeFavorite = async (recipeId) => {
 
 // Metadata API
 export const fetchMetadata = async (url) => {
-  const response = await apiClient.post('/api/recipes/fetch-metadata', { url });
+  const response = await apiClient.post("/api/recipes/fetch-metadata", { url });
   return response.data;
 };
 
 // Upload API
 export const getPresignedUploadUrl = async (fileName, contentType) => {
-  const response = await apiClient.post('/api/uploads/presign', {
+  const response = await apiClient.post("/api/uploads/presign", {
     fileName,
     contentType,
   });
@@ -82,7 +83,7 @@ export const getPresignedUploadUrl = async (fileName, contentType) => {
 };
 
 export const getPresignedDownloadUrl = async (recipeId) => {
-  const response = await apiClient.get('/api/uploads/presign-download', {
+  const response = await apiClient.get("/api/uploads/presign-download", {
     params: { recipeId },
   });
   return response.data;
@@ -91,7 +92,7 @@ export const getPresignedDownloadUrl = async (recipeId) => {
 export const uploadToPresignedUrl = async (presignedUrl, file) => {
   await axios.put(presignedUrl, file, {
     headers: {
-      'Content-Type': file.type,
+      "Content-Type": file.type,
     },
   });
 };
@@ -116,12 +117,12 @@ export const uploadsApi = {
 
 // User Profile API
 export const getUserProfile = async () => {
-  const response = await apiClient.get('/api/user/profile');
+  const response = await apiClient.get("/api/user/profile");
   return response.data;
 };
 
 export const updateUserProfile = async (profileData) => {
-  const response = await apiClient.put('/api/user/profile', profileData);
+  const response = await apiClient.put("/api/user/profile", profileData);
   return response.data;
 };
 

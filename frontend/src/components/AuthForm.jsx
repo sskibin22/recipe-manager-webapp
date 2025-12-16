@@ -1,36 +1,36 @@
-import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 const AuthForm = () => {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleEmailAuth = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       if (isSignUp) {
         if (!firstName.trim() || !lastName.trim()) {
-          setError('First name and last name are required');
+          setError("First name and last name are required");
           setLoading(false);
           return;
         }
         if (password !== confirmPassword) {
-          setError('Passwords do not match');
+          setError("Passwords do not match");
           setLoading(false);
           return;
         }
         if (password.length < 6) {
-          setError('Password must be at least 6 characters');
+          setError("Password must be at least 6 characters");
           setLoading(false);
           return;
         }
@@ -40,25 +40,29 @@ const AuthForm = () => {
         await signInWithEmail(email, password);
       }
     } catch (err) {
-      console.error('Authentication error:', err);
-      
+      console.error("Authentication error:", err);
+
       // User-friendly error messages
-      if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already registered. Please sign in instead.');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Invalid email address');
-      } else if (err.code === 'auth/user-not-found') {
-        setError('No account found with this email. Please sign up.');
-      } else if (err.code === 'auth/wrong-password') {
-        setError('Incorrect password');
-      } else if (err.code === 'auth/weak-password') {
-        setError('Password is too weak. Use at least 6 characters.');
-      } else if (err.code === 'auth/invalid-credential') {
-        setError('Invalid email or password');
-      } else if (err.code === 'auth/operation-not-allowed') {
-        setError('Email/Password authentication is not enabled. Please enable it in Firebase Console.');
+      if (err.code === "auth/email-already-in-use") {
+        setError("This email is already registered. Please sign in instead.");
+      } else if (err.code === "auth/invalid-email") {
+        setError("Invalid email address");
+      } else if (err.code === "auth/user-not-found") {
+        setError("No account found with this email. Please sign up.");
+      } else if (err.code === "auth/wrong-password") {
+        setError("Incorrect password");
+      } else if (err.code === "auth/weak-password") {
+        setError("Password is too weak. Use at least 6 characters.");
+      } else if (err.code === "auth/invalid-credential") {
+        setError("Invalid email or password");
+      } else if (err.code === "auth/operation-not-allowed") {
+        setError(
+          "Email/Password authentication is not enabled. Please enable it in Firebase Console.",
+        );
       } else {
-        setError(`Authentication failed: ${err.message || 'Please try again.'}`);
+        setError(
+          `Authentication failed: ${err.message || "Please try again."}`,
+        );
       }
     } finally {
       setLoading(false);
@@ -66,13 +70,13 @@ const AuthForm = () => {
   };
 
   const handleGoogleSignIn = async () => {
-    setError('');
+    setError("");
     setLoading(true);
     try {
       await signInWithGoogle();
     } catch (err) {
-      console.error('Google sign-in error:', err);
-      setError('Google sign-in failed. Please try again.');
+      console.error("Google sign-in error:", err);
+      setError("Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -85,7 +89,10 @@ const AuthForm = () => {
         {isSignUp && (
           <>
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 First Name
               </label>
               <input
@@ -100,7 +107,10 @@ const AuthForm = () => {
             </div>
 
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Last Name
               </label>
               <input
@@ -117,7 +127,10 @@ const AuthForm = () => {
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Email
           </label>
           <input
@@ -132,7 +145,10 @@ const AuthForm = () => {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Password
           </label>
           <input
@@ -149,7 +165,10 @@ const AuthForm = () => {
 
         {isSignUp && (
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Confirm Password
             </label>
             <input
@@ -176,7 +195,7 @@ const AuthForm = () => {
           disabled={loading}
           className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
         >
-          {loading ? 'Please wait...' : isSignUp ? 'Create Account' : 'Sign In'}
+          {loading ? "Please wait..." : isSignUp ? "Create Account" : "Sign In"}
         </button>
       </form>
 
@@ -186,15 +205,17 @@ const AuthForm = () => {
           type="button"
           onClick={() => {
             setIsSignUp(!isSignUp);
-            setError('');
-            setFirstName('');
-            setLastName('');
-            setPassword('');
-            setConfirmPassword('');
+            setError("");
+            setFirstName("");
+            setLastName("");
+            setPassword("");
+            setConfirmPassword("");
           }}
           className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
         >
-          {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+          {isSignUp
+            ? "Already have an account? Sign in"
+            : "Don't have an account? Sign up"}
         </button>
       </div>
 

@@ -45,7 +45,7 @@ public class StorageService : IStorageService
         {
             // Return a placeholder URL if R2 is not configured (for local development)
             var httpContext = _httpContextAccessor.HttpContext;
-            var baseUrl = httpContext != null 
+            var baseUrl = httpContext != null
                 ? $"{httpContext.Request.Scheme}://{httpContext.Request.Host}"
                 : "http://localhost:5172"; // Fallback to default dev port
             return $"{baseUrl}/placeholder-upload/{key}";
@@ -69,7 +69,7 @@ public class StorageService : IStorageService
         {
             // Return a placeholder URL if R2 is not configured (for local development)
             var httpContext = _httpContextAccessor.HttpContext;
-            var baseUrl = httpContext != null 
+            var baseUrl = httpContext != null
                 ? $"{httpContext.Request.Scheme}://{httpContext.Request.Host}"
                 : "http://localhost:5172"; // Fallback to default dev port
             return $"{baseUrl}/placeholder-download/{key}";

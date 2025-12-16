@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
-import { setTokenGetter } from './services/api';
-import Landing from './pages/Landing';
-import AuthCallback from './pages/AuthCallback';
-import RecipeDetail from './pages/RecipeDetail';
-import AccountSettings from './pages/AccountSettings';
+import { useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import { useAuth } from "./contexts/AuthContext";
+import { setTokenGetter } from "./services/api";
+import Landing from "./pages/Landing";
+import AuthCallback from "./pages/AuthCallback";
+import RecipeDetail from "./pages/RecipeDetail";
+import AccountSettings from "./pages/AccountSettings";
 
 function App() {
   const { getToken } = useAuth();

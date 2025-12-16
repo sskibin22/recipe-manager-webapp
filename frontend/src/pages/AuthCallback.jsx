@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function AuthCallback() {
   const { completeEmailSignIn } = useAuth();
@@ -10,10 +10,10 @@ export default function AuthCallback() {
     const handleCallback = async () => {
       try {
         await completeEmailSignIn();
-        navigate('/');
+        navigate("/");
       } catch (error) {
-        console.error('Auth callback error:', error);
-        navigate('/');
+        console.error("Auth callback error:", error);
+        navigate("/");
       }
     };
 

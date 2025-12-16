@@ -27,14 +27,14 @@ public class MetadataService : IMetadataService
             }
 
             var client = _httpClientFactory.CreateClient("MetadataClient");
-            
+
             // Create request with headers to mimic a browser
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("User-Agent", "Mozilla/5.0 (compatible; RecipeManagerBot/1.0)");
             request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml");
 
             using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            
+
             // Check content type
             var contentType = response.Content.Headers.ContentType?.MediaType?.ToLowerInvariant();
             if (contentType != null && !contentType.Contains("text/html") && !contentType.Contains("application/xhtml"))

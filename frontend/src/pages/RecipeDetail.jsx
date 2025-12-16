@@ -1,18 +1,20 @@
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { recipesApi, uploadsApi } from '../services/api';
-import { useState } from 'react';
-import DocumentPreview from '../components/DocumentPreview';
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { recipesApi, uploadsApi } from "../services/api";
+import { useState } from "react";
+import DocumentPreview from "../components/DocumentPreview";
 
 // File validation constants (matching RecipeForm)
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
 const ALLOWED_FILE_TYPES = {
-  'application/pdf': ['.pdf'],
-  'application/msword': ['.doc'],
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-  'text/plain': ['.txt'],
-  'image/jpeg': ['.jpg', '.jpeg'],
-  'image/png': ['.png'],
+  "application/pdf": [".pdf"],
+  "application/msword": [".doc"],
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
+    ".docx",
+  ],
+  "text/plain": [".txt"],
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
 };
 
 export default function RecipeDetail() {
@@ -20,23 +22,27 @@ export default function RecipeDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editedTitle, setEditedTitle] = useState('');
-  const [editedUrl, setEditedUrl] = useState('');
-  const [editedContent, setEditedContent] = useState('');
+  const [editedTitle, setEditedTitle] = useState("");
+  const [editedUrl, setEditedUrl] = useState("");
+  const [editedContent, setEditedContent] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const { data: recipe, isLoading, error } = useQuery({
-    queryKey: ['recipe', id],
+  const {
+    data: recipe,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["recipe", id],
     queryFn: () => recipesApi.getById(id),
   });
 
   const deleteMutation = useMutation({
     mutationFn: recipesApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recipes'] });
-      navigate('/');
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      navigate("/");
     },
   });
 
@@ -49,31 +55,31 @@ export default function RecipeDetail() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recipe', id] });
-      queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      queryClient.invalidateQueries({ queryKey: ["recipe", id] });
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: (data) => recipesApi.update({ id, ...data }),
     onSuccess: (updatedRecipe) => {
-      queryClient.setQueryData(['recipe', id], updatedRecipe);
-      queryClient.invalidateQueries({ queryKey: ['recipes'] });
+      queryClient.setQueryData(["recipe", id], updatedRecipe);
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
       setIsEditMode(false);
       setValidationErrors({});
     },
   });
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this recipe?')) {
+    if (window.confirm("Are you sure you want to delete this recipe?")) {
       deleteMutation.mutate(id);
     }
   };
 
   const handleEdit = () => {
     setEditedTitle(recipe.title);
-    setEditedUrl(recipe.url || '');
-    setEditedContent(recipe.content || '');
+    setEditedUrl(recipe.url || "");
+    setEditedContent(recipe.content || "");
     setValidationErrors({});
     setFile(null);
     setIsEditMode(true);
@@ -87,7 +93,7 @@ export default function RecipeDetail() {
 
   const validateFile = (file) => {
     if (!file) {
-      return 'No file selected';
+      return "No file selected";
     }
 
     // Check file size
@@ -97,21 +103,21 @@ export default function RecipeDetail() {
 
     // Check file type by MIME type first
     let isValidType = Object.keys(ALLOWED_FILE_TYPES).includes(file.type);
-    
+
     // If MIME type check fails or is empty, check by file extension
     if (!isValidType || !file.type) {
       const fileName = file.name.toLowerCase();
-      const dotIndex = fileName.lastIndexOf('.');
+      const dotIndex = fileName.lastIndexOf(".");
       if (dotIndex === -1) {
-        return 'Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG';
+        return "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG";
       }
       const fileExtension = fileName.substring(dotIndex);
       const allowedExtensions = Object.values(ALLOWED_FILE_TYPES).flat();
       isValidType = allowedExtensions.includes(fileExtension);
     }
-    
+
     if (!isValidType) {
-      return 'Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG';
+      return "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG";
     }
 
     return null; // Valid file
@@ -119,7 +125,7 @@ export default function RecipeDetail() {
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files?.[0] || null;
-    
+
     if (!selectedFile) {
       setFile(null);
       const { file, ...rest } = validationErrors;
@@ -132,7 +138,7 @@ export default function RecipeDetail() {
       setValidationErrors({ ...validationErrors, file: validationError });
       setFile(null);
       // Clear the input
-      e.target.value = '';
+      e.target.value = "";
       return;
     }
 
@@ -143,52 +149,56 @@ export default function RecipeDetail() {
 
   const validateForm = () => {
     const errors = {};
-    
+
     if (!editedTitle.trim()) {
-      errors.title = 'Title is required';
+      errors.title = "Title is required";
     }
-    
-    if (recipe.type.toLowerCase() === 'link') {
+
+    if (recipe.type.toLowerCase() === "link") {
       if (!editedUrl.trim()) {
-        errors.url = 'URL is required for link recipes';
+        errors.url = "URL is required for link recipes";
       } else {
         try {
           new URL(editedUrl);
         } catch {
-          errors.url = 'Please enter a valid URL';
+          errors.url = "Please enter a valid URL";
         }
       }
     }
-    
-    if (recipe.type.toLowerCase() === 'manual' && !editedContent.trim()) {
-      errors.content = 'Content is required for manual recipes';
+
+    if (recipe.type.toLowerCase() === "manual" && !editedContent.trim()) {
+      errors.content = "Content is required for manual recipes";
     }
-    
+
     return errors;
   };
 
   const handleSave = async () => {
     const errors = validateForm();
-    
+
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       return;
     }
-    
+
     let updateData = {
       title: editedTitle,
       type: recipe.type,
-      url: recipe.type.toLowerCase() === 'link' ? editedUrl : recipe.url,
-      content: recipe.type.toLowerCase() === 'manual' ? editedContent : recipe.content,
+      url: recipe.type.toLowerCase() === "link" ? editedUrl : recipe.url,
+      content:
+        recipe.type.toLowerCase() === "manual" ? editedContent : recipe.content,
     };
 
     // Handle document upload if user selected a new file
-    if (recipe.type.toLowerCase() === 'document' && file) {
+    if (recipe.type.toLowerCase() === "document" && file) {
       try {
         setUploading(true);
-        
+
         // Get presigned upload URL
-        const presignData = await uploadsApi.getPresignedUploadUrl(file.name, file.type);
+        const presignData = await uploadsApi.getPresignedUploadUrl(
+          file.name,
+          file.type,
+        );
 
         // Upload file to R2
         await uploadsApi.uploadToPresignedUrl(presignData.uploadUrl, file);
@@ -197,7 +207,10 @@ export default function RecipeDetail() {
         setUploading(false);
       } catch (err) {
         setUploading(false);
-        setValidationErrors({ ...validationErrors, file: err.message || 'Failed to upload file' });
+        setValidationErrors({
+          ...validationErrors,
+          file: err.message || "Failed to upload file",
+        });
         return; // Don't proceed with mutation if upload failed
       }
     }
@@ -217,7 +230,9 @@ export default function RecipeDetail() {
   if (error || !recipe) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold text-red-600 mb-4">Recipe not found</h2>
+        <h2 className="text-2xl font-bold text-red-600 mb-4">
+          Recipe not found
+        </h2>
         <Link to="/" className="text-blue-600 hover:underline">
           Return to home
         </Link>
@@ -231,11 +246,21 @@ export default function RecipeDetail() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16 gap-4">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="text-gray-600 hover:text-gray-900 flex items-center gap-2"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               Back
             </button>
@@ -248,11 +273,12 @@ export default function RecipeDetail() {
         {updateMutation.isError && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-800">
-              Failed to update recipe: {updateMutation.error?.message || 'Unknown error'}
+              Failed to update recipe:{" "}
+              {updateMutation.error?.message || "Unknown error"}
             </p>
           </div>
         )}
-        
+
         {updateMutation.isSuccess && !isEditMode && (
           <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-green-800">Recipe updated successfully!</p>
@@ -265,7 +291,10 @@ export default function RecipeDetail() {
               <div className="flex-1">
                 {isEditMode ? (
                   <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="title"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Recipe Title
                     </label>
                     <input
@@ -274,12 +303,16 @@ export default function RecipeDetail() {
                       value={editedTitle}
                       onChange={(e) => setEditedTitle(e.target.value)}
                       className={`w-full px-4 py-2 text-2xl font-bold border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        validationErrors.title ? 'border-red-500' : 'border-gray-300'
+                        validationErrors.title
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                       placeholder="Enter recipe title"
                     />
                     {validationErrors.title && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.title}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {validationErrors.title}
+                      </p>
                     )}
                   </div>
                 ) : (
@@ -307,12 +340,24 @@ export default function RecipeDetail() {
                 <button
                   onClick={() => toggleFavoriteMutation.mutate()}
                   className={`transition-colors ${
-                    recipe.isFavorite ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-500'
+                    recipe.isFavorite
+                      ? "text-yellow-500"
+                      : "text-gray-300 hover:text-yellow-500"
                   }`}
                   disabled={toggleFavoriteMutation.isPending}
                 >
-                  <svg className="w-8 h-8" fill={recipe.isFavorite ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  <svg
+                    className="w-8 h-8"
+                    fill={recipe.isFavorite ? "currentColor" : "none"}
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
                   </svg>
                 </button>
               )}
@@ -320,9 +365,11 @@ export default function RecipeDetail() {
           </div>
 
           <div className="p-6">
-            {recipe.type.toLowerCase() === 'link' && (
+            {recipe.type.toLowerCase() === "link" && (
               <div>
-                <h2 className="text-lg font-semibold mb-3 text-gray-700">Recipe Link</h2>
+                <h2 className="text-lg font-semibold mb-3 text-gray-700">
+                  Recipe Link
+                </h2>
                 {isEditMode ? (
                   <div>
                     <input
@@ -330,12 +377,16 @@ export default function RecipeDetail() {
                       value={editedUrl}
                       onChange={(e) => setEditedUrl(e.target.value)}
                       className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        validationErrors.url ? 'border-red-500' : 'border-gray-300'
+                        validationErrors.url
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                       placeholder="https://example.com/recipe"
                     />
                     {validationErrors.url && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.url}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {validationErrors.url}
+                      </p>
                     )}
                   </div>
                 ) : recipe.url ? (
@@ -351,16 +402,19 @@ export default function RecipeDetail() {
               </div>
             )}
 
-            {recipe.type.toLowerCase() === 'document' && (
+            {recipe.type.toLowerCase() === "document" && (
               <div>
-                <h2 className="text-lg font-semibold mb-3 text-gray-700">Recipe Document</h2>
+                <h2 className="text-lg font-semibold mb-3 text-gray-700">
+                  Recipe Document
+                </h2>
                 {isEditMode ? (
                   <div>
                     <p className="text-sm text-gray-600 mb-2">
                       Replace document (optional)
                     </p>
                     <p className="text-xs text-gray-500 mb-2">
-                      Max file size: 10MB. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG
+                      Max file size: 10MB. Allowed types: PDF, DOC, DOCX, TXT,
+                      JPG, PNG
                     </p>
                     <input
                       type="file"
@@ -371,16 +425,21 @@ export default function RecipeDetail() {
                     />
                     {file && (
                       <p className="text-xs text-green-600 mt-1">
-                        Selected: {file.name} ({(file.size / (1024 * 1024)).toFixed(2)}MB)
+                        Selected: {file.name} (
+                        {(file.size / (1024 * 1024)).toFixed(2)}MB)
                       </p>
                     )}
                     {validationErrors.file && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.file}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {validationErrors.file}
+                      </p>
                     )}
                     {recipe.fileContent && recipe.fileContentType && (
                       <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-3">Current document preview:</p>
-                        <DocumentPreview 
+                        <p className="text-sm text-gray-600 mb-3">
+                          Current document preview:
+                        </p>
+                        <DocumentPreview
                           fileContent={recipe.fileContent}
                           fileContentType={recipe.fileContentType}
                           title={recipe.title}
@@ -389,22 +448,26 @@ export default function RecipeDetail() {
                     )}
                   </div>
                 ) : recipe.fileContent && recipe.fileContentType ? (
-                  <DocumentPreview 
+                  <DocumentPreview
                     fileContent={recipe.fileContent}
                     fileContentType={recipe.fileContentType}
                     title={recipe.title}
                   />
                 ) : (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <p className="text-yellow-800">Document content not available</p>
+                    <p className="text-yellow-800">
+                      Document content not available
+                    </p>
                   </div>
                 )}
               </div>
             )}
 
-            {recipe.type.toLowerCase() === 'manual' && (
+            {recipe.type.toLowerCase() === "manual" && (
               <div>
-                <h2 className="text-lg font-semibold mb-3 text-gray-700">Recipe</h2>
+                <h2 className="text-lg font-semibold mb-3 text-gray-700">
+                  Recipe
+                </h2>
                 {isEditMode ? (
                   <div>
                     <textarea
@@ -412,12 +475,16 @@ export default function RecipeDetail() {
                       onChange={(e) => setEditedContent(e.target.value)}
                       rows={10}
                       className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans ${
-                        validationErrors.content ? 'border-red-500' : 'border-gray-300'
+                        validationErrors.content
+                          ? "border-red-500"
+                          : "border-gray-300"
                       }`}
                       placeholder="Enter recipe content..."
                     />
                     {validationErrors.content && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.content}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {validationErrors.content}
+                      </p>
                     )}
                   </div>
                 ) : recipe.content ? (
@@ -457,7 +524,7 @@ export default function RecipeDetail() {
                       Saving...
                     </>
                   ) : (
-                    'Save Changes'
+                    "Save Changes"
                   )}
                 </button>
               </>
@@ -474,7 +541,7 @@ export default function RecipeDetail() {
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                   disabled={deleteMutation.isPending}
                 >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete Recipe'}
+                  {deleteMutation.isPending ? "Deleting..." : "Delete Recipe"}
                 </button>
               </>
             )}

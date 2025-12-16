@@ -125,7 +125,7 @@ app.MapPost("/api/recipes/fetch-metadata", async (FetchMetadataRequest request, 
     }
 
     var metadata = await metadataService.FetchMetadataAsync(request.Url);
-    
+
     if (metadata == null)
     {
         return Results.Ok(new
@@ -312,7 +312,7 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
     if (!string.IsNullOrEmpty(request.StorageKey))
     {
         recipe.StorageKey = request.StorageKey;
-        
+
         // If this is a document upload and the file is in the cache, save it to the database
         if (request.Type == RecipeType.Document && fileCache.TryGetValue(request.StorageKey, out var fileData))
         {
@@ -492,12 +492,12 @@ if (app.Environment.IsDevelopment())
         using var memoryStream = new MemoryStream();
         await request.Body.CopyToAsync(memoryStream);
         var fileContent = memoryStream.ToArray();
-        
+
         var contentType = request.ContentType ?? "application/octet-stream";
-        
+
         // Store in cache for later retrieval when recipe is created
         fileCache[key] = (fileContent, contentType);
-        
+
         return Results.Ok(new { message = "File uploaded successfully (development mode)", size = fileContent.Length });
     })
     .WithName("PlaceholderUpload")
@@ -508,14 +508,14 @@ if (app.Environment.IsDevelopment())
     {
         var userId = GetUserId(user);
         if (userId == null) return Results.Unauthorized();
-        
+
         // Find the recipe with this storage key
         var recipe = await db.Recipes
             .FirstOrDefaultAsync(r => r.StorageKey == key && r.UserId == userId.Value);
-        
+
         if (recipe == null || recipe.FileContent == null)
             return Results.NotFound();
-        
+
         // Return the file content
         return Results.File(recipe.FileContent, recipe.FileContentType ?? "application/octet-stream");
     })
