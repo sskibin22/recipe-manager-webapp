@@ -1,0 +1,15 @@
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f3f4f6"/>
+  <g transform="translate(200, 150)">
+    <!-- Chef's hat icon -->
+    <path d="M-40,-20 L-40,10 L40,10 L40,-20 Q40,-40 30,-50 Q20,-55 0,-55 Q-20,-55 -30,-50 Q-40,-40 -40,-20" 
+          fill="#9ca3af" stroke="none"/>
+    <ellipse cx="-25" cy="-35" rx="12" ry="15" fill="#9ca3af"/>
+    <ellipse cx="0" cy="-40" rx="15" ry="18" fill="#9ca3af"/>
+    <ellipse cx="25" cy="-35" rx="12" ry="15" fill="#9ca3af"/>
+    <rect x="-40" y="10" width="80" height="15" fill="#9ca3af" rx="2"/>
+  </g>
+  <text x="200" y="210" font-family="Arial, sans-serif" font-size="16" fill="#6b7280" text-anchor="middle">
+    Recipe Image
+  </text>
+</svg>

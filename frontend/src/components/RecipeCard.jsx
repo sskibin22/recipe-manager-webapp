@@ -89,26 +89,27 @@ const RecipeCard = ({ recipe }) => {
     toggleFavoriteMutation.mutate();
   };
 
+  // Determine image source (use placeholder if no preview image)
+  const imageSrc = recipe.previewImageUrl || "/recipe-placeholder.svg";
+
   return (
     <Link
       to={`/recipe/${recipe.id}`}
       className="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden"
     >
-      {/* Preview Image */}
-      {recipe.previewImageUrl && (
-        <div className="w-full h-48 bg-gray-200 overflow-hidden">
-          <img
-            src={recipe.previewImageUrl}
-            alt={recipe.title}
-            className="w-full h-full object-cover"
-            loading="lazy"
-            onError={(e) => {
-              // Hide image if it fails to load
-              e.target.style.display = "none";
-            }}
-          />
-        </div>
-      )}
+      {/* Preview Image - Always shown for consistent layout */}
+      <div className="w-full h-48 bg-gray-200 overflow-hidden">
+        <img
+          src={imageSrc}
+          alt={recipe.title}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={(e) => {
+            // Use placeholder if image fails to load
+            e.target.src = "/recipe-placeholder.svg";
+          }}
+        />
+      </div>
 
       <div className="p-4">
         {/* Header with Type Icon and Favorite Button */}
