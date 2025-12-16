@@ -240,10 +240,11 @@ describe("RecipeForm", () => {
         title: "Test Recipe",
         type: "manual",
         content: "Test content",
-        previewImageUrl: null,
-        description: null,
-        siteName: null,
       });
+      // Verify metadata fields are NOT included
+      expect(callArgs.previewImageUrl).toBeUndefined();
+      expect(callArgs.description).toBeUndefined();
+      expect(callArgs.siteName).toBeUndefined();
     });
   });
 
@@ -489,5 +490,105 @@ describe("RecipeForm", () => {
       "accept",
       ".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png",
     );
+  });
+
+  it("should clear metadata fields when switching from link to manual type", async () => {
+    const user = userEvent.setup();
+    api.recipesApi.create.mockResolvedValue({
+      id: "123",
+      title: "Test Recipe",
+    });
+
+    renderWithProviders(
+      <RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />,
+    );
+
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, "Test Recipe");
+
+    // Start with link type and enter URL
+    const urlInput = screen.getByLabelText(/Recipe URL/i);
+    await user.type(urlInput, "https://example.com/recipe");
+
+    // Switch to manual type
+    const manualRadio = screen.getByLabelText(/^Manual$/);
+    await user.click(manualRadio);
+
+    // Enter manual content
+    const contentInput = screen.getByLabelText(/Recipe Content/i);
+    await user.type(contentInput, "Test content");
+
+    // Submit the form
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+
+    // Verify that metadata fields are NOT included in the API call
+    await waitFor(() => {
+      expect(api.recipesApi.create).toHaveBeenCalled();
+      const callArgs = api.recipesApi.create.mock.calls[0][0];
+      expect(callArgs).toEqual({
+        title: "Test Recipe",
+        type: "manual",
+        content: "Test content",
+      });
+      // Verify metadata fields are NOT included
+      expect(callArgs.previewImageUrl).toBeUndefined();
+      expect(callArgs.description).toBeUndefined();
+      expect(callArgs.siteName).toBeUndefined();
+      expect(callArgs.url).toBeUndefined();
+    });
+  });
+
+  it("should clear metadata fields when switching from link to document type", async () => {
+    const user = userEvent.setup();
+    api.recipesApi.create.mockResolvedValue({
+      id: "123",
+      title: "Test Recipe",
+    });
+    api.uploadsApi.getPresignedUploadUrl.mockResolvedValue({
+      uploadUrl: "https://upload.example.com",
+      key: "test-key",
+    });
+    api.uploadsApi.uploadToPresignedUrl.mockResolvedValue({});
+
+    renderWithProviders(
+      <RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />,
+    );
+
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, "Test Recipe");
+
+    // Start with link type and enter URL
+    const urlInput = screen.getByLabelText(/Recipe URL/i);
+    await user.type(urlInput, "https://example.com/recipe");
+
+    // Switch to document type
+    const documentRadio = screen.getByLabelText(/^Document$/);
+    await user.click(documentRadio);
+
+    // Upload a file
+    const fileInput = screen.getByLabelText(/Upload Document/i);
+    const file = new File(["test content"], "test.pdf", {
+      type: "application/pdf",
+    });
+    await user.upload(fileInput, file);
+
+    // Submit the form
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+
+    // Verify that metadata fields are NOT included in the API call
+    await waitFor(() => {
+      expect(api.recipesApi.create).toHaveBeenCalled();
+      const callArgs = api.recipesApi.create.mock.calls[0][0];
+      expect(callArgs.title).toBe("Test Recipe");
+      expect(callArgs.type).toBe("document");
+      expect(callArgs.storageKey).toBe("test-key");
+      // Verify metadata fields are NOT included
+      expect(callArgs.previewImageUrl).toBeUndefined();
+      expect(callArgs.description).toBeUndefined();
+      expect(callArgs.siteName).toBeUndefined();
+      expect(callArgs.url).toBeUndefined();
+    });
   });
 });

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "../contexts/AuthContext";
 import { recipesApi, uploadsApi } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -59,6 +58,16 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     setDescription("");
     setSiteName("");
   };
+
+  // Clear metadata when switching away from link type
+  useEffect(() => {
+    if (recipeType !== "link") {
+      setMetadata(null);
+      setPreviewImageUrl("");
+      setDescription("");
+      setSiteName("");
+    }
+  }, [recipeType]);
 
   // Fetch metadata when URL changes (debounced)
   useEffect(() => {
@@ -183,9 +192,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
       let recipeData = {
         title: title.trim(),
         type: recipeType,
-        previewImageUrl: previewImageUrl.trim() || null,
-        description: description.trim() || null,
-        siteName: siteName.trim() || null,
       };
 
       if (recipeType === "link") {
@@ -194,6 +200,10 @@ const RecipeForm = ({ onClose, onSuccess }) => {
           return;
         }
         recipeData.url = url.trim();
+        // Only include metadata fields for link recipes
+        recipeData.previewImageUrl = previewImageUrl.trim() || null;
+        recipeData.description = description.trim() || null;
+        recipeData.siteName = siteName.trim() || null;
       } else if (recipeType === "document") {
         if (!file) {
           setError("File is required for document recipes");
