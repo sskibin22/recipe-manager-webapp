@@ -214,7 +214,7 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
 .WithName("CreateRecipe")
 .WithOpenApi();
 
-app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user, IStorageService storageService, string? q) =>
+app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user, IStorageService storageService, ILogger<Program> logger, string? q) =>
 {
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
@@ -236,21 +236,7 @@ app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user,
     var recipeDtos = new List<object>();
     foreach (var r in recipes)
     {
-        var previewImageUrl = r.PreviewImageUrl;
-        
-        // If PreviewImageUrl is a storage key (not an external URL), generate presigned download URL
-        if (!string.IsNullOrEmpty(previewImageUrl) && !previewImageUrl.StartsWith("http://") && !previewImageUrl.StartsWith("https://"))
-        {
-            try
-            {
-                previewImageUrl = await storageService.GetPresignedDownloadUrlAsync(previewImageUrl);
-            }
-            catch
-            {
-                // If presigned URL generation fails, use null (placeholder will be shown)
-                previewImageUrl = null;
-            }
-        }
+        var previewImageUrl = await GetPreviewImageUrlAsync(r.PreviewImageUrl, storageService, logger);
 
         recipeDtos.Add(new
         {
@@ -275,7 +261,7 @@ app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user,
 .WithName("GetRecipes")
 .WithOpenApi();
 
-app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, ClaimsPrincipal user, IStorageService storageService) =>
+app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, ClaimsPrincipal user, IStorageService storageService, ILogger<Program> logger) =>
 {
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
@@ -294,19 +280,7 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
     }
 
     // Convert storage key to presigned URL for preview image if needed
-    var previewImageUrl = recipe.PreviewImageUrl;
-    if (!string.IsNullOrEmpty(previewImageUrl) && !previewImageUrl.StartsWith("http://") && !previewImageUrl.StartsWith("https://"))
-    {
-        try
-        {
-            previewImageUrl = await storageService.GetPresignedDownloadUrlAsync(previewImageUrl);
-        }
-        catch
-        {
-            // If presigned URL generation fails, use null (placeholder will be shown)
-            previewImageUrl = null;
-        }
-    }
+    var previewImageUrl = await GetPreviewImageUrlAsync(recipe.PreviewImageUrl, storageService, logger);
 
     return Results.Ok(new
     {
@@ -622,6 +596,27 @@ static Guid? GetUserId(ClaimsPrincipal user)
     }
 
     return null;
+}
+
+// Helper method to convert storage keys to presigned URLs with error handling
+static async Task<string?> GetPreviewImageUrlAsync(string? previewImageUrl, IStorageService storageService, ILogger logger)
+{
+    // If PreviewImageUrl is a storage key (not an external URL), generate presigned download URL
+    if (!string.IsNullOrEmpty(previewImageUrl) && !previewImageUrl.StartsWith("http://") && !previewImageUrl.StartsWith("https://"))
+    {
+        try
+        {
+            return await storageService.GetPresignedDownloadUrlAsync(previewImageUrl);
+        }
+        catch (Exception ex)
+        {
+            // Log the error but don't fail the request - placeholder will be shown
+            logger.LogWarning(ex, "Failed to generate presigned download URL for preview image: {StorageKey}", previewImageUrl);
+            return null;
+        }
+    }
+
+    return previewImageUrl;
 }
 
 app.Run();

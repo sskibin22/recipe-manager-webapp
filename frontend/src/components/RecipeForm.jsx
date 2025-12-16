@@ -230,6 +230,22 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     setError("");
   };
 
+  const generateImageFilename = (file) => {
+    return `image-${Date.now()}-${file.name}`;
+  };
+
+  const uploadDisplayImage = async (imageFile) => {
+    const imagePresignData = await uploadsApi.getPresignedUploadUrl(
+      generateImageFilename(imageFile),
+      imageFile.type,
+    );
+    await uploadsApi.uploadToPresignedUrl(
+      imagePresignData.uploadUrl,
+      imageFile,
+    );
+    return imagePresignData.key;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -276,16 +292,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
 
         // Upload display image if provided
         if (displayImageFile) {
-          const imagePresignData = await uploadsApi.getPresignedUploadUrl(
-            `image-${Date.now()}-${displayImageFile.name}`,
-            displayImageFile.type,
-          );
-          await uploadsApi.uploadToPresignedUrl(
-            imagePresignData.uploadUrl,
-            displayImageFile,
-          );
-          // Store the uploaded image URL - use the key to construct the URL
-          recipeData.previewImageUrl = imagePresignData.key;
+          recipeData.previewImageUrl = await uploadDisplayImage(displayImageFile);
         }
 
         setUploading(false);
@@ -299,16 +306,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
         // Upload display image if provided
         if (displayImageFile) {
           setUploading(true);
-          const imagePresignData = await uploadsApi.getPresignedUploadUrl(
-            `image-${Date.now()}-${displayImageFile.name}`,
-            displayImageFile.type,
-          );
-          await uploadsApi.uploadToPresignedUrl(
-            imagePresignData.uploadUrl,
-            displayImageFile,
-          );
-          // Store the uploaded image URL - use the key to construct the URL
-          recipeData.previewImageUrl = imagePresignData.key;
+          recipeData.previewImageUrl = await uploadDisplayImage(displayImageFile);
           setUploading(false);
         }
       }
