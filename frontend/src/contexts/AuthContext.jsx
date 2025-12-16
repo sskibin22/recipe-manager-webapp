@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
+import { createContext, useContext, useState, useEffect } from "react";
+import { initializeApp } from "firebase/app";
 import {
   getAuth,
   signInWithPopup,
@@ -11,8 +11,8 @@ import {
   GoogleAuthProvider,
   GithubAuthProvider,
   onAuthStateChanged,
-  signOut as firebaseSignOut
-} from 'firebase/auth';
+  signOut as firebaseSignOut,
+} from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -28,7 +28,7 @@ const AuthContext = createContext(null);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 };
@@ -40,18 +40,18 @@ export const AuthProvider = ({ children }) => {
 
   // Development mode bypass
   const isDevelopment = import.meta.env.DEV;
-  const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === 'true';
+  const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === "true";
 
   useEffect(() => {
     // Development auth bypass
     if (isDevelopment && bypassAuth) {
       setUser({
-        uid: 'dev-user-001',
-        email: 'dev@localhost.com',
-        displayName: 'Dev User',
-        photoURL: null
+        uid: "dev-user-001",
+        email: "dev@localhost.com",
+        displayName: "Dev User",
+        photoURL: null,
       });
-      setIdToken('dev-token');
+      setIdToken("dev-token");
       setLoading(false);
       return;
     }
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
           uid: firebaseUser.uid,
           email: firebaseUser.email,
           displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL
+          photoURL: firebaseUser.photoURL,
         });
       } else {
         setUser(null);
@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await signInWithPopup(auth, provider);
     } catch (error) {
-      console.error('Google sign-in error:', error);
+      console.error("Google sign-in error:", error);
       throw error;
     }
   };
@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await signInWithPopup(auth, provider);
     } catch (error) {
-      console.error('GitHub sign-in error:', error);
+      console.error("GitHub sign-in error:", error);
       throw error;
     }
   };
@@ -100,51 +100,55 @@ export const AuthProvider = ({ children }) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
-      console.error('Email sign-in error:', error);
+      console.error("Email sign-in error:", error);
       throw error;
     }
   };
 
   const signUpWithEmail = async (email, password, displayName) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
       // Update the user's profile with the display name (e.g., "John Doe")
       if (displayName) {
         await updateProfile(userCredential.user, {
-          displayName: displayName
+          displayName: displayName,
         });
       }
     } catch (error) {
-      console.error('Email sign-up error:', error);
+      console.error("Email sign-up error:", error);
       throw error;
     }
   };
 
   const sendEmailLink = async (email) => {
     const actionCodeSettings = {
-      url: window.location.origin + '/auth/callback',
+      url: window.location.origin + "/auth/callback",
       handleCodeInApp: true,
     };
     try {
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      window.localStorage.setItem('emailForSignIn', email);
+      window.localStorage.setItem("emailForSignIn", email);
     } catch (error) {
-      console.error('Email link error:', error);
+      console.error("Email link error:", error);
       throw error;
     }
   };
 
   const completeEmailSignIn = async () => {
     if (signInWithEmailLink(auth, window.location.href)) {
-      const email = window.localStorage.getItem('emailForSignIn');
+      const email = window.localStorage.getItem("emailForSignIn");
       if (!email) {
-        throw new Error('Email not found. Please try signing in again.');
+        throw new Error("Email not found. Please try signing in again.");
       }
       try {
         await signInWithEmailLink(auth, email, window.location.href);
-        window.localStorage.removeItem('emailForSignIn');
+        window.localStorage.removeItem("emailForSignIn");
       } catch (error) {
-        console.error('Complete email sign-in error:', error);
+        console.error("Complete email sign-in error:", error);
         throw error;
       }
     }
@@ -160,13 +164,12 @@ export const AuthProvider = ({ children }) => {
 
     try {
       await firebaseSignOut(auth);
-    // Development mode bypass
-    if (isDevelopment && bypassAuth) {
-      return 'dev-token';
-    }
-
+      // Development mode bypass
+      if (isDevelopment && bypassAuth) {
+        return "dev-token";
+      }
     } catch (error) {
-      console.error('Sign-out error:', error);
+      console.error("Sign-out error:", error);
       throw error;
     }
   };

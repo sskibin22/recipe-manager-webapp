@@ -40,6 +40,9 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Url).HasMaxLength(2000);
             entity.Property(e => e.StorageKey).HasMaxLength(500);
             entity.Property(e => e.Content);
+            entity.Property(e => e.PreviewImageUrl).HasMaxLength(2000);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.SiteName).HasMaxLength(256);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 

@@ -1,4 +1,4 @@
-import RecipeCard from './RecipeCard';
+import RecipeCard from "./RecipeCard";
 
 const RecipeList = ({ recipes, isLoading, error }) => {
   if (isLoading) {
@@ -12,7 +12,9 @@ const RecipeList = ({ recipes, isLoading, error }) => {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600">Failed to load recipes. Please try again.</p>
+        <p className="text-red-600">
+          Failed to load recipes. Please try again.
+        </p>
       </div>
     );
   }
@@ -21,7 +23,9 @@ const RecipeList = ({ recipes, isLoading, error }) => {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 text-lg">No recipes found</p>
-        <p className="text-gray-400 mt-2">Add your first recipe to get started!</p>
+        <p className="text-gray-400 mt-2">
+          Add your first recipe to get started!
+        </p>
       </div>
     );
   }

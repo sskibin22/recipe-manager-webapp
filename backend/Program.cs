@@ -63,6 +63,13 @@ if (!string.IsNullOrEmpty(firebaseProjectId) && firebaseProjectId != "your-fireb
 // Add services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IStorageService, StorageService>();
+builder.Services.AddScoped<IMetadataService, MetadataService>();
+builder.Services.AddHttpClient("MetadataClient")
+    .ConfigureHttpClient(client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(10);
+        client.DefaultRequestHeaders.Add("Accept", "text/html");
+    });
 builder.Services.AddSingleton<Dictionary<string, (byte[] content, string contentType)>>();
 
 var app = builder.Build();
@@ -106,6 +113,41 @@ app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = Dat
    .WithName("HealthCheck")
    .WithOpenApi();
 
+// Metadata endpoint
+app.MapPost("/api/recipes/fetch-metadata", async (FetchMetadataRequest request, IMetadataService metadataService, ClaimsPrincipal user) =>
+{
+    var userId = GetUserId(user);
+    if (userId == null) return Results.Unauthorized();
+
+    if (string.IsNullOrWhiteSpace(request.Url))
+    {
+        return Results.BadRequest(new { message = "URL is required" });
+    }
+
+    var metadata = await metadataService.FetchMetadataAsync(request.Url);
+
+    if (metadata == null)
+    {
+        return Results.Ok(new
+        {
+            title = (string?)null,
+            description = (string?)null,
+            imageUrl = (string?)null,
+            siteName = (string?)null
+        });
+    }
+
+    return Results.Ok(new
+    {
+        title = metadata.Title,
+        description = metadata.Description,
+        imageUrl = metadata.ImageUrl,
+        siteName = metadata.SiteName
+    });
+})
+.WithName("FetchMetadata")
+.WithOpenApi();
+
 // Recipe endpoints
 app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache) =>
 {
@@ -121,6 +163,9 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
         Url = request.Url,
         StorageKey = request.StorageKey,
         Content = request.Content,
+        PreviewImageUrl = request.PreviewImageUrl,
+        Description = request.Description,
+        SiteName = request.SiteName,
         CreatedAt = DateTime.UtcNow,
         UpdatedAt = DateTime.UtcNow
     };
@@ -155,6 +200,9 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
         recipe.Url,
         recipe.StorageKey,
         recipe.Content,
+        recipe.PreviewImageUrl,
+        recipe.Description,
+        recipe.SiteName,
         recipe.CreatedAt,
         recipe.UpdatedAt,
         FileContent = fileContentBase64,
@@ -189,6 +237,9 @@ app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user,
             r.Url,
             r.StorageKey,
             r.Content,
+            r.PreviewImageUrl,
+            r.Description,
+            r.SiteName,
             r.CreatedAt,
             r.UpdatedAt,
             r.FileContentType,
@@ -227,6 +278,9 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
         recipe.Url,
         recipe.StorageKey,
         recipe.Content,
+        recipe.PreviewImageUrl,
+        recipe.Description,
+        recipe.SiteName,
         recipe.CreatedAt,
         recipe.UpdatedAt,
         FileContent = fileContentBase64,
@@ -249,13 +303,16 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
     recipe.Type = request.Type;
     recipe.Url = request.Url;
     recipe.Content = request.Content;
+    recipe.PreviewImageUrl = request.PreviewImageUrl;
+    recipe.Description = request.Description;
+    recipe.SiteName = request.SiteName;
     recipe.UpdatedAt = DateTime.UtcNow;
 
     // Handle document replacement if a new storage key is provided
     if (!string.IsNullOrEmpty(request.StorageKey))
     {
         recipe.StorageKey = request.StorageKey;
-        
+
         // If this is a document upload and the file is in the cache, save it to the database
         if (request.Type == RecipeType.Document && fileCache.TryGetValue(request.StorageKey, out var fileData))
         {
@@ -283,6 +340,9 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
         recipe.Url,
         recipe.StorageKey,
         recipe.Content,
+        recipe.PreviewImageUrl,
+        recipe.Description,
+        recipe.SiteName,
         recipe.CreatedAt,
         recipe.UpdatedAt,
         FileContent = fileContentBase64,
@@ -432,12 +492,12 @@ if (app.Environment.IsDevelopment())
         using var memoryStream = new MemoryStream();
         await request.Body.CopyToAsync(memoryStream);
         var fileContent = memoryStream.ToArray();
-        
+
         var contentType = request.ContentType ?? "application/octet-stream";
-        
+
         // Store in cache for later retrieval when recipe is created
         fileCache[key] = (fileContent, contentType);
-        
+
         return Results.Ok(new { message = "File uploaded successfully (development mode)", size = fileContent.Length });
     })
     .WithName("PlaceholderUpload")
@@ -448,14 +508,14 @@ if (app.Environment.IsDevelopment())
     {
         var userId = GetUserId(user);
         if (userId == null) return Results.Unauthorized();
-        
+
         // Find the recipe with this storage key
         var recipe = await db.Recipes
             .FirstOrDefaultAsync(r => r.StorageKey == key && r.UserId == userId.Value);
-        
+
         if (recipe == null || recipe.FileContent == null)
             return Results.NotFound();
-        
+
         // Return the file content
         return Results.File(recipe.FileContent, recipe.FileContentType ?? "application/octet-stream");
     })
@@ -529,10 +589,11 @@ static Guid? GetUserId(ClaimsPrincipal user)
 app.Run();
 
 // Request/Response DTOs (after app.Run to avoid CS8803 error)
-record CreateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content);
-record UpdateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content);
+record CreateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content, string? PreviewImageUrl, string? Description, string? SiteName);
+record UpdateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content, string? PreviewImageUrl, string? Description, string? SiteName);
 record PresignUploadRequest(string FileName, string ContentType);
 record UpdateUserProfileRequest(string? Email, string? DisplayName);
+record FetchMetadataRequest(string Url);
 
 // Make Program accessible to tests
 public partial class Program { }
