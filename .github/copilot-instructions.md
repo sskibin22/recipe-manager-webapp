@@ -220,6 +220,11 @@ npm run format
     - Fixing serialization issues (e.g., circular references)
   - **Best Practice**: Make it a habit to run `dotnet clean; dotnet build` before running tests after any code changes
 
+- **Issue**: SQLite error "no such column" when querying database after pulling changes
+  - **Solution**: Database schema is out of sync with the code. Apply pending migrations with `dotnet ef database update --context ApplicationDbContext`
+  - **Note**: This happens when entity models have been updated and migrations created but not applied to your local database
+  - **Best Practice**: ALWAYS run `dotnet ef database update --context ApplicationDbContext` after pulling changes that include new migration files in `/backend/Migrations/`
+
 ## Project Layout
 
 ### Repository Structure
@@ -419,7 +424,8 @@ npm run format
 - Run `dotnet restore` after modifying `.csproj`
 - Run `npm install` after modifying `package.json`
 - Run `npx playwright install` after Playwright version updates
-- Apply migrations with `dotnet ef database update` after creating them
+- **Apply migrations with `dotnet ef database update --context ApplicationDbContext` after creating them OR after pulling changes that include new migration files**
+- Run `dotnet ef database update --context ApplicationDbContext` immediately after pulling changes if you see new files in `/backend/Migrations/` to avoid "no such column" errors
 - Verify CORS allows frontend origin during local development
 - Check environment variables are set correctly for both backend and frontend
 - Use `dotnet format` for backend code formatting
