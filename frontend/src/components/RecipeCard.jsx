@@ -3,18 +3,18 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi } from "../services/api";
 import { parseRecipeContent } from "../utils/recipeContent";
 
+// Helper function to extract preview text from Manual recipe content
+const getManualRecipePreview = (content) => {
+  const parsedContent = parseRecipeContent(content);
+  // Try description first, then ingredients, then instructions
+  return parsedContent.description || 
+         parsedContent.ingredients || 
+         parsedContent.instructions || 
+         "";
+};
+
 const RecipeCard = ({ recipe }) => {
   const queryClient = useQueryClient();
-
-  // Extract preview text from Manual recipe content
-  const getManualRecipePreview = (content) => {
-    const parsedContent = parseRecipeContent(content);
-    // Try description first, then ingredients, then instructions
-    return parsedContent.description || 
-           parsedContent.ingredients || 
-           parsedContent.instructions || 
-           "";
-  };
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: async () => {
