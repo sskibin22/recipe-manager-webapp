@@ -77,6 +77,7 @@ export default function RecipeDetail() {
   // Metadata state for Link recipes
   const [metadata, setMetadata] = useState(null);
   const [fetchingMetadata, setFetchingMetadata] = useState(false);
+  const [editedMetadataTitle, setEditedMetadataTitle] = useState("");
   const [editedPreviewImageUrl, setEditedPreviewImageUrl] = useState("");
   const [editedDescription, setEditedDescription] = useState("");
   const [editedSiteName, setEditedSiteName] = useState("");
@@ -150,10 +151,11 @@ export default function RecipeDetail() {
         if (fetchedMetadata) {
           setMetadata(fetchedMetadata);
 
-          // Auto-update fields with fetched metadata when URL changes
-          // This ensures all fields update consistently in edit mode
+          // Auto-update metadata fields when URL changes
+          // These are shown in the editable metadata section only
+          // The main title field remains unchanged until save
           if (fetchedMetadata.title) {
-            setEditedTitle(fetchedMetadata.title);
+            setEditedMetadataTitle(fetchedMetadata.title);
           }
           if (fetchedMetadata.description) {
             setEditedDescription(fetchedMetadata.description);
@@ -200,6 +202,7 @@ export default function RecipeDetail() {
     
     // Initialize metadata fields for Link recipes
     if (recipe.type.toLowerCase() === "link") {
+      setEditedMetadataTitle(recipe.title || "");
       setEditedPreviewImageUrl(recipe.previewImageUrl || "");
       setEditedDescription(recipe.description || "");
       setEditedSiteName(recipe.siteName || "");
@@ -215,6 +218,7 @@ export default function RecipeDetail() {
     setRemoveDisplayImage(false);
     setDisplayImagePreview(null);
     setMetadata(null);
+    setEditedMetadataTitle("");
     setEditedPreviewImageUrl("");
     setEditedDescription("");
     setEditedSiteName("");
@@ -392,6 +396,10 @@ export default function RecipeDetail() {
         updateData.previewImageUrl = await uploadDisplayImage(displayImageFile);
       } else if (recipe.type.toLowerCase() === "link") {
         // For Link recipes, use the edited metadata fields
+        // If metadata was fetched (metadata title exists), use it for the title
+        if (editedMetadataTitle.trim()) {
+          updateData.title = editedMetadataTitle.trim();
+        }
         updateData.previewImageUrl = editedPreviewImageUrl.trim() || null;
         updateData.description = editedDescription.trim() || null;
         updateData.siteName = editedSiteName.trim() || null;
@@ -763,6 +771,24 @@ export default function RecipeDetail() {
                         <h4 className="text-sm font-medium text-gray-700 mb-3">
                           Recipe Metadata (Editable)
                         </h4>
+
+                        {/* Title */}
+                        <div className="mb-3">
+                          <label
+                            htmlFor="editedMetadataTitle"
+                            className="block text-xs font-medium text-gray-600 mb-1"
+                          >
+                            Title
+                          </label>
+                          <input
+                            type="text"
+                            id="editedMetadataTitle"
+                            value={editedMetadataTitle}
+                            onChange={(e) => setEditedMetadataTitle(e.target.value)}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="Recipe title from URL"
+                          />
+                        </div>
 
                         {/* Preview Image URL */}
                         <div className="mb-3">
