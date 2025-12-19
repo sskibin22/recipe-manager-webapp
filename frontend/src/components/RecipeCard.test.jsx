@@ -90,17 +90,26 @@ describe("RecipeCard", () => {
     api.recipesApi.addFavorite.mockResolvedValue({});
 
     const user = userEvent.setup();
-    renderWithProviders(<RecipeCard recipe={nonFavoriteRecipe} />);
+    const { queryClient } = renderWithProviders(
+      <RecipeCard recipe={nonFavoriteRecipe} />,
+      {
+        initialQueryData: {
+          '["recipes"]': [nonFavoriteRecipe],
+        },
+      }
+    );
 
     const favoriteButton = screen.getByLabelText(/Add to favorites/i);
     await user.click(favoriteButton);
 
-    // Verify optimistic update happened
+    // Verify optimistic update happened in the cache
     await waitFor(() => {
-      expect(
-        screen.getByLabelText(/Remove from favorites/i),
-      ).toBeInTheDocument();
+      const recipes = queryClient.getQueryData(["recipes"]);
+      expect(recipes[0].isFavorite).toBe(true);
     });
+    
+    // Verify API was called
+    expect(api.recipesApi.addFavorite).toHaveBeenCalledWith(nonFavoriteRecipe.id);
   });
 
   it("should call removeFavorite when clicking favorited star", async () => {
@@ -108,33 +117,59 @@ describe("RecipeCard", () => {
     api.recipesApi.removeFavorite.mockResolvedValue({});
 
     const user = userEvent.setup();
-    renderWithProviders(<RecipeCard recipe={favoriteRecipe} />);
+    const { queryClient } = renderWithProviders(
+      <RecipeCard recipe={favoriteRecipe} />,
+      {
+        initialQueryData: {
+          '["recipes"]': [favoriteRecipe],
+        },
+      }
+    );
 
     const favoriteButton = screen.getByLabelText(/Remove from favorites/i);
     await user.click(favoriteButton);
 
-    // Verify optimistic update happened
+    // Verify optimistic update happened in the cache
     await waitFor(() => {
-      expect(screen.getByLabelText(/Add to favorites/i)).toBeInTheDocument();
+      const recipes = queryClient.getQueryData(["recipes"]);
+      expect(recipes[0].isFavorite).toBe(false);
     });
+    
+    // Verify API was called
+    expect(api.recipesApi.removeFavorite).toHaveBeenCalledWith(favoriteRecipe.id);
   });
 
   it("should toggle favorite state optimistically", async () => {
     const nonFavoriteRecipe = { ...mockRecipe, isFavorite: false };
-    api.recipesApi.addFavorite.mockResolvedValue({});
+    
+    // Mock a slow API to verify optimistic update happens before API completes
+    let resolveApiCall;
+    api.recipesApi.addFavorite.mockImplementation(
+      () => new Promise((resolve) => { resolveApiCall = resolve; })
+    );
 
     const user = userEvent.setup();
-    renderWithProviders(<RecipeCard recipe={nonFavoriteRecipe} />);
+    const { queryClient } = renderWithProviders(
+      <RecipeCard recipe={nonFavoriteRecipe} />,
+      {
+        initialQueryData: {
+          '["recipes"]': [nonFavoriteRecipe],
+        },
+      }
+    );
 
     const favoriteButton = screen.getByLabelText(/Add to favorites/i);
-    await user.click(favoriteButton);
+    const clickPromise = user.click(favoriteButton);
 
-    // Button should change immediately (optimistic update)
+    // Verify optimistic update happened immediately (before API completes)
     await waitFor(() => {
-      expect(
-        screen.getByLabelText(/Remove from favorites/i),
-      ).toBeInTheDocument();
+      const recipes = queryClient.getQueryData(["recipes"]);
+      expect(recipes[0].isFavorite).toBe(true);
     });
+    
+    // Clean up - resolve the API call
+    resolveApiCall({});
+    await clickPromise;
   });
 
   it("should display correct icon for link type", () => {

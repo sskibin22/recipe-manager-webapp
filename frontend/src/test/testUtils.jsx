@@ -4,6 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 
 // Create a custom render function that includes providers
 export function renderWithProviders(ui, options = {}) {
+  const { initialQueryData, ...renderOptions } = options;
+  
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -15,6 +17,13 @@ export function renderWithProviders(ui, options = {}) {
     },
   });
 
+  // Set initial query data if provided
+  if (initialQueryData) {
+    Object.entries(initialQueryData).forEach(([key, data]) => {
+      queryClient.setQueryData(JSON.parse(key), data);
+    });
+  }
+
   function Wrapper({ children }) {
     return (
       <QueryClientProvider client={queryClient}>
@@ -23,7 +32,7 @@ export function renderWithProviders(ui, options = {}) {
     );
   }
 
-  return render(ui, { wrapper: Wrapper, ...options });
+  return { queryClient, ...render(ui, { wrapper: Wrapper, ...renderOptions }) };
 }
 
 // Mock user for testing

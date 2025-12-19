@@ -1,29 +1,44 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi } from "../services/api";
 
 const RecipeCard = ({ recipe }) => {
   const queryClient = useQueryClient();
-  const [isFavorite, setIsFavorite] = useState(recipe.isFavorite);
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: async () => {
-      if (isFavorite) {
+      if (recipe.isFavorite) {
         await recipesApi.removeFavorite(recipe.id);
       } else {
         await recipesApi.addFavorite(recipe.id);
       }
     },
-    onMutate: () => {
-      // Optimistic update
-      setIsFavorite(!isFavorite);
+    onMutate: async () => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["recipes"] });
+
+      // Snapshot previous value
+      const previousRecipes = queryClient.getQueryData(["recipes"]);
+
+      // Optimistically update cache
+      queryClient.setQueryData(["recipes"], (old) => {
+        if (!old) return old;
+        return old.map((r) =>
+          r.id === recipe.id ? { ...r, isFavorite: !r.isFavorite } : r
+        );
+      });
+
+      // Return context with snapshot
+      return { previousRecipes };
     },
-    onError: () => {
+    onError: (err, variables, context) => {
       // Revert on error
-      setIsFavorite(isFavorite);
+      if (context?.previousRecipes) {
+        queryClient.setQueryData(["recipes"], context.previousRecipes);
+      }
     },
-    onSuccess: () => {
+    onSettled: () => {
+      // Refetch to ensure consistency
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
     },
   });
@@ -132,12 +147,12 @@ const RecipeCard = ({ recipe }) => {
             onClick={handleFavoriteClick}
             disabled={toggleFavoriteMutation.isPending}
             className={`transition-colors flex-shrink-0 ${
-              isFavorite
+              recipe.isFavorite
                 ? "text-yellow-500"
                 : "text-gray-300 hover:text-yellow-500"
             } ${toggleFavoriteMutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
             aria-label={
-              isFavorite ? "Remove from favorites" : "Add to favorites"
+              recipe.isFavorite ? "Remove from favorites" : "Add to favorites"
             }
           >
             {toggleFavoriteMutation.isPending ? (
@@ -147,7 +162,7 @@ const RecipeCard = ({ recipe }) => {
             ) : (
               <svg
                 className="w-6 h-6"
-                fill={isFavorite ? "currentColor" : "none"}
+                fill={recipe.isFavorite ? "currentColor" : "none"}
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
