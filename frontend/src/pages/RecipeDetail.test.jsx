@@ -222,8 +222,8 @@ describe("RecipeDetail - Link Display", () => {
     // Verify "Recipe Link" heading is NOT present
     expect(screen.queryByText("Recipe Link")).not.toBeInTheDocument();
 
-    // Verify "Recipe Instructions" heading for manual type is present
-    expect(screen.getByText("Recipe Instructions")).toBeInTheDocument();
+    // Verify "Instructions" heading for manual type is present
+    expect(screen.getByText("Instructions")).toBeInTheDocument();
   });
 
   it("should handle long URLs with break-all class", async () => {
@@ -419,11 +419,14 @@ describe("RecipeDetail - Edit Functionality", () => {
 
     await user.click(screen.getByText("Edit Recipe"));
 
-    const contentTextarea = screen.getByPlaceholderText(
-      "Enter recipe content...",
-    );
-    expect(contentTextarea).toBeInTheDocument();
-    expect(contentTextarea).toHaveValue("Test recipe content");
+    // Check for segregated fields
+    expect(screen.getByLabelText(/Description \(Optional\)/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Ingredients \*/i)).toBeInTheDocument();
+    const instructionsTextarea = screen.getByLabelText(/Instructions \*/i);
+    expect(instructionsTextarea).toBeInTheDocument();
+    // Since the mock content is plain text (legacy), it should appear in instructions
+    expect(instructionsTextarea).toHaveValue("Test recipe content");
+    expect(screen.getByLabelText(/Notes \(Optional\)/i)).toBeInTheDocument();
   });
 
   it("should exit edit mode without saving when Cancel is clicked", async () => {
@@ -559,18 +562,19 @@ describe("RecipeDetail - Edit Functionality", () => {
 
     await user.click(screen.getByText("Edit Recipe"));
 
-    // Clear content
-    const contentTextarea = screen.getByPlaceholderText(
-      "Enter recipe content...",
-    );
-    await user.clear(contentTextarea);
+    // Clear both ingredients and instructions (validation requires at least one)
+    const ingredientsTextarea = screen.getByLabelText(/Ingredients \*/i);
+    await user.clear(ingredientsTextarea);
+    
+    const instructionsTextarea = screen.getByLabelText(/Instructions \*/i);
+    await user.clear(instructionsTextarea);
 
     // Try to save
     await user.click(screen.getByText("Save Changes"));
 
     // Should show validation error
     expect(
-      screen.getByText("Content is required for manual recipes"),
+      screen.getByText("Either Ingredients or Instructions must be provided"),
     ).toBeInTheDocument();
 
     // Should not call update API
@@ -612,25 +616,26 @@ describe("RecipeDetail - Edit Functionality", () => {
     await user.clear(titleInput);
     await user.type(titleInput, "Updated Recipe");
 
-    // Update content
-    const contentTextarea = screen.getByPlaceholderText(
-      "Enter recipe content...",
-    );
-    await user.clear(contentTextarea);
-    await user.type(contentTextarea, "Updated content");
+    // Update content - use the instructions field
+    const instructionsTextarea = screen.getByLabelText(/Instructions \*/i);
+    await user.clear(instructionsTextarea);
+    await user.type(instructionsTextarea, "Updated content");
 
     // Save
     await user.click(screen.getByText("Save Changes"));
 
-    // Should call update API with correct data
+    // Should call update API with correct data (as JSON)
     await waitFor(() => {
-      expect(api.recipesApi.update).toHaveBeenCalledWith({
-        id: "test-recipe-id",
-        title: "Updated Recipe",
-        type: "manual",
-        url: undefined,
-        content: "Updated content",
-      });
+      expect(api.recipesApi.update).toHaveBeenCalled();
+      const callArgs = api.recipesApi.update.mock.calls[0][0];
+      expect(callArgs.id).toBe("test-recipe-id");
+      expect(callArgs.title).toBe("Updated Recipe");
+      expect(callArgs.type).toBe("manual");
+      expect(callArgs.url).toBeUndefined();
+      // Content should be JSON string
+      expect(callArgs.content).toBeDefined();
+      const parsedContent = JSON.parse(callArgs.content);
+      expect(parsedContent.instructions).toBe("Updated content");
     });
 
     // Should exit edit mode

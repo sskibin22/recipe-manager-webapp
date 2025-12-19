@@ -3,6 +3,62 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi, uploadsApi } from "../services/api";
 import { useState, useEffect, useRef } from "react";
 import DocumentPreview from "../components/DocumentPreview";
+import { parseRecipeContent, serializeRecipeContent } from "../utils/recipeContent";
+
+// Component to display manual recipe content in readonly mode
+function ManualRecipeReadonlyView({ content }) {
+  if (!content) return null;
+  
+  const parsedContent = parseRecipeContent(content);
+  
+  return (
+    <div className="prose max-w-none space-y-6">
+      {parsedContent.description && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-700 mb-2">
+            Description
+          </h2>
+          <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg text-base border border-gray-200">
+            {parsedContent.description}
+          </pre>
+        </div>
+      )}
+
+      {parsedContent.ingredients && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-700 mb-2">
+            Ingredients
+          </h2>
+          <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg text-base border border-gray-200">
+            {parsedContent.ingredients}
+          </pre>
+        </div>
+      )}
+
+      {parsedContent.instructions && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-700 mb-2">
+            Instructions
+          </h2>
+          <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg text-base border border-gray-200">
+            {parsedContent.instructions}
+          </pre>
+        </div>
+      )}
+
+      {parsedContent.notes && (
+        <div>
+          <h2 className="text-lg font-semibold text-gray-700 mb-2">
+            Notes
+          </h2>
+          <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg text-base border border-gray-200">
+            {parsedContent.notes}
+          </pre>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // File validation constants (matching RecipeForm)
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
@@ -66,13 +122,18 @@ export default function RecipeDetail() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [editedUrl, setEditedUrl] = useState("");
-  const [editedContent, setEditedContent] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
   const [file, setFile] = useState(null);
   const [displayImageFile, setDisplayImageFile] = useState(null);
   const [removeDisplayImage, setRemoveDisplayImage] = useState(false);
   const [displayImagePreview, setDisplayImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  // Manual recipe structured fields for edit mode
+  const [editedManualDescription, setEditedManualDescription] = useState("");
+  const [editedManualIngredients, setEditedManualIngredients] = useState("");
+  const [editedManualInstructions, setEditedManualInstructions] = useState("");
+  const [editedManualNotes, setEditedManualNotes] = useState("");
 
   // Metadata state for Link recipes
   const [metadata, setMetadata] = useState(null);
@@ -192,7 +253,6 @@ export default function RecipeDetail() {
   const handleEdit = () => {
     setEditedTitle(recipe.title);
     setEditedUrl(recipe.url || "");
-    setEditedContent(recipe.content || "");
     setValidationErrors({});
     setFile(null);
     setDisplayImageFile(null);
@@ -208,6 +268,15 @@ export default function RecipeDetail() {
       setEditedSiteName(recipe.siteName || "");
       setMetadata(null);
     }
+    
+    // Parse structured content for Manual recipes
+    if (recipe.type.toLowerCase() === "manual") {
+      const parsedContent = parseRecipeContent(recipe.content);
+      setEditedManualDescription(parsedContent.description);
+      setEditedManualIngredients(parsedContent.ingredients);
+      setEditedManualInstructions(parsedContent.instructions);
+      setEditedManualNotes(parsedContent.notes);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -222,6 +291,11 @@ export default function RecipeDetail() {
     setEditedPreviewImageUrl("");
     setEditedDescription("");
     setEditedSiteName("");
+    // Reset manual recipe fields
+    setEditedManualDescription("");
+    setEditedManualIngredients("");
+    setEditedManualInstructions("");
+    setEditedManualNotes("");
   };
 
   const validateFile = (file) => {
@@ -327,8 +401,11 @@ export default function RecipeDetail() {
       }
     }
 
-    if (recipe.type.toLowerCase() === "manual" && !editedContent.trim()) {
-      errors.content = "Content is required for manual recipes";
+    if (recipe.type.toLowerCase() === "manual") {
+      // Validate that at least ingredients or instructions are provided
+      if (!editedManualIngredients.trim() && !editedManualInstructions.trim()) {
+        errors.content = "Either Ingredients or Instructions must be provided";
+      }
     }
 
     return errors;
@@ -367,7 +444,14 @@ export default function RecipeDetail() {
       type: recipe.type,
       url: recipe.type.toLowerCase() === "link" ? editedUrl : recipe.url,
       content:
-        recipe.type.toLowerCase() === "manual" ? editedContent : recipe.content,
+        recipe.type.toLowerCase() === "manual" 
+          ? serializeRecipeContent({
+              description: editedManualDescription,
+              ingredients: editedManualIngredients,
+              instructions: editedManualInstructions,
+              notes: editedManualNotes,
+            })
+          : recipe.content,
     };
 
     try {
@@ -952,35 +1036,97 @@ export default function RecipeDetail() {
 
             {recipe.type.toLowerCase() === "manual" && (
               <div>
-                <h2 className="text-lg font-semibold mb-3 text-gray-700">
-                  Recipe Instructions
-                </h2>
                 {isEditMode ? (
-                  <div>
-                    <textarea
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                      rows={12}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans ${
-                        validationErrors.content
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="Enter recipe content..."
-                    />
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-semibold mb-3 text-gray-700">
+                      Recipe Content
+                    </h2>
+
+                    <div>
+                      <label
+                        htmlFor="editManualDescription"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Description (Optional)
+                      </label>
+                      <textarea
+                        id="editManualDescription"
+                        value={editedManualDescription}
+                        onChange={(e) => setEditedManualDescription(e.target.value)}
+                        rows={3}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans"
+                        placeholder="A brief overview of the recipe..."
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="editManualIngredients"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Ingredients *
+                      </label>
+                      <textarea
+                        id="editManualIngredients"
+                        value={editedManualIngredients}
+                        onChange={(e) => setEditedManualIngredients(e.target.value)}
+                        rows={8}
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans ${
+                          validationErrors.content
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="- 2 cups flour&#10;- 1 cup sugar&#10;- 3 eggs&#10;- ..."
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="editManualInstructions"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Instructions *
+                      </label>
+                      <textarea
+                        id="editManualInstructions"
+                        value={editedManualInstructions}
+                        onChange={(e) => setEditedManualInstructions(e.target.value)}
+                        rows={10}
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans ${
+                          validationErrors.content
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        }`}
+                        placeholder="1. Preheat oven to 350°F&#10;2. Mix dry ingredients...&#10;3. ..."
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="editManualNotes"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Notes (Optional)
+                      </label>
+                      <textarea
+                        id="editManualNotes"
+                        value={editedManualNotes}
+                        onChange={(e) => setEditedManualNotes(e.target.value)}
+                        rows={4}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans"
+                        placeholder="Additional tips, variations, or storage instructions..."
+                      />
+                    </div>
+
                     {validationErrors.content && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="text-sm text-red-600">
                         {validationErrors.content}
                       </p>
                     )}
                   </div>
-                ) : recipe.content ? (
-                  <div className="prose max-w-none">
-                    <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-6 rounded-lg text-base">
-                      {recipe.content}
-                    </pre>
-                  </div>
-                ) : null}
+                ) : (
+                  <ManualRecipeReadonlyView content={recipe.content} />
+                )}
               </div>
             )}
           </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { recipesApi, uploadsApi } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { serializeRecipeContent } from "../utils/recipeContent";
 
 // File validation constants
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
@@ -29,11 +30,16 @@ const RecipeForm = ({ onClose, onSuccess }) => {
   const [recipeType, setRecipeType] = useState("link");
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
-  const [content, setContent] = useState("");
   const [file, setFile] = useState(null);
   const [displayImageFile, setDisplayImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+
+  // Manual recipe structured fields
+  const [manualDescription, setManualDescription] = useState("");
+  const [manualIngredients, setManualIngredients] = useState("");
+  const [manualInstructions, setManualInstructions] = useState("");
+  const [manualNotes, setManualNotes] = useState("");
 
   // Metadata state
   const [metadata, setMetadata] = useState(null);
@@ -59,7 +65,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
   const resetForm = () => {
     setTitle("");
     setUrl("");
-    setContent("");
     setFile(null);
     setDisplayImageFile(null);
     setError("");
@@ -68,6 +73,11 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     setPreviewImageUrl("");
     setDescription("");
     setSiteName("");
+    // Reset manual recipe fields
+    setManualDescription("");
+    setManualIngredients("");
+    setManualInstructions("");
+    setManualNotes("");
   };
 
   // Clear metadata when switching away from link type
@@ -297,11 +307,19 @@ const RecipeForm = ({ onClose, onSuccess }) => {
 
         setUploading(false);
       } else if (recipeType === "manual") {
-        if (!content.trim()) {
-          setError("Content is required for manual recipes");
+        // Validate that at least ingredients or instructions are provided
+        if (!manualIngredients.trim() && !manualInstructions.trim()) {
+          setError("Either Ingredients or Instructions must be provided for manual recipes");
           return;
         }
-        recipeData.content = content.trim();
+        
+        // Serialize structured content to JSON
+        recipeData.content = serializeRecipeContent({
+          description: manualDescription,
+          ingredients: manualIngredients,
+          instructions: manualInstructions,
+          notes: manualNotes,
+        });
 
         // Upload display image if provided
         if (displayImageFile) {
@@ -541,18 +559,69 @@ const RecipeForm = ({ onClose, onSuccess }) => {
               <>
                 <div className="mb-4">
                   <label
-                    htmlFor="content"
+                    htmlFor="manualDescription"
                     className="block text-sm font-medium mb-1"
                   >
-                    Recipe Content *
+                    Description (Optional)
                   </label>
                   <textarea
-                    id="content"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
+                    id="manualDescription"
+                    value={manualDescription}
+                    onChange={(e) => setManualDescription(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="3"
+                    placeholder="A brief overview of the recipe..."
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label
+                    htmlFor="manualIngredients"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Ingredients *
+                  </label>
+                  <textarea
+                    id="manualIngredients"
+                    value={manualIngredients}
+                    onChange={(e) => setManualIngredients(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="8"
+                    placeholder="- 2 cups flour&#10;- 1 cup sugar&#10;- 3 eggs&#10;- ..."
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label
+                    htmlFor="manualInstructions"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Instructions *
+                  </label>
+                  <textarea
+                    id="manualInstructions"
+                    value={manualInstructions}
+                    onChange={(e) => setManualInstructions(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows="10"
-                    placeholder="Ingredients:&#10;- ...&#10;&#10;Instructions:&#10;1. ..."
+                    placeholder="1. Preheat oven to 350°F&#10;2. Mix dry ingredients...&#10;3. ..."
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label
+                    htmlFor="manualNotes"
+                    className="block text-sm font-medium mb-1"
+                  >
+                    Notes (Optional)
+                  </label>
+                  <textarea
+                    id="manualNotes"
+                    value={manualNotes}
+                    onChange={(e) => setManualNotes(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="4"
+                    placeholder="Additional tips, variations, or storage instructions..."
                   />
                 </div>
 
