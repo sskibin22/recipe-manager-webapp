@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi } from "../services/api";
 import { parseRecipeContent } from "../utils/recipeContent";
+import CategoryBadge from "./CategoryBadge";
+import TagBadge from "./TagBadge";
 
 // Helper function to extract preview text from Manual recipe content
 const getManualRecipePreview = (content) => {
@@ -188,6 +190,13 @@ const RecipeCard = ({ recipe }) => {
           </button>
         </div>
 
+        {/* Category Badge */}
+        {recipe.category && (
+          <div className="mb-2">
+            <CategoryBadge category={recipe.category} />
+          </div>
+        )}
+
         {/* Title */}
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
           {recipe.title}
@@ -215,6 +224,15 @@ const RecipeCard = ({ recipe }) => {
               {getManualRecipePreview(recipe.content)}
             </p>
           )}
+
+        {/* Tags */}
+        {recipe.tags && recipe.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {recipe.tags.map((tag) => (
+              <TagBadge key={tag.id} tag={tag} />
+            ))}
+          </div>
+        )}
 
         {/* Date */}
         <p className="text-xs text-gray-400 mt-3">

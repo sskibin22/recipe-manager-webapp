@@ -4,6 +4,8 @@ import { recipesApi, uploadsApi } from "../services/api";
 import { useState, useEffect, useRef } from "react";
 import DocumentPreview from "../components/DocumentPreview";
 import { parseRecipeContent, serializeRecipeContent } from "../utils/recipeContent";
+import CategoryBadge from "../components/CategoryBadge";
+import TagBadge from "../components/TagBadge";
 
 // Component to display manual recipe content in readonly mode
 function ManualRecipeReadonlyView({ content }) {
@@ -815,6 +817,31 @@ export default function RecipeDetail() {
                 </p>
               </div>
             )}
+
+            {/* Category and Tags Section */}
+            <div className="mt-4 space-y-3">
+              {recipe.category && (
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    Category
+                  </h3>
+                  <CategoryBadge category={recipe.category} />
+                </div>
+              )}
+
+              {recipe.tags && recipe.tags.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    Tags
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {recipe.tags.map((tag) => (
+                      <TagBadge key={tag.id} tag={tag} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Type-Specific Content Section */}
