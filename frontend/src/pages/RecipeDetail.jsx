@@ -128,7 +128,8 @@ export default function RecipeDetail() {
 
     if (!selectedFile) {
       setFile(null);
-      const { file, ...rest } = validationErrors;
+      // Remove file error if it exists
+      const { file: _, ...rest } = validationErrors;
       setValidationErrors(rest);
       return;
     }
@@ -143,7 +144,8 @@ export default function RecipeDetail() {
     }
 
     setFile(selectedFile);
-    const { file, ...rest } = validationErrors;
+    // Remove file error if it exists
+    const { file: _, ...rest } = validationErrors;
     setValidationErrors(rest);
   };
 
@@ -240,6 +242,65 @@ export default function RecipeDetail() {
     );
   }
 
+  // Determine image source (use placeholder if no preview image)
+  const imageSrc = recipe?.previewImageUrl || "/recipe-placeholder.svg";
+
+  const getRecipeTypeIcon = () => {
+    const type = recipe.type.toLowerCase();
+    switch (type) {
+      case "link":
+        return (
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+            />
+          </svg>
+        );
+      case "document":
+        return (
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+            />
+          </svg>
+        );
+      case "manual":
+        return (
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            />
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
@@ -286,66 +347,35 @@ export default function RecipeDetail() {
         )}
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                {isEditMode ? (
-                  <div>
-                    <label
-                      htmlFor="title"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Recipe Title
-                    </label>
-                    <input
-                      id="title"
-                      type="text"
-                      value={editedTitle}
-                      onChange={(e) => setEditedTitle(e.target.value)}
-                      className={`w-full px-4 py-2 text-2xl font-bold border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        validationErrors.title
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="Enter recipe title"
-                    />
-                    {validationErrors.title && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {validationErrors.title}
-                      </p>
-                    )}
+          {/* Preview Image Section - Always shown for consistent layout */}
+          <div className="w-full h-64 sm:h-80 bg-gray-200 overflow-hidden relative">
+            <img
+              src={imageSrc}
+              alt={recipe.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.src = "/recipe-placeholder.svg";
+              }}
+            />
+            {/* Favorite button overlay on image */}
+            {!isEditMode && (
+              <button
+                onClick={() => toggleFavoriteMutation.mutate()}
+                className={`absolute top-4 right-4 transition-colors bg-white rounded-full p-2 shadow-lg ${
+                  recipe.isFavorite
+                    ? "text-yellow-500"
+                    : "text-gray-400 hover:text-yellow-500"
+                }`}
+                disabled={toggleFavoriteMutation.isPending}
+                aria-label={
+                  recipe.isFavorite ? "Remove from favorites" : "Add to favorites"
+                }
+              >
+                {toggleFavoriteMutation.isPending ? (
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-current"></div>
                   </div>
                 ) : (
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {recipe.title}
-                  </h1>
-                )}
-
-                <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
-                  <span className="capitalize bg-gray-100 px-3 py-1 rounded-full">
-                    {recipe.type}
-                  </span>
-                  <span>
-                    Added {new Date(recipe.createdAt).toLocaleDateString()}
-                  </span>
-                  {recipe.updatedAt !== recipe.createdAt && (
-                    <span>
-                      Updated {new Date(recipe.updatedAt).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {!isEditMode && (
-                <button
-                  onClick={() => toggleFavoriteMutation.mutate()}
-                  className={`transition-colors ${
-                    recipe.isFavorite
-                      ? "text-yellow-500"
-                      : "text-gray-300 hover:text-yellow-500"
-                  }`}
-                  disabled={toggleFavoriteMutation.isPending}
-                >
                   <svg
                     className="w-8 h-8"
                     fill={recipe.isFavorite ? "currentColor" : "none"}
@@ -359,11 +389,83 @@ export default function RecipeDetail() {
                       d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
                     />
                   </svg>
-                </button>
-              )}
-            </div>
+                )}
+              </button>
+            )}
           </div>
 
+          {/* Title and Metadata Section */}
+          <div className="p-6 border-b border-gray-200">
+            {isEditMode ? (
+              <div className="mb-4">
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Recipe Title
+                </label>
+                <input
+                  id="title"
+                  type="text"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  className={`w-full px-4 py-2 text-2xl font-bold border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    validationErrors.title
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  placeholder="Enter recipe title"
+                />
+                {validationErrors.title && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {validationErrors.title}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                {recipe.title}
+              </h1>
+            )}
+
+            {/* Recipe Type, Site Name, and Dates */}
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                {getRecipeTypeIcon()}
+                <span className="uppercase tracking-wide font-medium">
+                  {recipe.type}
+                </span>
+              </div>
+              {recipe.siteName && (
+                <span className="text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+                  {recipe.siteName}
+                </span>
+              )}
+              <span className="text-gray-400">•</span>
+              <span className="text-gray-600">
+                Added {new Date(recipe.createdAt).toLocaleDateString()}
+              </span>
+              {recipe.updatedAt !== recipe.createdAt && (
+                <>
+                  <span className="text-gray-400">•</span>
+                  <span className="text-gray-600">
+                    Updated {new Date(recipe.updatedAt).toLocaleDateString()}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {/* Description Section */}
+            {recipe.description && (
+              <div className="mt-4">
+                <p className="text-gray-700 text-base leading-relaxed">
+                  {recipe.description}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Type-Specific Content Section */}
           <div className="p-6">
             {recipe.type.toLowerCase() === "link" && (
               <div>
@@ -394,9 +496,22 @@ export default function RecipeDetail() {
                     href={recipe.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline break-all"
+                    className="inline-flex items-center gap-2 text-blue-600 hover:underline break-all text-base"
                   >
                     {recipe.url}
+                    <svg
+                      className="w-4 h-4 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
                   </a>
                 ) : null}
               </div>
@@ -466,14 +581,14 @@ export default function RecipeDetail() {
             {recipe.type.toLowerCase() === "manual" && (
               <div>
                 <h2 className="text-lg font-semibold mb-3 text-gray-700">
-                  Recipe
+                  Recipe Instructions
                 </h2>
                 {isEditMode ? (
                   <div>
                     <textarea
                       value={editedContent}
                       onChange={(e) => setEditedContent(e.target.value)}
-                      rows={10}
+                      rows={12}
                       className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans ${
                         validationErrors.content
                           ? "border-red-500"
@@ -489,7 +604,7 @@ export default function RecipeDetail() {
                   </div>
                 ) : recipe.content ? (
                   <div className="prose max-w-none">
-                    <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-4 rounded">
+                    <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-6 rounded-lg text-base">
                       {recipe.content}
                     </pre>
                   </div>
@@ -498,6 +613,7 @@ export default function RecipeDetail() {
             )}
           </div>
 
+          {/* Action Buttons */}
           <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
             {isEditMode ? (
               <>
