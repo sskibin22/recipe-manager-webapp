@@ -29,7 +29,7 @@ export const parseRecipeContent = (content) => {
         notes: parsed.notes || "",
       };
     }
-  } catch (e) {
+  } catch {
     // Not JSON or invalid JSON - treat as legacy plain text
   }
 
@@ -69,7 +69,7 @@ export const isStructuredContent = (content) => {
   try {
     const parsed = JSON.parse(content);
     return typeof parsed === "object" && parsed !== null;
-  } catch (e) {
+  } catch {
     return false;
   }
 };

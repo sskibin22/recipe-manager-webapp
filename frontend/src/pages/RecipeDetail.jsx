@@ -67,7 +67,6 @@ export default function RecipeDetail() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [editedUrl, setEditedUrl] = useState("");
-  const [editedContent, setEditedContent] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
   const [file, setFile] = useState(null);
   const [displayImageFile, setDisplayImageFile] = useState(null);
@@ -199,7 +198,6 @@ export default function RecipeDetail() {
   const handleEdit = () => {
     setEditedTitle(recipe.title);
     setEditedUrl(recipe.url || "");
-    setEditedContent(recipe.content || "");
     setValidationErrors({});
     setFile(null);
     setDisplayImageFile(null);

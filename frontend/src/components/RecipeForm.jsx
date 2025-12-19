@@ -30,7 +30,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
   const [recipeType, setRecipeType] = useState("link");
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
-  const [content, setContent] = useState("");
   const [file, setFile] = useState(null);
   const [displayImageFile, setDisplayImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -66,7 +65,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
   const resetForm = () => {
     setTitle("");
     setUrl("");
-    setContent("");
     setFile(null);
     setDisplayImageFile(null);
     setError("");
