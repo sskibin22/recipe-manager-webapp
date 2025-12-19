@@ -844,7 +844,7 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     resolveMetadata({});
   }, 10000);
 
-  it("should auto-populate title when metadata is fetched", async () => {
+  it("should auto-populate title in metadata section when metadata is fetched", async () => {
     const mockRecipe = {
       id: "test-recipe-id",
       title: "Original Title",
@@ -876,16 +876,23 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     const editButton = screen.getByText("Edit Recipe");
     await user.click(editButton);
 
+    // Verify main title field has original title (not auto-updated)
+    const mainTitleInput = screen.getByLabelText("Recipe Title");
+    expect(mainTitleInput).toHaveValue("Original Title");
+
     // Change URL
     const urlInput = screen.getByPlaceholderText("https://example.com/recipe");
     await user.clear(urlInput);
     await user.type(urlInput, "https://newsite.com/new-recipe");
 
-    // Wait for metadata to be applied
+    // Wait for metadata to be applied to the metadata section (not main title)
     await waitFor(() => {
-      const titleInput = screen.getByPlaceholderText("Enter recipe title");
-      expect(titleInput).toHaveValue("Fetched Title");
+      const metadataTitleInput = screen.getByLabelText("Title");
+      expect(metadataTitleInput).toHaveValue("Fetched Title");
     }, { timeout: 2000 });
+
+    // Verify main title field still has original title (unchanged)
+    expect(mainTitleInput).toHaveValue("Original Title");
   }, 10000);
 
   it("should display metadata preview section after fetching", async () => {
@@ -930,7 +937,8 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
       expect(screen.getByText(/Recipe Metadata \(Editable\)/i)).toBeInTheDocument();
     }, { timeout: 2000 });
 
-    // Verify metadata fields are displayed
+    // Verify metadata fields are displayed (including title)
+    expect(screen.getByLabelText("Title")).toBeInTheDocument();
     expect(screen.getByLabelText("Preview Image URL")).toBeInTheDocument();
     expect(screen.getByLabelText("Description")).toBeInTheDocument();
     expect(screen.getByLabelText("Site Name")).toBeInTheDocument();
@@ -1152,10 +1160,11 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     const saveButton = screen.getByText("Save Changes");
     await user.click(saveButton);
 
-    // Verify update was called with metadata fields
+    // Verify update was called with metadata fields including title
     await waitFor(() => {
       expect(api.recipesApi.update).toHaveBeenCalled();
       const updateCall = api.recipesApi.update.mock.calls[0][0];
+      expect(updateCall.title).toBe("New Title");
       expect(updateCall.previewImageUrl).toBe("https://example.com/new-image.jpg");
       expect(updateCall.description).toBe("New description");
       expect(updateCall.siteName).toBe("New Site");
