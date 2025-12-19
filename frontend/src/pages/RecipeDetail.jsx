@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi, uploadsApi } from "../services/api";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import DocumentPreview from "../components/DocumentPreview";
 
 // File validation constants (matching RecipeForm)
@@ -74,6 +74,15 @@ export default function RecipeDetail() {
   const [displayImagePreview, setDisplayImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
 
+  // Metadata state for Link recipes
+  const [metadata, setMetadata] = useState(null);
+  const [fetchingMetadata, setFetchingMetadata] = useState(false);
+  const [editedPreviewImageUrl, setEditedPreviewImageUrl] = useState("");
+  const [editedDescription, setEditedDescription] = useState("");
+  const [editedSiteName, setEditedSiteName] = useState("");
+
+  const urlDebounceRef = useRef(null);
+
   const {
     data: recipe,
     isLoading,
@@ -115,6 +124,70 @@ export default function RecipeDetail() {
     },
   });
 
+  // Fetch metadata when URL changes in edit mode for Link recipes (debounced)
+  useEffect(() => {
+    if (!isEditMode || !recipe || recipe.type.toLowerCase() !== "link" || !editedUrl.trim()) {
+      return;
+    }
+
+    // Clear previous timeout
+    if (urlDebounceRef.current) {
+      clearTimeout(urlDebounceRef.current);
+    }
+
+    // Set new timeout for fetching metadata
+    urlDebounceRef.current = setTimeout(async () => {
+      try {
+        // Basic URL validation
+        const urlPattern = /^https?:\/\/.+/i;
+        if (!urlPattern.test(editedUrl.trim())) {
+          return; // Don't fetch if URL is not valid
+        }
+
+        setFetchingMetadata(true);
+        const fetchedMetadata = await recipesApi.fetchMetadata(editedUrl.trim());
+
+        if (fetchedMetadata) {
+          setMetadata(fetchedMetadata);
+
+          // Auto-fill fields if they're empty or match the old URL's metadata
+          if (!editedTitle || editedTitle === recipe.title) {
+            if (fetchedMetadata.title) {
+              setEditedTitle(fetchedMetadata.title);
+            }
+          }
+          if (!editedDescription || editedDescription === recipe.description) {
+            if (fetchedMetadata.description) {
+              setEditedDescription(fetchedMetadata.description);
+            }
+          }
+          if (!editedPreviewImageUrl || editedPreviewImageUrl === recipe.previewImageUrl) {
+            if (fetchedMetadata.imageUrl) {
+              setEditedPreviewImageUrl(fetchedMetadata.imageUrl);
+            }
+          }
+          if (!editedSiteName || editedSiteName === recipe.siteName) {
+            if (fetchedMetadata.siteName) {
+              setEditedSiteName(fetchedMetadata.siteName);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching metadata:", err);
+        // Don't show error to user, just log it
+      } finally {
+        setFetchingMetadata(false);
+      }
+    }, 800); // 800ms debounce
+
+    // Cleanup on unmount or when URL changes
+    return () => {
+      if (urlDebounceRef.current) {
+        clearTimeout(urlDebounceRef.current);
+      }
+    };
+  }, [editedUrl, isEditMode, recipe, editedTitle, editedDescription, editedPreviewImageUrl, editedSiteName]);
+
   const handleDelete = () => {
     if (window.confirm("Are you sure you want to delete this recipe?")) {
       deleteMutation.mutate(id);
@@ -131,6 +204,14 @@ export default function RecipeDetail() {
     setRemoveDisplayImage(false);
     setDisplayImagePreview(null);
     setIsEditMode(true);
+    
+    // Initialize metadata fields for Link recipes
+    if (recipe.type.toLowerCase() === "link") {
+      setEditedPreviewImageUrl(recipe.previewImageUrl || "");
+      setEditedDescription(recipe.description || "");
+      setEditedSiteName(recipe.siteName || "");
+      setMetadata(null);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -140,6 +221,10 @@ export default function RecipeDetail() {
     setDisplayImageFile(null);
     setRemoveDisplayImage(false);
     setDisplayImagePreview(null);
+    setMetadata(null);
+    setEditedPreviewImageUrl("");
+    setEditedDescription("");
+    setEditedSiteName("");
   };
 
   const validateFile = (file) => {
@@ -312,8 +397,13 @@ export default function RecipeDetail() {
       } else if (displayImageFile) {
         // Upload new display image
         updateData.previewImageUrl = await uploadDisplayImage(displayImageFile);
+      } else if (recipe.type.toLowerCase() === "link") {
+        // For Link recipes, use the edited metadata fields
+        updateData.previewImageUrl = editedPreviewImageUrl.trim() || null;
+        updateData.description = editedDescription.trim() || null;
+        updateData.siteName = editedSiteName.trim() || null;
       } else {
-        // Keep existing preview image
+        // Keep existing preview image for Manual/Document recipes
         updateData.previewImageUrl = recipe.previewImageUrl;
       }
 
@@ -662,10 +752,96 @@ export default function RecipeDetail() {
                       }`}
                       placeholder="https://example.com/recipe"
                     />
+                    {fetchingMetadata && (
+                      <p className="text-xs text-blue-500 mt-1 flex items-center gap-1">
+                        <span className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></span>
+                        Fetching recipe preview...
+                      </p>
+                    )}
                     {validationErrors.url && (
                       <p className="mt-1 text-sm text-red-600">
                         {validationErrors.url}
                       </p>
+                    )}
+
+                    {/* Metadata Preview for Link Recipes */}
+                    {metadata && (
+                      <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                        <h4 className="text-sm font-medium text-gray-700 mb-3">
+                          Recipe Metadata (Editable)
+                        </h4>
+
+                        {/* Preview Image URL */}
+                        <div className="mb-3">
+                          <label
+                            htmlFor="editedPreviewImageUrl"
+                            className="block text-xs font-medium text-gray-600 mb-1"
+                          >
+                            Preview Image URL
+                          </label>
+                          <input
+                            type="url"
+                            id="editedPreviewImageUrl"
+                            value={editedPreviewImageUrl}
+                            onChange={(e) => setEditedPreviewImageUrl(e.target.value)}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="https://example.com/image.jpg"
+                          />
+                          {editedPreviewImageUrl && (
+                            <div className="mt-2">
+                              <img
+                                src={editedPreviewImageUrl}
+                                alt="Preview"
+                                className="h-24 w-auto rounded border border-gray-300 object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = "none";
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Description */}
+                        <div className="mb-3">
+                          <label
+                            htmlFor="editedDescription"
+                            className="block text-xs font-medium text-gray-600 mb-1"
+                          >
+                            Description
+                          </label>
+                          <textarea
+                            id="editedDescription"
+                            value={editedDescription}
+                            onChange={(e) => setEditedDescription(e.target.value)}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            rows="2"
+                            maxLength="500"
+                            placeholder="Brief description..."
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            {editedDescription.length}/500 characters
+                          </p>
+                        </div>
+
+                        {/* Site Name */}
+                        <div>
+                          <label
+                            htmlFor="editedSiteName"
+                            className="block text-xs font-medium text-gray-600 mb-1"
+                          >
+                            Site Name
+                          </label>
+                          <input
+                            type="text"
+                            id="editedSiteName"
+                            value={editedSiteName}
+                            onChange={(e) => setEditedSiteName(e.target.value)}
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            maxLength="256"
+                            placeholder="Recipe source"
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
                 ) : recipe.url ? (
