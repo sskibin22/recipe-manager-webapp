@@ -26,6 +26,39 @@ const ALLOWED_IMAGE_TYPES = {
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB for images
 
+// Helper function for generic file validation
+const validateFileGeneric = (file, maxSize, allowedTypes, typeDescription) => {
+  if (!file) {
+    return "No file selected";
+  }
+
+  // Check file size
+  if (file.size > maxSize) {
+    return `File size must be less than ${maxSize / (1024 * 1024)}MB (selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
+  }
+
+  // Check file type by MIME type first
+  let isValidType = Object.keys(allowedTypes).includes(file.type);
+
+  // If MIME type check fails or is empty, check by file extension
+  if (!isValidType || !file.type) {
+    const fileName = file.name.toLowerCase();
+    const dotIndex = fileName.lastIndexOf(".");
+    if (dotIndex === -1) {
+      return `Invalid file type. Allowed types: ${typeDescription}`;
+    }
+    const fileExtension = fileName.substring(dotIndex);
+    const allowedExtensions = Object.values(allowedTypes).flat();
+    isValidType = allowedExtensions.includes(fileExtension);
+  }
+
+  if (!isValidType) {
+    return `Invalid file type. Allowed types: ${typeDescription}`;
+  }
+
+  return null; // Valid file
+};
+
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -110,67 +143,21 @@ export default function RecipeDetail() {
   };
 
   const validateFile = (file) => {
-    if (!file) {
-      return "No file selected";
-    }
-
-    // Check file size
-    if (file.size > MAX_FILE_SIZE) {
-      return `File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB (selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
-    }
-
-    // Check file type by MIME type first
-    let isValidType = Object.keys(ALLOWED_FILE_TYPES).includes(file.type);
-
-    // If MIME type check fails or is empty, check by file extension
-    if (!isValidType || !file.type) {
-      const fileName = file.name.toLowerCase();
-      const dotIndex = fileName.lastIndexOf(".");
-      if (dotIndex === -1) {
-        return "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG";
-      }
-      const fileExtension = fileName.substring(dotIndex);
-      const allowedExtensions = Object.values(ALLOWED_FILE_TYPES).flat();
-      isValidType = allowedExtensions.includes(fileExtension);
-    }
-
-    if (!isValidType) {
-      return "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG";
-    }
-
-    return null; // Valid file
+    return validateFileGeneric(
+      file,
+      MAX_FILE_SIZE,
+      ALLOWED_FILE_TYPES,
+      "PDF, DOC, DOCX, TXT, JPG, PNG"
+    );
   };
 
   const validateImageFile = (file) => {
-    if (!file) {
-      return "No file selected";
-    }
-
-    // Check file size
-    if (file.size > MAX_IMAGE_SIZE) {
-      return `File size must be less than ${MAX_IMAGE_SIZE / (1024 * 1024)}MB (selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
-    }
-
-    // Check file type by MIME type first
-    let isValidType = Object.keys(ALLOWED_IMAGE_TYPES).includes(file.type);
-
-    // If MIME type check fails or is empty, check by file extension
-    if (!isValidType || !file.type) {
-      const fileName = file.name.toLowerCase();
-      const dotIndex = fileName.lastIndexOf(".");
-      if (dotIndex === -1) {
-        return "Invalid file type. Allowed types: JPG, PNG, GIF, WEBP";
-      }
-      const fileExtension = fileName.substring(dotIndex);
-      const allowedExtensions = Object.values(ALLOWED_IMAGE_TYPES).flat();
-      isValidType = allowedExtensions.includes(fileExtension);
-    }
-
-    if (!isValidType) {
-      return "Invalid file type. Allowed types: JPG, PNG, GIF, WEBP";
-    }
-
-    return null; // Valid file
+    return validateFileGeneric(
+      file,
+      MAX_IMAGE_SIZE,
+      ALLOWED_IMAGE_TYPES,
+      "JPG, PNG, GIF, WEBP"
+    );
   };
 
   const handleFileChange = (e) => {
@@ -266,7 +253,11 @@ export default function RecipeDetail() {
   };
 
   const generateImageFilename = (file) => {
-    return `image-${Date.now()}-${file.name}`;
+    // Use crypto.randomUUID if available, otherwise fallback to timestamp + random
+    const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    return `image-${uniqueId}-${file.name}`;
   };
 
   const uploadDisplayImage = async (imageFile) => {

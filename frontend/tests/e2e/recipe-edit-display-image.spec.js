@@ -119,8 +119,8 @@ test.describe('Recipe Edit - Display Image Functionality', () => {
         const displayImageInput = page.locator('input[type="file"]#displayImageEdit');
         await expect(displayImageInput).toBeVisible();
         
-        // Create a small test image file
-        const testImagePath = path.join(process.cwd(), 'tests', 'fixtures', 'test-image.png');
+        // Create a small test image file using a path relative to the test file
+        const testImagePath = path.join(__dirname, '..', 'fixtures', 'test-image.png');
         
         // Try to set the file (will only work if file exists)
         try {
