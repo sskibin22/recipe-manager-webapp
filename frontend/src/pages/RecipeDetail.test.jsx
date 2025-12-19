@@ -50,6 +50,108 @@ describe("RecipeDetail - Link Display", () => {
     vi.clearAllMocks();
   });
 
+  it("should display preview image with correct src", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Recipe with Image",
+      type: "manual",
+      content: "Recipe content",
+      previewImageUrl: "https://example.com/image.jpg",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Recipe with Image")).toBeInTheDocument();
+    });
+
+    // Verify image is displayed with correct src
+    const image = screen.getByAltText("Test Recipe with Image");
+    expect(image).toBeInTheDocument();
+    expect(image).toHaveAttribute("src", "https://example.com/image.jpg");
+  });
+
+  it("should display placeholder image when previewImageUrl is null", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Recipe without Image",
+      type: "manual",
+      content: "Recipe content",
+      previewImageUrl: null,
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Recipe without Image")).toBeInTheDocument();
+    });
+
+    // Verify placeholder image is used
+    const image = screen.getByAltText("Test Recipe without Image");
+    expect(image).toBeInTheDocument();
+    expect(image).toHaveAttribute("src", "/recipe-placeholder.svg");
+  });
+
+  it("should display description when available", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Recipe",
+      type: "link",
+      url: "https://example.com/recipe",
+      description: "This is a delicious recipe description",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Recipe")).toBeInTheDocument();
+    });
+
+    // Verify description is displayed
+    expect(
+      screen.getByText("This is a delicious recipe description"),
+    ).toBeInTheDocument();
+  });
+
+  it("should display site name when available for link recipes", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Recipe",
+      type: "link",
+      url: "https://example.com/recipe",
+      siteName: "Example Recipe Site",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Recipe")).toBeInTheDocument();
+    });
+
+    // Verify site name is displayed
+    expect(screen.getByText("Example Recipe Site")).toBeInTheDocument();
+  });
+
   it("should display URL as clickable link with proper attributes for link-type recipe", async () => {
     const mockRecipe = {
       id: "test-recipe-id",
@@ -119,8 +221,8 @@ describe("RecipeDetail - Link Display", () => {
     // Verify "Recipe Link" heading is NOT present
     expect(screen.queryByText("Recipe Link")).not.toBeInTheDocument();
 
-    // Verify "Recipe" heading for manual type is present
-    expect(screen.getByText("Recipe")).toBeInTheDocument();
+    // Verify "Recipe Instructions" heading for manual type is present
+    expect(screen.getByText("Recipe Instructions")).toBeInTheDocument();
   });
 
   it("should handle long URLs with break-all class", async () => {
@@ -174,8 +276,13 @@ describe("RecipeDetail - Link Display", () => {
     // Verify "Recipe Link" heading is present (section is always shown for link recipes)
     expect(screen.getByText("Recipe Link")).toBeInTheDocument();
 
-    // But the actual link should not be present
-    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    // But the actual link should not be present (excluding Back button and external link icon)
+    const links = screen.queryAllByRole("link");
+    const recipeUrlLinks = links.filter((link) => 
+      link.getAttribute("href") && 
+      !link.getAttribute("href").includes("/") // Filter out navigation links
+    );
+    expect(recipeUrlLinks).toHaveLength(0);
   });
 });
 
