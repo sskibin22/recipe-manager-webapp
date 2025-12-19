@@ -167,6 +167,7 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
         PreviewImageUrl = request.PreviewImageUrl,
         Description = request.Description,
         SiteName = request.SiteName,
+        CategoryId = request.CategoryId,
         CreatedAt = DateTime.UtcNow,
         UpdatedAt = DateTime.UtcNow
     };
@@ -196,7 +197,26 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
     }
 
     db.Recipes.Add(recipe);
+
+    // Add tags if provided
+    if (request.TagIds != null && request.TagIds.Count > 0)
+    {
+        foreach (var tagId in request.TagIds)
+        {
+            var recipeTag = new RecipeTag
+            {
+                RecipeId = recipe.Id,
+                TagId = tagId
+            };
+            db.RecipeTags.Add(recipeTag);
+        }
+    }
+
     await db.SaveChangesAsync();
+
+    // Load category and tags for response
+    await db.Entry(recipe).Reference(r => r.Category).LoadAsync();
+    await db.Entry(recipe).Collection(r => r.RecipeTags).Query().Include(rt => rt.Tag).LoadAsync();
 
     // Convert FileContent to base64 for document recipes
     string? fileContentBase64 = null;
@@ -233,24 +253,44 @@ app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbCon
         recipe.UpdatedAt,
         FileContent = fileContentBase64,
         FileContentType = recipe.FileContentType,
-        IsFavorite = false
+        IsFavorite = false,
+        Category = recipe.Category != null ? new { recipe.Category.Id, recipe.Category.Name, recipe.Category.Color } : null,
+        Tags = recipe.RecipeTags.Select(rt => new { rt.Tag.Id, rt.Tag.Name, rt.Tag.Color, rt.Tag.Type }).ToList()
     });
 })
 .WithName("CreateRecipe")
 .WithOpenApi();
 
-app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user, IStorageService storageService, ILogger<Program> logger, string? q) =>
+app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user, IStorageService storageService, ILogger<Program> logger, string? q, int? category, string? tags) =>
 {
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
 
     var query = db.Recipes
         .Include(r => r.Favorites)
+        .Include(r => r.Category)
+        .Include(r => r.RecipeTags)
+            .ThenInclude(rt => rt.Tag)
         .Where(r => r.UserId == userId.Value);
 
     if (!string.IsNullOrWhiteSpace(q))
     {
         query = query.Where(r => r.Title.Contains(q));
+    }
+
+    if (category.HasValue)
+    {
+        query = query.Where(r => r.CategoryId == category.Value);
+    }
+
+    if (!string.IsNullOrWhiteSpace(tags))
+    {
+        var tagIds = tags.Split(',').Select(t => int.TryParse(t.Trim(), out var id) ? id : 0).Where(id => id > 0).ToList();
+        if (tagIds.Count > 0)
+        {
+            // Filter recipes that have ALL specified tags
+            query = query.Where(r => tagIds.All(tagId => r.RecipeTags.Any(rt => rt.TagId == tagId)));
+        }
     }
 
     var recipes = await query
@@ -286,7 +326,9 @@ app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user,
             r.CreatedAt,
             r.UpdatedAt,
             r.FileContentType,
-            IsFavorite = r.Favorites.Any(f => f.UserId == userId.Value)
+            IsFavorite = r.Favorites.Any(f => f.UserId == userId.Value),
+            Category = r.Category != null ? new { r.Category.Id, r.Category.Name, r.Category.Color } : null,
+            Tags = r.RecipeTags.Select(rt => new { rt.Tag.Id, rt.Tag.Name, rt.Tag.Color, rt.Tag.Type }).ToList()
         });
     }
 
@@ -302,6 +344,9 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
 
     var recipe = await db.Recipes
         .Include(r => r.Favorites)
+        .Include(r => r.Category)
+        .Include(r => r.RecipeTags)
+            .ThenInclude(rt => rt.Tag)
         .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
 
     if (recipe == null) return Results.NotFound();
@@ -341,7 +386,9 @@ app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, Cl
         recipe.UpdatedAt,
         FileContent = fileContentBase64,
         FileContentType = recipe.FileContentType,
-        IsFavorite = recipe.Favorites.Any(f => f.UserId == userId.Value)
+        IsFavorite = recipe.Favorites.Any(f => f.UserId == userId.Value),
+        Category = recipe.Category != null ? new { recipe.Category.Id, recipe.Category.Name, recipe.Category.Color } : null,
+        Tags = recipe.RecipeTags.Select(rt => new { rt.Tag.Id, rt.Tag.Name, rt.Tag.Color, rt.Tag.Type }).ToList()
     });
 })
 .WithName("GetRecipe")
@@ -352,7 +399,9 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
     var userId = GetUserId(user);
     if (userId == null) return Results.Unauthorized();
 
-    var recipe = await db.Recipes.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
+    var recipe = await db.Recipes
+        .Include(r => r.RecipeTags)
+        .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
     if (recipe == null) return Results.NotFound();
 
     recipe.Title = request.Title;
@@ -362,6 +411,7 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
     recipe.PreviewImageUrl = request.PreviewImageUrl;
     recipe.Description = request.Description;
     recipe.SiteName = request.SiteName;
+    recipe.CategoryId = request.CategoryId;
     recipe.UpdatedAt = DateTime.UtcNow;
 
     // Handle document replacement if a new storage key is provided
@@ -394,7 +444,29 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
         }
     }
 
+    // Update tags
+    if (request.TagIds != null)
+    {
+        // Remove existing tags
+        db.RecipeTags.RemoveRange(recipe.RecipeTags);
+
+        // Add new tags
+        foreach (var tagId in request.TagIds)
+        {
+            var recipeTag = new RecipeTag
+            {
+                RecipeId = recipe.Id,
+                TagId = tagId
+            };
+            db.RecipeTags.Add(recipeTag);
+        }
+    }
+
     await db.SaveChangesAsync();
+
+    // Load category and tags for response
+    await db.Entry(recipe).Reference(r => r.Category).LoadAsync();
+    await db.Entry(recipe).Collection(r => r.RecipeTags).Query().Include(rt => rt.Tag).LoadAsync();
 
     // Convert FileContent to base64 for document recipes
     string? fileContentBase64 = null;
@@ -430,7 +502,9 @@ app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request
         recipe.CreatedAt,
         recipe.UpdatedAt,
         FileContent = fileContentBase64,
-        FileContentType = recipe.FileContentType
+        FileContentType = recipe.FileContentType,
+        Category = recipe.Category != null ? new { recipe.Category.Id, recipe.Category.Name, recipe.Category.Color } : null,
+        Tags = recipe.RecipeTags.Select(rt => new { rt.Tag.Id, rt.Tag.Name, rt.Tag.Color, rt.Tag.Type }).ToList()
     });
 })
 .WithName("UpdateRecipe")
@@ -637,6 +711,42 @@ app.MapGet("/api/user/profile", async (ApplicationDbContext db, ClaimsPrincipal 
 .WithName("GetUserProfile")
 .WithOpenApi();
 
+// Categories endpoint
+app.MapGet("/api/categories", async (ApplicationDbContext db) =>
+{
+    var categories = await db.Categories
+        .OrderBy(c => c.Name)
+        .ToListAsync();
+
+    return Results.Ok(categories.Select(c => new
+    {
+        c.Id,
+        c.Name,
+        c.Color
+    }));
+})
+.WithName("GetCategories")
+.WithOpenApi();
+
+// Tags endpoint
+app.MapGet("/api/tags", async (ApplicationDbContext db) =>
+{
+    var tags = await db.Tags
+        .OrderBy(t => t.Type)
+        .ThenBy(t => t.Name)
+        .ToListAsync();
+
+    return Results.Ok(tags.Select(t => new
+    {
+        t.Id,
+        t.Name,
+        t.Color,
+        t.Type
+    }));
+})
+.WithName("GetTags")
+.WithOpenApi();
+
 app.MapPut("/api/user/profile", async (UpdateUserProfileRequest request, ApplicationDbContext db, ClaimsPrincipal user) =>
 {
     var userId = GetUserId(user);
@@ -705,8 +815,8 @@ static async Task<string?> GetPreviewImageUrlAsync(string? previewImageUrl, ISto
 app.Run();
 
 // Request/Response DTOs (after app.Run to avoid CS8803 error)
-record CreateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content, string? PreviewImageUrl, string? Description, string? SiteName);
-record UpdateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content, string? PreviewImageUrl, string? Description, string? SiteName);
+record CreateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content, string? PreviewImageUrl, string? Description, string? SiteName, int? CategoryId, List<int>? TagIds);
+record UpdateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content, string? PreviewImageUrl, string? Description, string? SiteName, int? CategoryId, List<int>? TagIds);
 record PresignUploadRequest(string FileName, string ContentType);
 record UpdateUserProfileRequest(string? Email, string? DisplayName);
 record FetchMetadataRequest(string Url);

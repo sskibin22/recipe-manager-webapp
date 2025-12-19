@@ -40,11 +40,17 @@ public partial class Recipe
 
     public string? SiteName { get; set; }
 
+    public int? CategoryId { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
 
+    public virtual Category? Category { get; set; }
+
     public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
+
+    public virtual ICollection<RecipeTag> RecipeTags { get; set; } = new List<RecipeTag>();
 
     public virtual User User { get; set; } = null!;
 }
