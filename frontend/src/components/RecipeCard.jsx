@@ -6,6 +6,16 @@ import { parseRecipeContent } from "../utils/recipeContent";
 const RecipeCard = ({ recipe }) => {
   const queryClient = useQueryClient();
 
+  // Extract preview text from Manual recipe content
+  const getManualRecipePreview = (content) => {
+    const parsedContent = parseRecipeContent(content);
+    // Try description first, then ingredients, then instructions
+    return parsedContent.description || 
+           parsedContent.ingredients || 
+           parsedContent.instructions || 
+           "";
+  };
+
   const toggleFavoriteMutation = useMutation({
     mutationFn: async () => {
       if (recipe.isFavorite) {
@@ -202,15 +212,7 @@ const RecipeCard = ({ recipe }) => {
           recipe.content &&
           !recipe.description && (
             <p className="text-sm text-gray-600 line-clamp-3">
-              {(() => {
-                const parsedContent = parseRecipeContent(recipe.content);
-                // Try description first, then ingredients, then instructions
-                const previewText = parsedContent.description || 
-                                   parsedContent.ingredients || 
-                                   parsedContent.instructions || 
-                                   "";
-                return previewText;
-              })()}
+              {getManualRecipePreview(recipe.content)}
             </p>
           )}
 

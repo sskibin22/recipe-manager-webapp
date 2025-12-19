@@ -146,7 +146,8 @@ describe("RecipeCard", () => {
     expect(screen.queryByText("Content description")).not.toBeInTheDocument();
   });
 
-  it("should truncate long descriptions with line-clamp-3", () => {
+  it("should apply line-clamp-3 class to long descriptions for CSS truncation", () => {
+    // Create a long description (10 repetitions = ~590 characters)
     const longDescription = "This is a very long description that should be truncated. ".repeat(10).trim();
     const manualRecipe = {
       ...mockRecipe,
