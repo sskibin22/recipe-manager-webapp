@@ -32,8 +32,12 @@ apiClient.interceptors.request.use(
 );
 
 // Recipe API
-export const fetchRecipes = async (searchQuery = "") => {
-  const params = searchQuery ? { q: searchQuery } : {};
+export const fetchRecipes = async (searchQuery = "", categoryId = null, tagIds = []) => {
+  const params = {};
+  if (searchQuery) params.q = searchQuery;
+  if (categoryId) params.category = categoryId;
+  if (tagIds && tagIds.length > 0) params.tags = tagIds.join(',');
+  
   const response = await apiClient.get("/api/recipes", { params });
   return response.data;
 };
@@ -55,6 +59,18 @@ export const updateRecipe = async ({ id, ...recipeData }) => {
 
 export const deleteRecipe = async (id) => {
   await apiClient.delete(`/api/recipes/${id}`);
+};
+
+// Categories API
+export const fetchCategories = async () => {
+  const response = await apiClient.get("/api/categories");
+  return response.data;
+};
+
+// Tags API
+export const fetchTags = async () => {
+  const response = await apiClient.get("/api/tags");
+  return response.data;
 };
 
 // Favorite API
@@ -107,6 +123,14 @@ export const recipesApi = {
   addFavorite,
   removeFavorite,
   fetchMetadata,
+};
+
+export const categoriesApi = {
+  getAll: fetchCategories,
+};
+
+export const tagsApi = {
+  getAll: fetchTags,
 };
 
 export const uploadsApi = {

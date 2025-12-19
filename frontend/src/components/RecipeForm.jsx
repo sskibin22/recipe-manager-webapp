@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { recipesApi, uploadsApi } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { serializeRecipeContent } from "../utils/recipeContent";
+import CategorySelector from "./CategorySelector";
+import TagSelector from "./TagSelector";
 
 // File validation constants
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
@@ -48,6 +50,10 @@ const RecipeForm = ({ onClose, onSuccess }) => {
   const [description, setDescription] = useState("");
   const [siteName, setSiteName] = useState("");
 
+  // Category and tags state
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [selectedTagIds, setSelectedTagIds] = useState([]);
+
   const urlDebounceRef = useRef(null);
 
   const createRecipeMutation = useMutation({
@@ -78,6 +84,9 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     setManualIngredients("");
     setManualInstructions("");
     setManualNotes("");
+    // Reset category and tags
+    setSelectedCategoryId(null);
+    setSelectedTagIds([]);
   };
 
   // Clear metadata when switching away from link type
@@ -327,6 +336,14 @@ const RecipeForm = ({ onClose, onSuccess }) => {
           recipeData.previewImageUrl = await uploadDisplayImage(displayImageFile);
           setUploading(false);
         }
+      }
+
+      // Add category and tags to recipe data
+      if (selectedCategoryId) {
+        recipeData.categoryId = selectedCategoryId;
+      }
+      if (selectedTagIds.length > 0) {
+        recipeData.tagIds = selectedTagIds;
       }
 
       createRecipeMutation.mutate(recipeData);
@@ -651,6 +668,22 @@ const RecipeForm = ({ onClose, onSuccess }) => {
                 </div>
               </>
             )}
+
+            {/* Category Selector */}
+            <div className="mb-4">
+              <CategorySelector
+                selectedCategoryId={selectedCategoryId}
+                onChange={setSelectedCategoryId}
+              />
+            </div>
+
+            {/* Tag Selector */}
+            <div className="mb-4">
+              <TagSelector
+                selectedTagIds={selectedTagIds}
+                onChange={setSelectedTagIds}
+              />
+            </div>
 
             {/* Error Message */}
             {error && (
