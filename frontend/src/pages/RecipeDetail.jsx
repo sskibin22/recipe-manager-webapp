@@ -150,8 +150,8 @@ export default function RecipeDetail() {
         if (fetchedMetadata) {
           setMetadata(fetchedMetadata);
 
-          // Auto-update fields with fetched metadata
-          // Always update to new metadata when URL changes, similar to create form behavior
+          // Auto-update fields with fetched metadata when URL changes
+          // This ensures all fields update consistently in edit mode
           if (fetchedMetadata.title) {
             setEditedTitle(fetchedMetadata.title);
           }
