@@ -55,21 +55,3 @@ export const serializeRecipeContent = (content) => {
     notes: (content.notes || "").trim(),
   });
 };
-
-/**
- * Check if content is in structured format
- * @param {string} content - The raw content string
- * @returns {boolean} True if content is structured JSON
- */
-export const isStructuredContent = (content) => {
-  if (!content || !content.trim()) {
-    return false;
-  }
-
-  try {
-    const parsed = JSON.parse(content);
-    return typeof parsed === "object" && parsed !== null;
-  } catch {
-    return false;
-  }
-};
