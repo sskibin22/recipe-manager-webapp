@@ -14,6 +14,7 @@ vi.mock("../services/api", () => ({
     addFavorite: vi.fn(),
     removeFavorite: vi.fn(),
     update: vi.fn(),
+    fetchMetadata: vi.fn(),
   },
   uploadsApi: {
     getPresignedDownloadUrl: vi.fn(),
@@ -740,4 +741,424 @@ describe("RecipeDetail - Edit Functionality", () => {
     );
     expect(favButtonAfter).toBeUndefined();
   });
+});
+
+describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should fetch metadata when URL is changed in edit mode for Link recipe", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Original Title",
+      type: "link",
+      url: "https://example.com/original",
+      description: "Original description",
+      siteName: "Original Site",
+      previewImageUrl: "https://example.com/original-image.jpg",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const mockMetadata = {
+      title: "New Title from Metadata",
+      description: "New description from metadata",
+      siteName: "New Site",
+      imageUrl: "https://example.com/new-image.jpg",
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
+
+    const user = userEvent.setup();
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Original Title")).toBeInTheDocument();
+    });
+
+    // Click edit button
+    const editButton = screen.getByText("Edit Recipe");
+    await user.click(editButton);
+
+    // Change URL
+    const urlInput = screen.getByPlaceholderText("https://example.com/recipe");
+    await user.clear(urlInput);
+    await user.type(urlInput, "https://newsite.com/recipe");
+
+    // Wait for debounce and metadata fetch
+    await waitFor(
+      () => {
+        expect(api.recipesApi.fetchMetadata).toHaveBeenCalledWith(
+          "https://newsite.com/recipe",
+        );
+      },
+      { timeout: 2000 }
+    );
+  }, 10000);
+
+  it("should show loading indicator during metadata fetch", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Recipe",
+      type: "link",
+      url: "https://example.com/recipe",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    
+    // Mock with a delayed response
+    let resolveMetadata;
+    const metadataPromise = new Promise((resolve) => {
+      resolveMetadata = resolve;
+    });
+    api.recipesApi.fetchMetadata = vi.fn().mockReturnValue(metadataPromise);
+
+    const user = userEvent.setup();
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Recipe")).toBeInTheDocument();
+    });
+
+    // Enter edit mode
+    const editButton = screen.getByText("Edit Recipe");
+    await user.click(editButton);
+
+    // Change URL
+    const urlInput = screen.getByPlaceholderText("https://example.com/recipe");
+    await user.clear(urlInput);
+    await user.type(urlInput, "https://newsite.com/new-recipe");
+
+    // Check for loading indicator
+    await waitFor(() => {
+      expect(screen.getByText(/Fetching recipe preview/i)).toBeInTheDocument();
+    }, { timeout: 2000 });
+
+    // Resolve the metadata
+    resolveMetadata({});
+  }, 10000);
+
+  it("should auto-populate title when metadata is fetched", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Original Title",
+      type: "link",
+      url: "https://example.com/recipe",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const mockMetadata = {
+      title: "Fetched Title",
+      description: "Fetched description",
+      siteName: "Fetched Site",
+      imageUrl: "https://example.com/fetched-image.jpg",
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
+
+    const user = userEvent.setup();
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Original Title")).toBeInTheDocument();
+    });
+
+    // Enter edit mode
+    const editButton = screen.getByText("Edit Recipe");
+    await user.click(editButton);
+
+    // Change URL
+    const urlInput = screen.getByPlaceholderText("https://example.com/recipe");
+    await user.clear(urlInput);
+    await user.type(urlInput, "https://newsite.com/new-recipe");
+
+    // Wait for metadata to be applied
+    await waitFor(() => {
+      const titleInput = screen.getByPlaceholderText("Enter recipe title");
+      expect(titleInput).toHaveValue("Fetched Title");
+    }, { timeout: 2000 });
+  }, 10000);
+
+  it("should display metadata preview section after fetching", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Recipe",
+      type: "link",
+      url: "https://example.com/recipe",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const mockMetadata = {
+      title: "Fetched Title",
+      description: "Fetched description",
+      siteName: "Fetched Site",
+      imageUrl: "https://example.com/fetched-image.jpg",
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
+
+    const user = userEvent.setup();
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Recipe")).toBeInTheDocument();
+    });
+
+    // Enter edit mode
+    const editButton = screen.getByText("Edit Recipe");
+    await user.click(editButton);
+
+    // Change URL
+    const urlInput = screen.getByPlaceholderText("https://example.com/recipe");
+    await user.clear(urlInput);
+    await user.type(urlInput, "https://newsite.com/new-recipe");
+
+    // Wait for metadata preview section
+    await waitFor(() => {
+      expect(screen.getByText(/Recipe Metadata \(Editable\)/i)).toBeInTheDocument();
+    }, { timeout: 2000 });
+
+    // Verify metadata fields are displayed
+    expect(screen.getByLabelText("Preview Image URL")).toBeInTheDocument();
+    expect(screen.getByLabelText("Description")).toBeInTheDocument();
+    expect(screen.getByLabelText("Site Name")).toBeInTheDocument();
+  }, 10000);
+
+  it("should allow user to manually edit auto-populated metadata fields", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Recipe",
+      type: "link",
+      url: "https://example.com/recipe",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const mockMetadata = {
+      title: "Fetched Title",
+      description: "Fetched description",
+      siteName: "Fetched Site",
+      imageUrl: "https://example.com/fetched-image.jpg",
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
+
+    const user = userEvent.setup();
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Recipe")).toBeInTheDocument();
+    });
+
+    // Enter edit mode
+    const editButton = screen.getByText("Edit Recipe");
+    await user.click(editButton);
+
+    // Change URL
+    const urlInput = screen.getByPlaceholderText("https://example.com/recipe");
+    await user.clear(urlInput);
+    await user.type(urlInput, "https://newsite.com/new-recipe");
+
+    // Wait for metadata preview section
+    await waitFor(() => {
+      expect(screen.getByLabelText("Description")).toBeInTheDocument();
+    }, { timeout: 2000 });
+
+    // Manually edit description
+    const descriptionInput = screen.getByLabelText("Description");
+    await user.clear(descriptionInput);
+    await user.type(descriptionInput, "My custom description");
+
+    expect(descriptionInput).toHaveValue("My custom description");
+  }, 10000);
+
+  it("should not fetch metadata for Manual recipe type in edit mode", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Manual Recipe",
+      type: "manual",
+      content: "Recipe content",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipesApi.fetchMetadata = vi.fn();
+
+    const user = userEvent.setup();
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Manual Recipe")).toBeInTheDocument();
+    });
+
+    // Enter edit mode
+    const editButton = screen.getByText("Edit Recipe");
+    await user.click(editButton);
+
+    // Wait a bit
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Verify fetchMetadata was not called
+    expect(api.recipesApi.fetchMetadata).not.toHaveBeenCalled();
+  });
+
+  it("should not fetch metadata for Document recipe type in edit mode", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Document Recipe",
+      type: "document",
+      storageKey: "test-key",
+      fileContent: "base64content",
+      fileContentType: "application/pdf",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipesApi.fetchMetadata = vi.fn();
+
+    const user = userEvent.setup();
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Document Recipe")).toBeInTheDocument();
+    });
+
+    // Enter edit mode
+    const editButton = screen.getByText("Edit Recipe");
+    await user.click(editButton);
+
+    // Wait a bit
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Verify fetchMetadata was not called
+    expect(api.recipesApi.fetchMetadata).not.toHaveBeenCalled();
+  });
+
+  it("should handle metadata fetch errors gracefully", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Recipe",
+      type: "link",
+      url: "https://example.com/recipe",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipesApi.fetchMetadata = vi
+      .fn()
+      .mockRejectedValue(new Error("Network error"));
+
+    const user = userEvent.setup();
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Recipe")).toBeInTheDocument();
+    });
+
+    // Enter edit mode
+    const editButton = screen.getByText("Edit Recipe");
+    await user.click(editButton);
+
+    // Change URL
+    const urlInput = screen.getByPlaceholderText("https://example.com/recipe");
+    await user.clear(urlInput);
+    await user.type(urlInput, "https://invalid.com/recipe");
+
+    // Wait for fetch to complete
+    await waitFor(() => {
+      expect(api.recipesApi.fetchMetadata).toHaveBeenCalled();
+    }, { timeout: 2000 });
+
+    // Verify no error message is displayed to user (errors are logged only)
+    expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
+  }, 10000);
+
+  it("should include metadata fields in update request for Link recipes", async () => {
+    const mockRecipe = {
+      id: "test-recipe-id",
+      title: "Test Recipe",
+      type: "link",
+      url: "https://example.com/recipe",
+      previewImageUrl: "https://example.com/old-image.jpg",
+      description: "Old description",
+      siteName: "Old Site",
+      isFavorite: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const mockMetadata = {
+      title: "New Title",
+      description: "New description",
+      siteName: "New Site",
+      imageUrl: "https://example.com/new-image.jpg",
+    };
+
+    const updatedRecipe = {
+      ...mockRecipe,
+      title: "New Title",
+      url: "https://newsite.com/recipe",
+      previewImageUrl: "https://example.com/new-image.jpg",
+      description: "New description",
+      siteName: "New Site",
+    };
+
+    api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
+    api.recipesApi.update = vi.fn().mockResolvedValue(updatedRecipe);
+
+    const user = userEvent.setup();
+    render(<RecipeDetail />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Test Recipe")).toBeInTheDocument();
+    });
+
+    // Enter edit mode
+    const editButton = screen.getByText("Edit Recipe");
+    await user.click(editButton);
+
+    // Change URL
+    const urlInput = screen.getByPlaceholderText("https://example.com/recipe");
+    await user.clear(urlInput);
+    await user.type(urlInput, "https://newsite.com/recipe");
+
+    // Wait for metadata to be fetched
+    await waitFor(() => {
+      expect(api.recipesApi.fetchMetadata).toHaveBeenCalled();
+    }, { timeout: 2000 });
+
+    // Save changes
+    const saveButton = screen.getByText("Save Changes");
+    await user.click(saveButton);
+
+    // Verify update was called with metadata fields
+    await waitFor(() => {
+      expect(api.recipesApi.update).toHaveBeenCalled();
+      const updateCall = api.recipesApi.update.mock.calls[0][0];
+      expect(updateCall.previewImageUrl).toBe("https://example.com/new-image.jpg");
+      expect(updateCall.description).toBe("New description");
+      expect(updateCall.siteName).toBe("New Site");
+    });
+  }, 10000);
 });
