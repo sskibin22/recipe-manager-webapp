@@ -17,6 +17,48 @@ const ALLOWED_FILE_TYPES = {
   "image/png": [".png"],
 };
 
+const ALLOWED_IMAGE_TYPES = {
+  "image/jpeg": [".jpg", ".jpeg"],
+  "image/png": [".png"],
+  "image/gif": [".gif"],
+  "image/webp": [".webp"],
+};
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB for images
+
+// Helper function for generic file validation
+const validateFileGeneric = (file, maxSize, allowedTypes, typeDescription) => {
+  if (!file) {
+    return "No file selected";
+  }
+
+  // Check file size
+  if (file.size > maxSize) {
+    return `File size must be less than ${maxSize / (1024 * 1024)}MB (selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
+  }
+
+  // Check file type by MIME type first
+  let isValidType = Object.keys(allowedTypes).includes(file.type);
+
+  // If MIME type check fails or is empty, check by file extension
+  if (!isValidType || !file.type) {
+    const fileName = file.name.toLowerCase();
+    const dotIndex = fileName.lastIndexOf(".");
+    if (dotIndex === -1) {
+      return `Invalid file type. Allowed types: ${typeDescription}`;
+    }
+    const fileExtension = fileName.substring(dotIndex);
+    const allowedExtensions = Object.values(allowedTypes).flat();
+    isValidType = allowedExtensions.includes(fileExtension);
+  }
+
+  if (!isValidType) {
+    return `Invalid file type. Allowed types: ${typeDescription}`;
+  }
+
+  return null; // Valid file
+};
+
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -27,6 +69,9 @@ export default function RecipeDetail() {
   const [editedContent, setEditedContent] = useState("");
   const [validationErrors, setValidationErrors] = useState({});
   const [file, setFile] = useState(null);
+  const [displayImageFile, setDisplayImageFile] = useState(null);
+  const [removeDisplayImage, setRemoveDisplayImage] = useState(false);
+  const [displayImagePreview, setDisplayImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
 
   const {
@@ -82,6 +127,9 @@ export default function RecipeDetail() {
     setEditedContent(recipe.content || "");
     setValidationErrors({});
     setFile(null);
+    setDisplayImageFile(null);
+    setRemoveDisplayImage(false);
+    setDisplayImagePreview(null);
     setIsEditMode(true);
   };
 
@@ -89,38 +137,27 @@ export default function RecipeDetail() {
     setIsEditMode(false);
     setValidationErrors({});
     setFile(null);
+    setDisplayImageFile(null);
+    setRemoveDisplayImage(false);
+    setDisplayImagePreview(null);
   };
 
   const validateFile = (file) => {
-    if (!file) {
-      return "No file selected";
-    }
+    return validateFileGeneric(
+      file,
+      MAX_FILE_SIZE,
+      ALLOWED_FILE_TYPES,
+      "PDF, DOC, DOCX, TXT, JPG, PNG"
+    );
+  };
 
-    // Check file size
-    if (file.size > MAX_FILE_SIZE) {
-      return `File size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB (selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
-    }
-
-    // Check file type by MIME type first
-    let isValidType = Object.keys(ALLOWED_FILE_TYPES).includes(file.type);
-
-    // If MIME type check fails or is empty, check by file extension
-    if (!isValidType || !file.type) {
-      const fileName = file.name.toLowerCase();
-      const dotIndex = fileName.lastIndexOf(".");
-      if (dotIndex === -1) {
-        return "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG";
-      }
-      const fileExtension = fileName.substring(dotIndex);
-      const allowedExtensions = Object.values(ALLOWED_FILE_TYPES).flat();
-      isValidType = allowedExtensions.includes(fileExtension);
-    }
-
-    if (!isValidType) {
-      return "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG";
-    }
-
-    return null; // Valid file
+  const validateImageFile = (file) => {
+    return validateFileGeneric(
+      file,
+      MAX_IMAGE_SIZE,
+      ALLOWED_IMAGE_TYPES,
+      "JPG, PNG, GIF, WEBP"
+    );
   };
 
   const handleFileChange = (e) => {
@@ -146,6 +183,46 @@ export default function RecipeDetail() {
     setFile(selectedFile);
     // Remove file error if it exists
     const { file: _, ...rest } = validationErrors;
+    setValidationErrors(rest);
+  };
+
+  const handleDisplayImageChange = (e) => {
+    const selectedFile = e.target.files?.[0] || null;
+
+    if (!selectedFile) {
+      setDisplayImageFile(null);
+      setDisplayImagePreview(null);
+      const { displayImage: _, ...rest } = validationErrors;
+      setValidationErrors(rest);
+      return;
+    }
+
+    const validationError = validateImageFile(selectedFile);
+    if (validationError) {
+      setValidationErrors({ ...validationErrors, displayImage: validationError });
+      setDisplayImageFile(null);
+      setDisplayImagePreview(null);
+      e.target.value = "";
+      return;
+    }
+
+    setDisplayImageFile(selectedFile);
+    setRemoveDisplayImage(false);
+    
+    // Create preview URL for the selected image
+    const previewUrl = URL.createObjectURL(selectedFile);
+    setDisplayImagePreview(previewUrl);
+    
+    // Remove error if it exists
+    const { displayImage: _, ...rest } = validationErrors;
+    setValidationErrors(rest);
+  };
+
+  const handleRemoveDisplayImage = () => {
+    setRemoveDisplayImage(true);
+    setDisplayImageFile(null);
+    setDisplayImagePreview(null);
+    const { displayImage: _, ...rest } = validationErrors;
     setValidationErrors(rest);
   };
 
@@ -175,6 +252,26 @@ export default function RecipeDetail() {
     return errors;
   };
 
+  const generateImageFilename = (file) => {
+    // Use crypto.randomUUID if available, otherwise fallback to timestamp + random
+    const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    return `image-${uniqueId}-${file.name}`;
+  };
+
+  const uploadDisplayImage = async (imageFile) => {
+    const imagePresignData = await uploadsApi.getPresignedUploadUrl(
+      generateImageFilename(imageFile),
+      imageFile.type,
+    );
+    await uploadsApi.uploadToPresignedUrl(
+      imagePresignData.uploadUrl,
+      imageFile,
+    );
+    return imagePresignData.key;
+  };
+
   const handleSave = async () => {
     const errors = validateForm();
 
@@ -191,11 +288,11 @@ export default function RecipeDetail() {
         recipe.type.toLowerCase() === "manual" ? editedContent : recipe.content,
     };
 
-    // Handle document upload if user selected a new file
-    if (recipe.type.toLowerCase() === "document" && file) {
-      try {
-        setUploading(true);
+    try {
+      setUploading(true);
 
+      // Handle document upload if user selected a new file
+      if (recipe.type.toLowerCase() === "document" && file) {
         // Get presigned upload URL
         const presignData = await uploadsApi.getPresignedUploadUrl(
           file.name,
@@ -206,19 +303,31 @@ export default function RecipeDetail() {
         await uploadsApi.uploadToPresignedUrl(presignData.uploadUrl, file);
 
         updateData.storageKey = presignData.key;
-        setUploading(false);
-      } catch (err) {
-        setUploading(false);
-        setValidationErrors({
-          ...validationErrors,
-          file: err.message || "Failed to upload file",
-        });
-        return; // Don't proceed with mutation if upload failed
       }
-    }
 
-    // Mutation has its own error handling via onError callback
-    updateMutation.mutate(updateData);
+      // Handle display image upload/removal
+      if (removeDisplayImage) {
+        // Clear the preview image
+        updateData.previewImageUrl = null;
+      } else if (displayImageFile) {
+        // Upload new display image
+        updateData.previewImageUrl = await uploadDisplayImage(displayImageFile);
+      } else {
+        // Keep existing preview image
+        updateData.previewImageUrl = recipe.previewImageUrl;
+      }
+
+      setUploading(false);
+
+      // Mutation has its own error handling via onError callback
+      updateMutation.mutate(updateData);
+    } catch (err) {
+      setUploading(false);
+      setValidationErrors({
+        ...validationErrors,
+        upload: err.message || "Failed to upload file",
+      });
+    }
   };
 
   if (isLoading) {
@@ -346,11 +455,17 @@ export default function RecipeDetail() {
           </div>
         )}
 
+        {validationErrors.upload && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-800">Upload error: {validationErrors.upload}</p>
+          </div>
+        )}
+
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {/* Preview Image Section - Always shown for consistent layout */}
           <div className="w-full h-64 sm:h-80 bg-gray-200 overflow-hidden relative">
             <img
-              src={imageSrc}
+              src={displayImagePreview || (removeDisplayImage ? "/recipe-placeholder.svg" : imageSrc)}
               alt={recipe.title}
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -393,6 +508,68 @@ export default function RecipeDetail() {
               </button>
             )}
           </div>
+
+          {/* Display Image Upload Controls - Only in Edit Mode */}
+          {isEditMode && (
+            <div className="p-4 bg-blue-50 border-b border-blue-200">
+              <h3 className="text-sm font-semibold text-gray-800 mb-3">
+                Display Image
+              </h3>
+              
+              {recipe.previewImageUrl && !removeDisplayImage && !displayImageFile && (
+                <div className="mb-3 flex items-center gap-3">
+                  <p className="text-sm text-gray-600">Current image is displayed above</p>
+                  <button
+                    type="button"
+                    onClick={handleRemoveDisplayImage}
+                    className="text-sm text-red-600 hover:text-red-700 hover:underline"
+                  >
+                    Remove Image
+                  </button>
+                </div>
+              )}
+
+              {removeDisplayImage && (
+                <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                  <p className="text-sm text-yellow-800">
+                    Image will be removed when you save
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <label
+                  htmlFor="displayImageEdit"
+                  className="block text-sm font-medium mb-1"
+                >
+                  {recipe.previewImageUrl && !removeDisplayImage
+                    ? "Replace Display Image (Optional)"
+                    : "Upload Display Image (Optional)"}
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Max file size: 5MB. Allowed types: JPG, PNG, GIF, WEBP
+                </p>
+                <input
+                  type="file"
+                  id="displayImageEdit"
+                  onChange={handleDisplayImageChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  accept=".jpg,.jpeg,.png,.gif,.webp"
+                />
+                {displayImageFile && (
+                  <p className="text-xs text-green-600 mt-1">
+                    Selected: {displayImageFile.name} (
+                    {(displayImageFile.size / (1024 * 1024)).toFixed(2)}MB)
+                  </p>
+                )}
+                {validationErrors.displayImage && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {validationErrors.displayImage}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Title and Metadata Section */}
           <div className="p-6 border-b border-gray-200">
