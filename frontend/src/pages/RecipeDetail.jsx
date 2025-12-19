@@ -150,26 +150,19 @@ export default function RecipeDetail() {
         if (fetchedMetadata) {
           setMetadata(fetchedMetadata);
 
-          // Auto-fill fields if they're empty or match the old URL's metadata
-          if (!editedTitle || editedTitle === recipe.title) {
-            if (fetchedMetadata.title) {
-              setEditedTitle(fetchedMetadata.title);
-            }
+          // Auto-update fields with fetched metadata when URL changes
+          // This ensures all fields update consistently in edit mode
+          if (fetchedMetadata.title) {
+            setEditedTitle(fetchedMetadata.title);
           }
-          if (!editedDescription || editedDescription === recipe.description) {
-            if (fetchedMetadata.description) {
-              setEditedDescription(fetchedMetadata.description);
-            }
+          if (fetchedMetadata.description) {
+            setEditedDescription(fetchedMetadata.description);
           }
-          if (!editedPreviewImageUrl || editedPreviewImageUrl === recipe.previewImageUrl) {
-            if (fetchedMetadata.imageUrl) {
-              setEditedPreviewImageUrl(fetchedMetadata.imageUrl);
-            }
+          if (fetchedMetadata.imageUrl) {
+            setEditedPreviewImageUrl(fetchedMetadata.imageUrl);
           }
-          if (!editedSiteName || editedSiteName === recipe.siteName) {
-            if (fetchedMetadata.siteName) {
-              setEditedSiteName(fetchedMetadata.siteName);
-            }
+          if (fetchedMetadata.siteName) {
+            setEditedSiteName(fetchedMetadata.siteName);
           }
         }
       } catch (err) {
@@ -186,7 +179,7 @@ export default function RecipeDetail() {
         clearTimeout(urlDebounceRef.current);
       }
     };
-  }, [editedUrl, isEditMode, recipe, editedTitle, editedDescription, editedPreviewImageUrl, editedSiteName]);
+  }, [editedUrl, isEditMode, recipe]);
 
   const handleDelete = () => {
     if (window.confirm("Are you sure you want to delete this recipe?")) {
