@@ -55,7 +55,7 @@ describe("RecipeCard", () => {
     expect(screen.getByText("https://example.com/recipe")).toBeInTheDocument();
   });
 
-  it("should display content preview for manual type recipes", () => {
+  it("should display content preview for manual type recipes with legacy plain text", () => {
     const manualRecipe = {
       ...mockRecipe,
       type: "manual",
@@ -67,6 +67,105 @@ describe("RecipeCard", () => {
     expect(
       screen.getByText("Test content for manual recipe"),
     ).toBeInTheDocument();
+  });
+
+  it("should display description from parsed JSON for manual recipe", () => {
+    const manualRecipe = {
+      ...mockRecipe,
+      type: "manual",
+      content: JSON.stringify({
+        description: "A delicious recipe",
+        ingredients: "2 cups flour\n1 cup sugar",
+        instructions: "Mix and bake",
+        notes: "Best served warm"
+      }),
+      description: null, // No separate description field
+    };
+
+    renderWithProviders(<RecipeCard recipe={manualRecipe} />);
+
+    expect(screen.getByText("A delicious recipe")).toBeInTheDocument();
+    // Should NOT show the ingredients or instructions
+    expect(screen.queryByText(/2 cups flour/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Mix and bake/)).not.toBeInTheDocument();
+  });
+
+  it("should fallback to ingredients when description is empty in manual recipe", () => {
+    const manualRecipe = {
+      ...mockRecipe,
+      type: "manual",
+      content: JSON.stringify({
+        description: "",
+        ingredients: "2 cups flour\n1 cup sugar\n3 eggs",
+        instructions: "Mix and bake",
+        notes: ""
+      }),
+      description: null,
+    };
+
+    renderWithProviders(<RecipeCard recipe={manualRecipe} />);
+
+    expect(screen.getByText(/2 cups flour/)).toBeInTheDocument();
+  });
+
+  it("should fallback to instructions when both description and ingredients are empty", () => {
+    const manualRecipe = {
+      ...mockRecipe,
+      type: "manual",
+      content: JSON.stringify({
+        description: "",
+        ingredients: "",
+        instructions: "Preheat oven to 350°F\nMix ingredients\nBake for 30 minutes",
+        notes: ""
+      }),
+      description: null,
+    };
+
+    renderWithProviders(<RecipeCard recipe={manualRecipe} />);
+
+    expect(screen.getByText(/Preheat oven to 350°F/)).toBeInTheDocument();
+  });
+
+  it("should use separate description field over parsed content description", () => {
+    const manualRecipe = {
+      ...mockRecipe,
+      type: "manual",
+      content: JSON.stringify({
+        description: "Content description",
+        ingredients: "2 cups flour",
+        instructions: "Mix",
+        notes: ""
+      }),
+      description: "Separate field description", // This should take priority
+    };
+
+    renderWithProviders(<RecipeCard recipe={manualRecipe} />);
+
+    expect(screen.getByText("Separate field description")).toBeInTheDocument();
+    // Should NOT show the content description
+    expect(screen.queryByText("Content description")).not.toBeInTheDocument();
+  });
+
+  it("should truncate long descriptions with line-clamp-3", () => {
+    const longDescription = "This is a very long description that should be truncated. ".repeat(10).trim();
+    const manualRecipe = {
+      ...mockRecipe,
+      type: "manual",
+      content: JSON.stringify({
+        description: longDescription,
+        ingredients: "2 cups flour",
+        instructions: "Mix",
+        notes: ""
+      }),
+      description: null,
+    };
+
+    const { container } = renderWithProviders(<RecipeCard recipe={manualRecipe} />);
+
+    // Verify the text container has line-clamp-3 class
+    const textElement = container.querySelector('.line-clamp-3');
+    expect(textElement).toBeInTheDocument();
+    expect(textElement).toHaveTextContent(longDescription);
   });
 
   it("should show filled star icon when recipe is favorited", () => {

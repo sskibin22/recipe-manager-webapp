@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi } from "../services/api";
+import { parseRecipeContent } from "../utils/recipeContent";
 
 const RecipeCard = ({ recipe }) => {
   const queryClient = useQueryClient();
@@ -201,7 +202,15 @@ const RecipeCard = ({ recipe }) => {
           recipe.content &&
           !recipe.description && (
             <p className="text-sm text-gray-600 line-clamp-3">
-              {recipe.content}
+              {(() => {
+                const parsedContent = parseRecipeContent(recipe.content);
+                // Try description first, then ingredients, then instructions
+                const previewText = parsedContent.description || 
+                                   parsedContent.ingredients || 
+                                   parsedContent.instructions || 
+                                   "";
+                return previewText;
+              })()}
             </p>
           )}
 
