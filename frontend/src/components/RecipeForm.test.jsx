@@ -101,7 +101,11 @@ describe("RecipeForm", () => {
     const manualRadio = screen.getByLabelText(/^Manual$/);
     await user.click(manualRadio);
 
-    expect(screen.getByLabelText(/Recipe Content/i)).toBeInTheDocument();
+    // Check for segregated fields
+    expect(screen.getByLabelText(/Description \(Optional\)/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Ingredients \*/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Instructions \*/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Notes \(Optional\)/i)).toBeInTheDocument();
   });
 
   it("should show error when title is empty on submit", async () => {
@@ -172,7 +176,7 @@ describe("RecipeForm", () => {
     await user.click(submitButton);
 
     expect(
-      await screen.findByText("Content is required for manual recipes"),
+      await screen.findByText("Either Ingredients or Instructions must be provided for manual recipes"),
     ).toBeInTheDocument();
   });
 
@@ -227,8 +231,11 @@ describe("RecipeForm", () => {
     const manualRadio = screen.getByLabelText(/^Manual$/);
     await user.click(manualRadio);
 
-    const contentInput = screen.getByLabelText(/Recipe Content/i);
-    await user.type(contentInput, "Test content");
+    const ingredientsInput = screen.getByLabelText(/Ingredients \*/i);
+    await user.type(ingredientsInput, "Test ingredients");
+
+    const instructionsInput = screen.getByLabelText(/Instructions \*/i);
+    await user.type(instructionsInput, "Test instructions");
 
     const submitButton = screen.getByText(/Add Recipe/);
     await user.click(submitButton);
@@ -236,11 +243,13 @@ describe("RecipeForm", () => {
     await waitFor(() => {
       expect(api.recipesApi.create).toHaveBeenCalled();
       const callArgs = api.recipesApi.create.mock.calls[0][0];
-      expect(callArgs).toEqual({
-        title: "Test Recipe",
-        type: "manual",
-        content: "Test content",
-      });
+      expect(callArgs.title).toBe("Test Recipe");
+      expect(callArgs.type).toBe("manual");
+      // Content should be JSON string
+      expect(callArgs.content).toBeDefined();
+      const parsedContent = JSON.parse(callArgs.content);
+      expect(parsedContent.ingredients).toBe("Test ingredients");
+      expect(parsedContent.instructions).toBe("Test instructions");
       // Verify metadata fields are NOT included
       expect(callArgs.previewImageUrl).toBeUndefined();
       expect(callArgs.description).toBeUndefined();
@@ -514,9 +523,9 @@ describe("RecipeForm", () => {
     const manualRadio = screen.getByLabelText(/^Manual$/);
     await user.click(manualRadio);
 
-    // Enter manual content
-    const contentInput = screen.getByLabelText(/Recipe Content/i);
-    await user.type(contentInput, "Test content");
+    // Enter manual content in segregated fields
+    const ingredientsInput = screen.getByLabelText(/Ingredients \*/i);
+    await user.type(ingredientsInput, "Test ingredients");
 
     // Submit the form
     const submitButton = screen.getByText(/Add Recipe/);
@@ -526,11 +535,12 @@ describe("RecipeForm", () => {
     await waitFor(() => {
       expect(api.recipesApi.create).toHaveBeenCalled();
       const callArgs = api.recipesApi.create.mock.calls[0][0];
-      expect(callArgs).toEqual({
-        title: "Test Recipe",
-        type: "manual",
-        content: "Test content",
-      });
+      expect(callArgs.title).toBe("Test Recipe");
+      expect(callArgs.type).toBe("manual");
+      // Content should be JSON string
+      expect(callArgs.content).toBeDefined();
+      const parsedContent = JSON.parse(callArgs.content);
+      expect(parsedContent.ingredients).toBe("Test ingredients");
       // Verify metadata fields are NOT included
       expect(callArgs.previewImageUrl).toBeUndefined();
       expect(callArgs.description).toBeUndefined();
