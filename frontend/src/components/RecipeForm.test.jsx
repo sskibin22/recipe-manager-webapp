@@ -12,6 +12,20 @@ vi.mock("../services/api", () => ({
     getPresignedUploadUrl: vi.fn(),
     uploadToPresignedUrl: vi.fn(),
   },
+  categoriesApi: {
+    getAll: vi.fn(() => Promise.resolve([
+      { id: 1, name: "Breakfast", color: "#FCD34D" },
+      { id: 2, name: "Lunch", color: "#34D399" },
+      { id: 3, name: "Dinner", color: "#F87171" }
+    ])),
+  },
+  tagsApi: {
+    getAll: vi.fn(() => Promise.resolve([
+      { id: 1, name: "Vegetarian", color: "#10B981", type: 0 },
+      { id: 2, name: "Vegan", color: "#059669", type: 0 },
+      { id: 7, name: "Quick (<30 min)", color: "#3B82F6", type: 1 }
+    ])),
+  },
 }));
 
 vi.mock("../contexts/AuthContext", () => ({

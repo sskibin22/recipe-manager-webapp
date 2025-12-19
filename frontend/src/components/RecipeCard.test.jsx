@@ -11,6 +11,12 @@ vi.mock("../services/api", () => ({
     addFavorite: vi.fn(),
     removeFavorite: vi.fn(),
   },
+  categoriesApi: {
+    getAll: vi.fn(() => Promise.resolve([])),
+  },
+  tagsApi: {
+    getAll: vi.fn(() => Promise.resolve([])),
+  },
 }));
 
 describe("RecipeCard", () => {

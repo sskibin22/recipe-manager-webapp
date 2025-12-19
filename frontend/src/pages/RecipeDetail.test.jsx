@@ -19,6 +19,12 @@ vi.mock("../services/api", () => ({
   uploadsApi: {
     getPresignedDownloadUrl: vi.fn(),
   },
+  categoriesApi: {
+    getAll: vi.fn(() => Promise.resolve([])),
+  },
+  tagsApi: {
+    getAll: vi.fn(() => Promise.resolve([])),
+  },
 }));
 
 // Mock react-router-dom hooks
