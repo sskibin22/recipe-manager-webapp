@@ -1,6 +1,17 @@
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi } from "../services/api";
+import { parseRecipeContent } from "../utils/recipeContent";
+
+// Helper function to extract preview text from Manual recipe content
+const getManualRecipePreview = (content) => {
+  const parsedContent = parseRecipeContent(content);
+  // Try description first, then ingredients, then instructions
+  return parsedContent.description || 
+         parsedContent.ingredients || 
+         parsedContent.instructions || 
+         "";
+};
 
 const RecipeCard = ({ recipe }) => {
   const queryClient = useQueryClient();
@@ -201,7 +212,7 @@ const RecipeCard = ({ recipe }) => {
           recipe.content &&
           !recipe.description && (
             <p className="text-sm text-gray-600 line-clamp-3">
-              {recipe.content}
+              {getManualRecipePreview(recipe.content)}
             </p>
           )}
 
