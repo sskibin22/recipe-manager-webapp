@@ -140,9 +140,9 @@ const RecipeCard = ({ recipe }) => {
       </div>
 
       <div className="p-4">
-        {/* Header with Type Icon and Favorite Button */}
+        {/* Header with Type Icon, Category, and Favorite Button */}
         <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-gray-600 flex-wrap">
             {getRecipeTypeIcon()}
             <span className="text-xs uppercase tracking-wide">
               {recipe.type}
@@ -154,6 +154,9 @@ const RecipeCard = ({ recipe }) => {
                   {recipe.siteName}
                 </span>
               </>
+            )}
+            {recipe.category && (
+              <CategoryBadge category={recipe.category} />
             )}
           </div>
           <button
@@ -189,13 +192,6 @@ const RecipeCard = ({ recipe }) => {
             )}
           </button>
         </div>
-
-        {/* Category Badge */}
-        {recipe.category && (
-          <div className="mb-2">
-            <CategoryBadge category={recipe.category} />
-          </div>
-        )}
 
         {/* Title */}
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
