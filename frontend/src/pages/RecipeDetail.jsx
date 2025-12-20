@@ -6,6 +6,8 @@ import DocumentPreview from "../components/DocumentPreview";
 import { parseRecipeContent, serializeRecipeContent } from "../utils/recipeContent";
 import CategoryBadge from "../components/CategoryBadge";
 import TagBadge from "../components/TagBadge";
+import CategorySelector from "../components/CategorySelector";
+import TagSelector from "../components/TagSelector";
 
 // Component to display manual recipe content in readonly mode
 function ManualRecipeReadonlyView({ content }) {
@@ -145,6 +147,10 @@ export default function RecipeDetail() {
   const [editedDescription, setEditedDescription] = useState("");
   const [editedSiteName, setEditedSiteName] = useState("");
 
+  // Category and tags state for edit mode
+  const [editedCategoryId, setEditedCategoryId] = useState(null);
+  const [editedTagIds, setEditedTagIds] = useState([]);
+
   const urlDebounceRef = useRef(null);
 
   const {
@@ -271,6 +277,10 @@ export default function RecipeDetail() {
       setMetadata(null);
     }
     
+    // Initialize category and tags
+    setEditedCategoryId(recipe.category?.id || null);
+    setEditedTagIds(recipe.tags?.map(tag => tag.id) || []);
+    
     // Parse structured content for Manual recipes
     if (recipe.type.toLowerCase() === "manual") {
       const parsedContent = parseRecipeContent(recipe.content);
@@ -298,6 +308,9 @@ export default function RecipeDetail() {
     setEditedManualIngredients("");
     setEditedManualInstructions("");
     setEditedManualNotes("");
+    // Reset category and tags
+    setEditedCategoryId(null);
+    setEditedTagIds([]);
   };
 
   const validateFile = (file) => {
@@ -454,6 +467,8 @@ export default function RecipeDetail() {
               notes: editedManualNotes,
             })
           : recipe.content,
+      categoryId: editedCategoryId,
+      tagIds: editedTagIds,
     };
 
     try {
@@ -1157,6 +1172,31 @@ export default function RecipeDetail() {
               </div>
             )}
           </div>
+
+          {/* Category and Tags Section - Only in Edit Mode */}
+          {isEditMode && (
+            <div className="p-6 border-t border-gray-200 space-y-4">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                Category and Tags
+              </h2>
+              
+              {/* Category Selector */}
+              <div>
+                <CategorySelector
+                  selectedCategoryId={editedCategoryId}
+                  onChange={setEditedCategoryId}
+                />
+              </div>
+
+              {/* Tag Selector */}
+              <div>
+                <TagSelector
+                  selectedTagIds={editedTagIds}
+                  onChange={setEditedTagIds}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
