@@ -8,22 +8,82 @@ import AuthForm from "../components/AuthForm";
 import RecipeList from "../components/RecipeList";
 import RecipeForm from "../components/RecipeForm";
 import SearchBar from "../components/SearchBar";
+import FilterPanel from "../components/FilterPanel";
+import FilterChips from "../components/FilterChips";
 
 export default function Landing() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    categories: [],
+    types: [],
+  });
 
+  // Calculate active filter count
+  const activeFilterCount = (filters.categories?.length || 0) + (filters.types?.length || 0);
+
+  // Fetch recipes with client-side type filtering since backend doesn't support multiple types
   const {
-    data: recipes = [],
+    data: allRecipes = [],
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["recipes", searchQuery],
-    queryFn: () => fetchRecipes(searchQuery),
+    queryKey: ["recipes", searchQuery, filters.categories, filters.types],
+    queryFn: () => {
+      // Convert filters to API parameters
+      const categoryId = filters.categories?.length === 1 ? filters.categories[0] : null;
+      
+      return fetchRecipes(searchQuery, categoryId, []);
+    },
     enabled: !!user,
   });
+
+  // Apply client-side filtering for types and multiple categories
+  const recipes = allRecipes.filter((recipe) => {
+    // Filter by types if any are selected
+    if (filters.types?.length > 0) {
+      if (!filters.types.includes(recipe.type)) {
+        return false;
+      }
+    }
+
+    // Filter by multiple categories if more than one is selected
+    if (filters.categories?.length > 1) {
+      if (!recipe.category || !filters.categories.includes(recipe.category.id)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  const handleFiltersChange = (newFilters) => {
+    setFilters(newFilters);
+  };
+
+  const handleRemoveCategory = (categoryId) => {
+    setFilters({
+      ...filters,
+      categories: filters.categories.filter((id) => id !== categoryId),
+    });
+  };
+
+  const handleRemoveType = (type) => {
+    setFilters({
+      ...filters,
+      types: filters.types.filter((t) => t !== type),
+    });
+  };
+
+  const handleClearAllFilters = () => {
+    setFilters({
+      categories: [],
+      types: [],
+    });
+  };
 
   if (authLoading) {
     return (
@@ -93,8 +153,43 @@ export default function Landing() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 space-y-4">
-          <div className="flex gap-4">
-            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          <div className="flex gap-4 items-start">
+            <div className="flex-1">
+              <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition whitespace-nowrap flex items-center gap-2"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
+                </svg>
+                <span>Filter</span>
+                {activeFilterCount > 0 && (
+                  <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-600 rounded-full">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+              {isFilterOpen && (
+                <FilterPanel
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                  onClose={() => setIsFilterOpen(false)}
+                />
+              )}
+            </div>
             <button
               onClick={() => setIsFormOpen(true)}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
@@ -102,6 +197,14 @@ export default function Landing() {
               Add Recipe
             </button>
           </div>
+
+          {/* Filter chips */}
+          <FilterChips
+            filters={filters}
+            onRemoveCategory={handleRemoveCategory}
+            onRemoveType={handleRemoveType}
+            onClearAll={handleClearAllFilters}
+          />
         </div>
 
         {isLoading ? (
