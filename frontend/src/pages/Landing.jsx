@@ -153,49 +153,51 @@ export default function Landing() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 space-y-4">
-          <div className="flex gap-4 items-start">
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-start">
             <div className="flex-1">
               <SearchBar value={searchQuery} onChange={setSearchQuery} />
             </div>
-            <div className="relative">
-              <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition whitespace-nowrap flex items-center gap-2"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            <div className="flex gap-4">
+              <div className="relative flex-1 sm:flex-initial">
+                <button
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition whitespace-nowrap flex items-center justify-center gap-2"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                    />
+                  </svg>
+                  <span>Filter</span>
+                  {activeFilterCount > 0 && (
+                    <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-600 rounded-full">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
+                {isFilterOpen && (
+                  <FilterPanel
+                    filters={filters}
+                    onFiltersChange={handleFiltersChange}
+                    onClose={() => setIsFilterOpen(false)}
                   />
-                </svg>
-                <span>Filter</span>
-                {activeFilterCount > 0 && (
-                  <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-600 rounded-full">
-                    {activeFilterCount}
-                  </span>
                 )}
+              </div>
+              <button
+                onClick={() => setIsFormOpen(true)}
+                className="flex-1 sm:flex-initial px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
+              >
+                Add Recipe
               </button>
-              {isFilterOpen && (
-                <FilterPanel
-                  filters={filters}
-                  onFiltersChange={handleFiltersChange}
-                  onClose={() => setIsFilterOpen(false)}
-                />
-              )}
             </div>
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
-            >
-              Add Recipe
-            </button>
           </div>
 
           {/* Filter chips */}

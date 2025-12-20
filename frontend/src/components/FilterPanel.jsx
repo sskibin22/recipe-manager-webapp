@@ -71,7 +71,7 @@ const FilterPanel = ({ filters, onFiltersChange, onClose }) => {
   return (
     <div
       ref={panelRef}
-      className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+      className="absolute top-full right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-xl border border-gray-200 z-50"
     >
       <div className="p-4">
         {/* Header */}
