@@ -653,9 +653,9 @@ export default function RecipeDetail() {
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-white rounded-lg shadow-lg overflow-visible">
           {/* Preview Image Section - Always shown for consistent layout */}
-          <div className="w-full h-64 sm:h-80 bg-gray-200 overflow-hidden relative">
+          <div className="w-full h-64 sm:h-80 bg-gray-200 overflow-hidden relative rounded-t-lg">
             <img
               src={displayImagePreview || (removeDisplayImage ? "/recipe-placeholder.svg" : imageSrc)}
               alt={recipe.title}
