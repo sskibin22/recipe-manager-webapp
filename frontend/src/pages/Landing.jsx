@@ -31,7 +31,7 @@ export default function Landing() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["recipes", searchQuery, filters.categories, filters.types],
+    queryKey: ["recipes", searchQuery, filters.categories],
     queryFn: () => {
       // Convert filters to API parameters
       const categoryId = filters.categories?.length === 1 ? filters.categories[0] : null;
