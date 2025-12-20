@@ -433,4 +433,152 @@ describe("RecipeCard", () => {
     const imageContainer = container.querySelector(".h-48");
     expect(imageContainer).toBeInTheDocument();
   });
+
+  describe("Category Display in Header", () => {
+    it("should display category badge in the header row when category exists", () => {
+      const recipeWithCategory = {
+        ...mockRecipe,
+        category: {
+          id: "cat-123",
+          name: "Desserts",
+          color: "#FF5733",
+        },
+      };
+      const { container } = renderWithProviders(
+        <RecipeCard recipe={recipeWithCategory} />,
+      );
+
+      // Find the header row (the one with justify-between class)
+      const headerRow = container.querySelector(".flex.justify-between");
+      expect(headerRow).toBeInTheDocument();
+
+      // Verify category name is displayed in the header
+      expect(screen.getByText("Desserts")).toBeInTheDocument();
+      
+      // Verify the category badge has the correct styling
+      const categoryBadge = screen.getByText("Desserts").closest("span");
+      expect(categoryBadge).toHaveClass("inline-flex");
+      expect(categoryBadge).toHaveClass("items-center");
+    });
+
+    it("should not display category badge when recipe has no category", () => {
+      const recipeWithoutCategory = {
+        ...mockRecipe,
+        category: null,
+      };
+      renderWithProviders(<RecipeCard recipe={recipeWithoutCategory} />);
+
+      // Category should not be displayed anywhere
+      expect(screen.queryByText(/category/i)).not.toBeInTheDocument();
+    });
+
+    it("should position category after site name for link recipes", () => {
+      const linkRecipeWithCategory = {
+        ...mockRecipe,
+        type: "link",
+        siteName: "Example Site",
+        category: {
+          id: "cat-123",
+          name: "Quick Meals",
+          color: "#4CAF50",
+        },
+      };
+      const { container } = renderWithProviders(
+        <RecipeCard recipe={linkRecipeWithCategory} />,
+      );
+
+      // Get the header content area (not including favorite button)
+      const headerContent = container.querySelector(".flex.items-center.gap-2");
+      expect(headerContent).toBeInTheDocument();
+
+      // Both site name and category should be in the header
+      expect(screen.getByText("Example Site")).toBeInTheDocument();
+      expect(screen.getByText("Quick Meals")).toBeInTheDocument();
+    });
+
+    it("should position category after recipe type for manual recipes", () => {
+      const manualRecipeWithCategory = {
+        ...mockRecipe,
+        type: "manual",
+        category: {
+          id: "cat-456",
+          name: "Breakfast",
+          color: "#FFC107",
+        },
+      };
+      renderWithProviders(<RecipeCard recipe={manualRecipeWithCategory} />);
+
+      // Recipe type and category should both be visible
+      expect(screen.getByText(/manual/i)).toBeInTheDocument();
+      expect(screen.getByText("Breakfast")).toBeInTheDocument();
+    });
+
+    it("should position category after recipe type for document recipes", () => {
+      const documentRecipeWithCategory = {
+        ...mockRecipe,
+        type: "document",
+        category: {
+          id: "cat-789",
+          name: "Lunch",
+          color: "#2196F3",
+        },
+      };
+      renderWithProviders(<RecipeCard recipe={documentRecipeWithCategory} />);
+
+      // Recipe type and category should both be visible
+      expect(screen.getByText(/document/i)).toBeInTheDocument();
+      expect(screen.getByText("Lunch")).toBeInTheDocument();
+    });
+
+    it("should maintain proper layout when category text is long", () => {
+      const recipeWithLongCategory = {
+        ...mockRecipe,
+        category: {
+          id: "cat-999",
+          name: "Very Long Category Name That Might Wrap",
+          color: "#9C27B0",
+        },
+      };
+      const { container } = renderWithProviders(
+        <RecipeCard recipe={recipeWithLongCategory} />,
+      );
+
+      // Header should have flex-wrap to handle long content
+      const headerContent = container.querySelector(
+        ".flex.items-center.gap-2.flex-wrap",
+      );
+      expect(headerContent).toBeInTheDocument();
+
+      // Category should still be visible
+      expect(
+        screen.getByText("Very Long Category Name That Might Wrap"),
+      ).toBeInTheDocument();
+    });
+
+    it("should keep favorite button on the right side with category present", () => {
+      const recipeWithCategory = {
+        ...mockRecipe,
+        isFavorite: false,
+        category: {
+          id: "cat-321",
+          name: "Dinner",
+          color: "#E91E63",
+        },
+      };
+      const { container } = renderWithProviders(
+        <RecipeCard recipe={recipeWithCategory} />,
+      );
+
+      // Header should maintain justify-between layout
+      const headerRow = container.querySelector(".flex.justify-between");
+      expect(headerRow).toBeInTheDocument();
+
+      // Favorite button should still be present
+      const favoriteButton = screen.getByLabelText(/Add to favorites/i);
+      expect(favoriteButton).toBeInTheDocument();
+
+      // Category should also be present
+      expect(screen.getByText("Dinner")).toBeInTheDocument();
+    });
+  });
 });
