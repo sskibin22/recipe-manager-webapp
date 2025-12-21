@@ -92,10 +92,9 @@ public static class RecipeEndpoints
         app.MapGet("/api/recipes", async (
             [AsParameters] RecipeQueryParameters queryParams,
             ApplicationDbContext db, 
-            IUserContextService userContext, 
-            IStorageService storageService, 
+            IUserContextService userContext,
+            RecipeMapper mapper,
             ILogger<Program> logger) =>
-        app.MapGet("/api/recipes", async (ApplicationDbContext db, IUserContextService userContext, RecipeMapper mapper, ILogger<Program> logger, string? q, int? category, string? tags) =>
         {
             var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
