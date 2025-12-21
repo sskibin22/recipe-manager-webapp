@@ -5,6 +5,7 @@ using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Queries;
 using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.DTOs.Responses;
+using RecipeManager.Api.Mapping;
 using RecipeManager.Api.Models;
 using RecipeManager.Api.Services;
 
@@ -14,7 +15,7 @@ public static class RecipeEndpoints
 {
     public static IEndpointRouteBuilder MapRecipeEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, IUserContextService userContext, IFileCacheService fileCache, IStorageService storageService, ILogger<Program> logger) =>
+        app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, IUserContextService userContext, IFileCacheService fileCache, RecipeMapper mapper, ILogger<Program> logger) =>
         {
             var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
@@ -82,45 +83,8 @@ public static class RecipeEndpoints
             await db.Entry(recipe).Reference(r => r.Category).LoadAsync();
             await db.Entry(recipe).Collection(r => r.RecipeTags).Query().Include(rt => rt.Tag).LoadAsync();
 
-            // Convert FileContent to base64 for document recipes
-            string? fileContentBase64 = null;
-            if (recipe.Type == RecipeType.Document && recipe.FileContent != null)
-            {
-                fileContentBase64 = Convert.ToBase64String(recipe.FileContent);
-            }
-
-            // Convert PreviewImageContent to base64 data URL if stored in database
-            string? previewImageUrl = null;
-            if (recipe.PreviewImageContent != null && !string.IsNullOrEmpty(recipe.PreviewImageContentType))
-            {
-                var base64Image = Convert.ToBase64String(recipe.PreviewImageContent);
-                previewImageUrl = $"data:{recipe.PreviewImageContentType};base64,{base64Image}";
-            }
-            else
-            {
-                // Otherwise, convert storage key to presigned URL for preview image
-                previewImageUrl = await storageService.GetPreviewImageUrlAsync(recipe.PreviewImageUrl);
-            }
-
-            return Results.Created($"/api/recipes/{recipe.Id}", new
-            {
-                recipe.Id,
-                recipe.Title,
-                recipe.Type,
-                recipe.Url,
-                recipe.StorageKey,
-                recipe.Content,
-                previewImageUrl = previewImageUrl,
-                recipe.Description,
-                recipe.SiteName,
-                recipe.CreatedAt,
-                recipe.UpdatedAt,
-                FileContent = fileContentBase64,
-                FileContentType = recipe.FileContentType,
-                IsFavorite = false,
-                Category = recipe.Category != null ? new { recipe.Category.Id, recipe.Category.Name, recipe.Category.Color } : null,
-                Tags = recipe.RecipeTags.Select(rt => new { rt.Tag.Id, rt.Tag.Name, rt.Tag.Color, rt.Tag.Type }).ToList()
-            });
+            var response = await mapper.MapToRecipeResponseAsync(recipe, userId.Value);
+            return Results.Created($"/api/recipes/{recipe.Id}", response);
         })
         .WithName("CreateRecipe")
         .WithOpenApi();
@@ -131,6 +95,7 @@ public static class RecipeEndpoints
             IUserContextService userContext, 
             IStorageService storageService, 
             ILogger<Program> logger) =>
+        app.MapGet("/api/recipes", async (ApplicationDbContext db, IUserContextService userContext, RecipeMapper mapper, ILogger<Program> logger, string? q, int? category, string? tags) =>
         {
             var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
@@ -169,47 +134,13 @@ public static class RecipeEndpoints
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
 
-            // Convert preview images to base64 data URLs if stored in database, or presigned URLs if in storage
-            var recipeDtos = new List<object>();
-            foreach (var r in recipes)
-            {
-                string? previewImageUrl = null;
-                if (r.PreviewImageContent != null && !string.IsNullOrEmpty(r.PreviewImageContentType))
-                {
-                    var base64Image = Convert.ToBase64String(r.PreviewImageContent);
-                    previewImageUrl = $"data:{r.PreviewImageContentType};base64,{base64Image}";
-                }
-                else
-                {
-                    previewImageUrl = await storageService.GetPreviewImageUrlAsync(r.PreviewImageUrl);
-                }
-
-                recipeDtos.Add(new
-                {
-                    r.Id,
-                    r.Title,
-                    r.Type,
-                    r.Url,
-                    r.StorageKey,
-                    r.Content,
-                    PreviewImageUrl = previewImageUrl,
-                    r.Description,
-                    r.SiteName,
-                    r.CreatedAt,
-                    r.UpdatedAt,
-                    r.FileContentType,
-                    IsFavorite = r.Favorites.Any(f => f.UserId == userId.Value),
-                    Category = r.Category != null ? new { r.Category.Id, r.Category.Name, r.Category.Color } : null,
-                    Tags = r.RecipeTags.Select(rt => new { rt.Tag.Id, rt.Tag.Name, rt.Tag.Color, rt.Tag.Type }).ToList()
-                });
-            }
-
+            var recipeDtos = await mapper.MapToRecipeResponseListAsync(recipes, userId.Value);
             return Results.Ok(recipeDtos);
         })
         .WithName("GetRecipes")
         .WithOpenApi();
 
-        app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, IUserContextService userContext, IStorageService storageService, ILogger<Program> logger) =>
+        app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, IUserContextService userContext, RecipeMapper mapper, ILogger<Program> logger) =>
         {
             var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
@@ -223,55 +154,19 @@ public static class RecipeEndpoints
 
             if (recipe == null) return Results.NotFound();
 
-            // Convert FileContent to base64 for document recipes
-            string? fileContentBase64 = null;
-            if (recipe.Type == RecipeType.Document && recipe.FileContent != null)
-            {
-                fileContentBase64 = Convert.ToBase64String(recipe.FileContent);
-            }
-
-            // Convert PreviewImageContent to base64 data URL if stored in database
-            string? previewImageUrl = null;
-            if (recipe.PreviewImageContent != null && !string.IsNullOrEmpty(recipe.PreviewImageContentType))
-            {
-                var base64Image = Convert.ToBase64String(recipe.PreviewImageContent);
-                previewImageUrl = $"data:{recipe.PreviewImageContentType};base64,{base64Image}";
-            }
-            else
-            {
-                // Otherwise, convert storage key to presigned URL for preview image if needed
-                previewImageUrl = await storageService.GetPreviewImageUrlAsync(recipe.PreviewImageUrl);
-            }
-
-            return Results.Ok(new
-            {
-                recipe.Id,
-                recipe.Title,
-                recipe.Type,
-                recipe.Url,
-                recipe.StorageKey,
-                recipe.Content,
-                PreviewImageUrl = previewImageUrl,
-                recipe.Description,
-                recipe.SiteName,
-                recipe.CreatedAt,
-                recipe.UpdatedAt,
-                FileContent = fileContentBase64,
-                FileContentType = recipe.FileContentType,
-                IsFavorite = recipe.Favorites.Any(f => f.UserId == userId.Value),
-                Category = recipe.Category != null ? new { recipe.Category.Id, recipe.Category.Name, recipe.Category.Color } : null,
-                Tags = recipe.RecipeTags.Select(rt => new { rt.Tag.Id, rt.Tag.Name, rt.Tag.Color, rt.Tag.Type }).ToList()
-            });
+            var response = await mapper.MapToRecipeResponseAsync(recipe, userId.Value);
+            return Results.Ok(response);
         })
         .WithName("GetRecipe")
         .WithOpenApi();
 
-        app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, IUserContextService userContext, IFileCacheService fileCache, IStorageService storageService, ILogger<Program> logger) =>
+        app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, IUserContextService userContext, IFileCacheService fileCache, RecipeMapper mapper, ILogger<Program> logger) =>
         {
             var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var recipe = await db.Recipes
+                .Include(r => r.Favorites)
                 .Include(r => r.RecipeTags)
                 .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
             if (recipe == null) return Results.NotFound();
@@ -340,44 +235,8 @@ public static class RecipeEndpoints
             await db.Entry(recipe).Reference(r => r.Category).LoadAsync();
             await db.Entry(recipe).Collection(r => r.RecipeTags).Query().Include(rt => rt.Tag).LoadAsync();
 
-            // Convert FileContent to base64 for document recipes
-            string? fileContentBase64 = null;
-            if (recipe.Type == RecipeType.Document && recipe.FileContent != null)
-            {
-                fileContentBase64 = Convert.ToBase64String(recipe.FileContent);
-            }
-
-            // Convert PreviewImageContent to base64 data URL if stored in database
-            string? previewImageUrl = null;
-            if (recipe.PreviewImageContent != null && !string.IsNullOrEmpty(recipe.PreviewImageContentType))
-            {
-                var base64Image = Convert.ToBase64String(recipe.PreviewImageContent);
-                previewImageUrl = $"data:{recipe.PreviewImageContentType};base64,{base64Image}";
-            }
-            else
-            {
-                // Otherwise, convert storage key to presigned URL for preview image
-                previewImageUrl = await storageService.GetPreviewImageUrlAsync(recipe.PreviewImageUrl);
-            }
-
-            return Results.Ok(new
-            {
-                recipe.Id,
-                recipe.Title,
-                recipe.Type,
-                recipe.Url,
-                recipe.StorageKey,
-                recipe.Content,
-                previewImageUrl = previewImageUrl,
-                recipe.Description,
-                recipe.SiteName,
-                recipe.CreatedAt,
-                recipe.UpdatedAt,
-                FileContent = fileContentBase64,
-                FileContentType = recipe.FileContentType,
-                Category = recipe.Category != null ? new { recipe.Category.Id, recipe.Category.Name, recipe.Category.Color } : null,
-                Tags = recipe.RecipeTags.Select(rt => new { rt.Tag.Id, rt.Tag.Name, rt.Tag.Color, rt.Tag.Type }).ToList()
-            });
+            var response = await mapper.MapToRecipeResponseAsync(recipe, userId.Value);
+            return Results.Ok(response);
         })
         .WithName("UpdateRecipe")
         .WithOpenApi();
