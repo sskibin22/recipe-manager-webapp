@@ -1,6 +1,8 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
+using RecipeManager.Api.DTOs.Queries;
 using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.DTOs.Responses;
 using RecipeManager.Api.Mapping;
@@ -87,6 +89,12 @@ public static class RecipeEndpoints
         .WithName("CreateRecipe")
         .WithOpenApi();
 
+        app.MapGet("/api/recipes", async (
+            [AsParameters] RecipeQueryParameters queryParams,
+            ApplicationDbContext db, 
+            IUserContextService userContext, 
+            IStorageService storageService, 
+            ILogger<Program> logger) =>
         app.MapGet("/api/recipes", async (ApplicationDbContext db, IUserContextService userContext, RecipeMapper mapper, ILogger<Program> logger, string? q, int? category, string? tags) =>
         {
             var userId = userContext.GetCurrentUserId();
@@ -99,23 +107,26 @@ public static class RecipeEndpoints
                     .ThenInclude(rt => rt.Tag)
                 .Where(r => r.UserId == userId.Value);
 
-            if (!string.IsNullOrWhiteSpace(q))
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
             {
-                query = query.Where(r => r.Title.Contains(q));
+                query = query.Where(r => r.Title.Contains(queryParams.SearchTerm));
             }
 
-            if (category.HasValue)
+            // Apply category filter
+            if (queryParams.CategoryId.HasValue)
             {
-                query = query.Where(r => r.CategoryId == category.Value);
+                query = query.Where(r => r.CategoryId == queryParams.CategoryId.Value);
             }
 
-            if (!string.IsNullOrWhiteSpace(tags))
+            // Apply tag filter
+            var tagIds = queryParams.GetTagIds();
+            if (tagIds.Count > 0)
             {
-                var tagIds = tags.Split(',').Select(t => int.TryParse(t.Trim(), out var id) ? id : 0).Where(id => id > 0).ToList();
-                if (tagIds.Count > 0)
+                // Filter recipes that have ALL specified tags by chaining Where clauses
+                foreach (var tagId in tagIds)
                 {
-                    // Filter recipes that have ALL specified tags
-                    query = query.Where(r => tagIds.All(tagId => r.RecipeTags.Any(rt => rt.TagId == tagId)));
+                    query = query.Where(r => r.RecipeTags.Any(rt => rt.TagId == tagId));
                 }
             }
 
