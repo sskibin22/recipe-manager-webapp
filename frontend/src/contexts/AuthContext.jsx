@@ -1,27 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
-import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  signInWithPopup,
-  signInWithEmailLink,
-  sendSignInLinkToEmail,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  GoogleAuthProvider,
-  GithubAuthProvider,
-  onAuthStateChanged,
-  signOut as firebaseSignOut,
-} from "firebase/auth";
-
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { authService } from "../services/firebase/firebaseAuth";
+import { auth } from "../services/firebase/firebaseConfig";
 
 const AuthContext = createContext(null);
 
@@ -61,11 +40,11 @@ export const AuthProvider = ({ children }) => {
 
     // Always set up Firebase auth listener (even in bypass mode)
     // This allows signing out of Dev User and into a real account
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = authService.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
         // Real Firebase user signed in - clear the sign-out flag
         hasSignedOut.current = false;
-        const token = await firebaseUser.getIdToken();
+        const token = await authService.getIdToken(firebaseUser);
         setIdToken(token);
         setUser({
           uid: firebaseUser.uid,
@@ -85,9 +64,8 @@ export const AuthProvider = ({ children }) => {
   }, [isDevelopment, bypassAuth]);
 
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      await authService.signInWithGoogle();
     } catch (error) {
       console.error("Google sign-in error:", error);
       throw error;
@@ -95,9 +73,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signInWithGithub = async () => {
-    const provider = new GithubAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      await authService.signInWithGithub();
     } catch (error) {
       console.error("GitHub sign-in error:", error);
       throw error;
@@ -106,7 +83,7 @@ export const AuthProvider = ({ children }) => {
 
   const signInWithEmail = async (email, password) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      await authService.signInWithEmail(email, password);
     } catch (error) {
       console.error("Email sign-in error:", error);
       throw error;
@@ -115,17 +92,7 @@ export const AuthProvider = ({ children }) => {
 
   const signUpWithEmail = async (email, password, displayName) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
-      // Update the user's profile with the display name (e.g., "John Doe")
-      if (displayName) {
-        await updateProfile(userCredential.user, {
-          displayName: displayName,
-        });
-      }
+      await authService.signUpWithEmail(email, password, displayName);
     } catch (error) {
       console.error("Email sign-up error:", error);
       throw error;
@@ -133,13 +100,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const sendEmailLink = async (email) => {
-    const actionCodeSettings = {
-      url: window.location.origin + "/auth/callback",
-      handleCodeInApp: true,
-    };
+    const redirectUrl = window.location.origin + "/auth/callback";
     try {
-      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      window.localStorage.setItem("emailForSignIn", email);
+      await authService.sendSignInLink(email, redirectUrl);
     } catch (error) {
       console.error("Email link error:", error);
       throw error;
@@ -147,43 +110,34 @@ export const AuthProvider = ({ children }) => {
   };
 
   const completeEmailSignIn = async () => {
-    if (signInWithEmailLink(auth, window.location.href)) {
-      const email = window.localStorage.getItem("emailForSignIn");
-      if (!email) {
-        throw new Error("Email not found. Please try signing in again.");
-      }
-      try {
-        await signInWithEmailLink(auth, email, window.location.href);
-        window.localStorage.removeItem("emailForSignIn");
-      } catch (error) {
-        console.error("Complete email sign-in error:", error);
-        throw error;
-      }
+    try {
+      await authService.completeSignInWithEmailLink(window.location.href);
+    } catch (error) {
+      console.error("Complete email sign-in error:", error);
+      throw error;
     }
   };
 
   const signOut = async () => {
     // Mark that user has explicitly signed out
     hasSignedOut.current = true;
-    
+
     try {
       // Always try to sign out of Firebase (in case user is logged in with real account)
-      await firebaseSignOut(auth);
+      await authService.signOut();
     } catch (error) {
       console.error("Sign-out error:", error);
       // Even if Firebase sign-out fails, still clear the user state
     }
-    
+
     // Always clear the user state on sign out
     setUser(null);
     setIdToken(null);
   };
 
   const getToken = async () => {
-    if (auth.currentUser) {
-      return await auth.currentUser.getIdToken();
-    }
-    return null;
+    // Use the auth service for consistency
+    return await authService.getIdToken(auth.currentUser);
   };
 
   const value = {
