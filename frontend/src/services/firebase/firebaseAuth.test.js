@@ -28,13 +28,13 @@ describe("authService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Mock localStorage
-    global.localStorage = {
+    globalThis.localStorage = {
       getItem: vi.fn(),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     };
     // Mock console methods
-    global.console.error = vi.fn();
+    globalThis.console.error = vi.fn();
   });
 
   afterEach(() => {
