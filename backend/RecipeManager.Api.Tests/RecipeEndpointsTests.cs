@@ -375,4 +375,235 @@ public class RecipeEndpointsTests
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
+
+    [Test]
+    public async Task GetRecipes_WithCategoryFilter_ReturnsFilteredRecipes()
+    {
+        // Arrange
+        var category1 = new Category { Name = "Dessert", Color = "#FF0000" };
+        var category2 = new Category { Name = "Main Course", Color = "#00FF00" };
+        _db.Categories.AddRange(category1, category2);
+        await _db.SaveChangesAsync();
+
+        var recipe1 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Chocolate Cake",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CategoryId = category1.Id,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        var recipe2 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Pasta Carbonara",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CategoryId = category2.Id,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        var recipe3 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Tiramisu",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CategoryId = category1.Id,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _db.Recipes.AddRange(recipe1, recipe2, recipe3);
+        await _db.SaveChangesAsync();
+
+        // Act
+        var response = await _client.GetAsync($"/api/recipes?category={category1.Id}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var recipes = await response.Content.ReadFromJsonAsync<List<dynamic>>();
+        recipes.Should().NotBeNull();
+        recipes.Should().HaveCount(2);
+    }
+
+    [Test]
+    public async Task GetRecipes_WithTagFilter_ReturnsFilteredRecipes()
+    {
+        // Arrange
+        var tag1 = new Tag { Name = "Vegetarian", Color = "#00FF00", Type = TagType.Dietary };
+        var tag2 = new Tag { Name = "Quick", Color = "#0000FF", Type = TagType.PrepTime };
+        _db.Tags.AddRange(tag1, tag2);
+        await _db.SaveChangesAsync();
+
+        var recipe1 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Veggie Salad",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        var recipe2 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Quick Pasta",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        var recipe3 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Quick Veggie Stir Fry",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _db.Recipes.AddRange(recipe1, recipe2, recipe3);
+        
+        // Add tags to recipes
+        _db.RecipeTags.Add(new RecipeTag { RecipeId = recipe1.Id, TagId = tag1.Id }); // Veggie Salad - Vegetarian
+        _db.RecipeTags.Add(new RecipeTag { RecipeId = recipe2.Id, TagId = tag2.Id }); // Quick Pasta - Quick
+        _db.RecipeTags.Add(new RecipeTag { RecipeId = recipe3.Id, TagId = tag1.Id }); // Quick Veggie Stir Fry - Vegetarian
+        _db.RecipeTags.Add(new RecipeTag { RecipeId = recipe3.Id, TagId = tag2.Id }); // Quick Veggie Stir Fry - Quick
+        await _db.SaveChangesAsync();
+
+        // Act - Filter by single tag (Vegetarian)
+        var response = await _client.GetAsync($"/api/recipes?tags={tag1.Id}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var recipes = await response.Content.ReadFromJsonAsync<List<dynamic>>();
+        recipes.Should().NotBeNull();
+        recipes.Should().HaveCount(2); // Veggie Salad and Quick Veggie Stir Fry
+    }
+
+    [Test]
+    public async Task GetRecipes_WithMultipleTagFilter_ReturnsRecipesWithAllTags()
+    {
+        // Arrange
+        var tag1 = new Tag { Name = "Vegetarian", Color = "#00FF00", Type = TagType.Dietary };
+        var tag2 = new Tag { Name = "Quick", Color = "#0000FF", Type = TagType.PrepTime };
+        _db.Tags.AddRange(tag1, tag2);
+        await _db.SaveChangesAsync();
+
+        var recipe1 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Veggie Salad",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        var recipe2 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Quick Pasta",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        var recipe3 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Quick Veggie Stir Fry",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _db.Recipes.AddRange(recipe1, recipe2, recipe3);
+        
+        // Add tags to recipes
+        _db.RecipeTags.Add(new RecipeTag { RecipeId = recipe1.Id, TagId = tag1.Id }); // Veggie Salad - Vegetarian only
+        _db.RecipeTags.Add(new RecipeTag { RecipeId = recipe2.Id, TagId = tag2.Id }); // Quick Pasta - Quick only
+        _db.RecipeTags.Add(new RecipeTag { RecipeId = recipe3.Id, TagId = tag1.Id }); // Quick Veggie Stir Fry - Vegetarian
+        _db.RecipeTags.Add(new RecipeTag { RecipeId = recipe3.Id, TagId = tag2.Id }); // Quick Veggie Stir Fry - Quick
+        await _db.SaveChangesAsync();
+
+        // Act - Filter by both tags (must have ALL tags)
+        var response = await _client.GetAsync($"/api/recipes?tags={tag1.Id},{tag2.Id}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var recipes = await response.Content.ReadFromJsonAsync<List<dynamic>>();
+        recipes.Should().NotBeNull();
+        recipes.Should().HaveCount(1); // Only Quick Veggie Stir Fry has both tags
+    }
+
+    [Test]
+    public async Task GetRecipes_WithSearchAndCategoryAndTags_AppliesAllFilters()
+    {
+        // Arrange
+        var category = new Category { Name = "Main Course", Color = "#00FF00" };
+        var tag = new Tag { Name = "Vegetarian", Color = "#00FF00", Type = TagType.Dietary };
+        _db.Categories.Add(category);
+        _db.Tags.Add(tag);
+        await _db.SaveChangesAsync();
+
+        var recipe1 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Veggie Pasta",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CategoryId = category.Id,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        var recipe2 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Veggie Pizza",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CategoryId = category.Id,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        var recipe3 = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = _testUserId,
+            Title = "Chicken Pasta",
+            Type = RecipeType.Manual,
+            Content = "Test content",
+            CategoryId = category.Id,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _db.Recipes.AddRange(recipe1, recipe2, recipe3);
+        
+        // Add vegetarian tag only to veggie recipes
+        _db.RecipeTags.Add(new RecipeTag { RecipeId = recipe1.Id, TagId = tag.Id });
+        _db.RecipeTags.Add(new RecipeTag { RecipeId = recipe2.Id, TagId = tag.Id });
+        await _db.SaveChangesAsync();
+
+        // Act - Filter by search term, category, and tag
+        var response = await _client.GetAsync($"/api/recipes?q=Pasta&category={category.Id}&tags={tag.Id}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var recipes = await response.Content.ReadFromJsonAsync<List<dynamic>>();
+        recipes.Should().NotBeNull();
+        recipes.Should().HaveCount(1); // Only Veggie Pasta matches all criteria
+    }
 }

@@ -159,7 +159,11 @@ public static class RecipeEndpoints
             if (tagIds.Count > 0)
             {
                 // Filter recipes that have ALL specified tags
-                query = query.Where(r => tagIds.All(tagId => r.RecipeTags.Any(rt => rt.TagId == tagId)));
+                // Load recipes into memory first, then filter by tags
+                foreach (var tagId in tagIds)
+                {
+                    query = query.Where(r => r.RecipeTags.Any(rt => rt.TagId == tagId));
+                }
             }
 
             var recipes = await query
