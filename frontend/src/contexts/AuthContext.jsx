@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -37,14 +37,17 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [idToken, setIdToken] = useState(null);
+  
+  // Track if user manually signed out (to prevent auto-restoring Dev User)
+  const hasSignedOut = useRef(false);
 
   // Development mode bypass
   const isDevelopment = import.meta.env.DEV;
   const bypassAuth = import.meta.env.VITE_BYPASS_AUTH === "true";
 
   useEffect(() => {
-    // Development auth bypass
-    if (isDevelopment && bypassAuth) {
+    // Development auth bypass - set dev user initially but still listen for real auth
+    if (isDevelopment && bypassAuth && !hasSignedOut.current) {
       setUser({
         uid: "dev-user-001",
         email: "dev@localhost.com",
@@ -53,11 +56,15 @@ export const AuthProvider = ({ children }) => {
       });
       setIdToken("dev-token");
       setLoading(false);
-      return;
+      // Don't return early - still set up Firebase listener below
     }
 
+    // Always set up Firebase auth listener (even in bypass mode)
+    // This allows signing out of Dev User and into a real account
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        // Real Firebase user signed in - clear the sign-out flag
+        hasSignedOut.current = false;
         const token = await firebaseUser.getIdToken();
         setIdToken(token);
         setUser({
@@ -67,6 +74,7 @@ export const AuthProvider = ({ children }) => {
           photoURL: firebaseUser.photoURL,
         });
       } else {
+        // No Firebase user - clear the user state
         setUser(null);
         setIdToken(null);
       }
@@ -74,7 +82,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     return unsubscribe;
-  }, []);
+  }, [isDevelopment, bypassAuth]);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
@@ -155,23 +163,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
-    // Development mode bypass
-    if (isDevelopment && bypassAuth) {
-      setUser(null);
-      setIdToken(null);
-      return;
-    }
-
+    // Mark that user has explicitly signed out
+    hasSignedOut.current = true;
+    
     try {
+      // Always try to sign out of Firebase (in case user is logged in with real account)
       await firebaseSignOut(auth);
-      // Development mode bypass
-      if (isDevelopment && bypassAuth) {
-        return "dev-token";
-      }
     } catch (error) {
       console.error("Sign-out error:", error);
-      throw error;
+      // Even if Firebase sign-out fails, still clear the user state
     }
+    
+    // Always clear the user state on sign out
+    setUser(null);
+    setIdToken(null);
   };
 
   const getToken = async () => {
