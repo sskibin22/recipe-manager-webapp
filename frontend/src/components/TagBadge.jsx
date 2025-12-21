@@ -1,3 +1,13 @@
+/**
+ * @typedef {import('../types/recipe').Tag} Tag
+ */
+
+/**
+ * Tag badge component - displays a tag label with color styling
+ * @param {Object} props
+ * @param {Tag|null} props.tag - Tag object to display
+ * @returns {JSX.Element|null}
+ */
 const TagBadge = ({ tag }) => {
   if (!tag) return null;
 

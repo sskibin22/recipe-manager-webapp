@@ -1,5 +1,9 @@
 import { useAuth } from "../contexts/AuthContext";
 
+/**
+ * Authentication button component - displays sign in/sign out based on auth state
+ * @returns {JSX.Element}
+ */
 const AuthButton = () => {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
 

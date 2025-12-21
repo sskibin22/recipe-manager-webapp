@@ -1,5 +1,17 @@
+/**
+ * @typedef {import('../types/recipe').Recipe} Recipe
+ */
+
 import RecipeCard from "./RecipeCard";
 
+/**
+ * Recipe list component - displays a grid of recipe cards
+ * @param {Object} props
+ * @param {Recipe[]} props.recipes - Array of recipes to display
+ * @param {boolean} props.isLoading - Loading state
+ * @param {Error|null} props.error - Error object if fetch failed
+ * @returns {JSX.Element}
+ */
 const RecipeList = ({ recipes, isLoading, error }) => {
   if (isLoading) {
     return (

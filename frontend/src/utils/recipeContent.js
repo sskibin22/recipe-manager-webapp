@@ -1,11 +1,15 @@
 /**
+ * @typedef {import('../types/recipe').RecipeContent} RecipeContent
+ */
+
+/**
  * Helper utilities for managing structured manual recipe content
  */
 
 /**
  * Parse recipe content - handles both structured JSON and legacy plain text
  * @param {string} content - The raw content string from the recipe
- * @returns {Object} Structured content object with description, ingredients, instructions, notes
+ * @returns {RecipeContent} Structured content object with description, ingredients, instructions, notes
  */
 export const parseRecipeContent = (content) => {
   if (!content || !content.trim()) {
@@ -44,7 +48,7 @@ export const parseRecipeContent = (content) => {
 
 /**
  * Serialize structured content to JSON string for storage
- * @param {Object} content - Structured content object
+ * @param {RecipeContent} content - Structured content object
  * @returns {string} JSON string
  */
 export const serializeRecipeContent = (content) => {

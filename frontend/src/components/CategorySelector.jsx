@@ -1,6 +1,17 @@
+/**
+ * @typedef {import('../types/recipe').Category} Category
+ */
+
 import { useQuery } from "@tanstack/react-query";
 import { categoriesApi } from "../services/api";
 
+/**
+ * Category selector component - dropdown for selecting recipe category
+ * @param {Object} props
+ * @param {number|null} props.selectedCategoryId - Currently selected category ID
+ * @param {(categoryId: number|null) => void} props.onChange - Callback when category selection changes
+ * @returns {JSX.Element}
+ */
 const CategorySelector = ({ selectedCategoryId, onChange }) => {
   const { data: categories, isLoading } = useQuery({
     queryKey: ["categories"],

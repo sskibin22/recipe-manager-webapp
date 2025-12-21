@@ -1,3 +1,16 @@
+/**
+ * @typedef {import('../types/recipe').Recipe} Recipe
+ * @typedef {import('../types/recipe').RecipeCreateData} RecipeCreateData
+ * @typedef {import('../types/recipe').RecipeUpdateData} RecipeUpdateData
+ * @typedef {import('../types/recipe').Category} Category
+ * @typedef {import('../types/recipe').Tag} Tag
+ * @typedef {import('../types/recipe').MetadataResponse} MetadataResponse
+ * @typedef {import('../types/api').PresignedUploadResponse} PresignedUploadResponse
+ * @typedef {import('../types/api').PresignedDownloadResponse} PresignedDownloadResponse
+ * @typedef {import('../types/api').ApiError} ApiError
+ * @typedef {import('../types/user').UserProfile} UserProfile
+ */
+
 import axios from "axios";
 
 const API_BASE_URL =
@@ -12,6 +25,10 @@ const apiClient = axios.create({
 
 let getTokenFunction = null;
 
+/**
+ * Set the function to retrieve authentication token
+ * @param {() => Promise<string|null>} tokenGetter - Function that returns a promise resolving to the auth token
+ */
 export const setTokenGetter = (tokenGetter) => {
   getTokenFunction = tokenGetter;
 };
@@ -35,13 +52,7 @@ apiClient.interceptors.request.use(
  * Extracts a user-friendly error message from an error object.
  * Supports both RFC 7807 Problem Details format and legacy error format.
  * 
- * @param {Error} error - The error object from an API call
- * @param {Object} [error.response] - The HTTP response object (Axios format)
- * @param {Object} [error.response.data] - The response body
- * @param {string} [error.response.data.detail] - RFC 7807 Problem Details: detailed error message
- * @param {string} [error.response.data.title] - RFC 7807 Problem Details: error title
- * @param {string} [error.response.data.message] - Legacy format: error message
- * @param {string} [error.message] - Fallback error message
+ * @param {ApiError} error - The error object from an API call
  * @returns {string} User-friendly error message
  * 
  * @example
@@ -84,6 +95,13 @@ export const getErrorMessage = (error) => {
 };
 
 // Recipe API
+/**
+ * Fetch all recipes with optional filters
+ * @param {string} [searchQuery=""] - Search term to filter by title
+ * @param {number|null} [categoryId=null] - Category ID to filter by
+ * @param {number[]} [tagIds=[]] - Tag IDs to filter by (AND logic)
+ * @returns {Promise<Recipe[]>} Array of recipes
+ */
 export const fetchRecipes = async (searchQuery = "", categoryId = null, tagIds = []) => {
   const params = {};
   if (searchQuery) params.q = searchQuery;
@@ -94,54 +112,103 @@ export const fetchRecipes = async (searchQuery = "", categoryId = null, tagIds =
   return response.data;
 };
 
+/**
+ * Fetch single recipe by ID
+ * @param {string} id - Recipe ID (GUID)
+ * @returns {Promise<Recipe>} Recipe object
+ */
 export const fetchRecipe = async (id) => {
   const response = await apiClient.get(`/api/recipes/${id}`);
   return response.data;
 };
 
+/**
+ * Create new recipe
+ * @param {RecipeCreateData} recipeData - Recipe data
+ * @returns {Promise<Recipe>} Created recipe
+ */
 export const createRecipe = async (recipeData) => {
   const response = await apiClient.post("/api/recipes", recipeData);
   return response.data;
 };
 
+/**
+ * Update existing recipe
+ * @param {RecipeUpdateData} recipeData - Recipe data including ID
+ * @returns {Promise<Recipe>} Updated recipe
+ */
 export const updateRecipe = async ({ id, ...recipeData }) => {
   const response = await apiClient.put(`/api/recipes/${id}`, recipeData);
   return response.data;
 };
 
+/**
+ * Delete recipe by ID
+ * @param {string} id - Recipe ID (GUID)
+ * @returns {Promise<void>}
+ */
 export const deleteRecipe = async (id) => {
   await apiClient.delete(`/api/recipes/${id}`);
 };
 
 // Categories API
+/**
+ * Fetch all categories
+ * @returns {Promise<Category[]>} Array of categories
+ */
 export const fetchCategories = async () => {
   const response = await apiClient.get("/api/categories");
   return response.data;
 };
 
 // Tags API
+/**
+ * Fetch all tags
+ * @returns {Promise<Tag[]>} Array of tags
+ */
 export const fetchTags = async () => {
   const response = await apiClient.get("/api/tags");
   return response.data;
 };
 
 // Favorite API
+/**
+ * Add recipe to favorites
+ * @param {string} recipeId - Recipe ID (GUID)
+ * @returns {Promise<Object>} API response
+ */
 export const addFavorite = async (recipeId) => {
   const response = await apiClient.post(`/api/recipes/${recipeId}/favorite`);
   return response.data;
 };
 
+/**
+ * Remove recipe from favorites
+ * @param {string} recipeId - Recipe ID (GUID)
+ * @returns {Promise<void>}
+ */
 export const removeFavorite = async (recipeId) => {
   await apiClient.delete(`/api/recipes/${recipeId}/favorite`);
 };
 
 // Metadata API
+/**
+ * Fetch metadata from external URL
+ * @param {string} url - External URL to fetch metadata from
+ * @returns {Promise<MetadataResponse>} Extracted metadata
+ */
 export const fetchMetadata = async (url) => {
   const response = await apiClient.post("/api/recipes/fetch-metadata", { url });
   return response.data;
 };
 
 // Upload API
+/**
+ * Get presigned upload URL for cloud storage
+ * @param {string} fileName - Name of file to upload
+ * @param {string} contentType - MIME type of file
+ * @returns {Promise<PresignedUploadResponse>} Presigned upload URL and storage key
+ */
 export const getPresignedUploadUrl = async (fileName, contentType) => {
   const response = await apiClient.post("/api/uploads/presign", {
     fileName,
@@ -150,6 +217,11 @@ export const getPresignedUploadUrl = async (fileName, contentType) => {
   return response.data;
 };
 
+/**
+ * Get presigned download URL for cloud storage
+ * @param {string} recipeId - Recipe ID (GUID)
+ * @returns {Promise<PresignedDownloadResponse>} Presigned download URL
+ */
 export const getPresignedDownloadUrl = async (recipeId) => {
   const response = await apiClient.get("/api/uploads/presign-download", {
     params: { recipeId },
@@ -157,6 +229,12 @@ export const getPresignedDownloadUrl = async (recipeId) => {
   return response.data;
 };
 
+/**
+ * Upload file to presigned URL
+ * @param {string} presignedUrl - Presigned upload URL
+ * @param {File} file - File object to upload
+ * @returns {Promise<void>}
+ */
 export const uploadToPresignedUrl = async (presignedUrl, file) => {
   await axios.put(presignedUrl, file, {
     headers: {
@@ -192,11 +270,20 @@ export const uploadsApi = {
 };
 
 // User Profile API
+/**
+ * Get current user profile
+ * @returns {Promise<UserProfile>} User profile data
+ */
 export const getUserProfile = async () => {
   const response = await apiClient.get("/api/user/profile");
   return response.data;
 };
 
+/**
+ * Update user profile
+ * @param {Partial<UserProfile>} profileData - Profile data to update
+ * @returns {Promise<UserProfile>} Updated user profile
+ */
 export const updateUserProfile = async (profileData) => {
   const response = await apiClient.put("/api/user/profile", profileData);
   return response.data;
