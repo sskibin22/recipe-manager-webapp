@@ -97,8 +97,8 @@ public class StorageService : IStorageService
     public async Task<string?> GetPreviewImageUrlAsync(string? previewImageUrl)
     {
         // If PreviewImageUrl is a storage key (not an external URL), generate presigned download URL
-        if (!string.IsNullOrEmpty(previewImageUrl) 
-            && !previewImageUrl.StartsWith("http://") 
+        if (!string.IsNullOrEmpty(previewImageUrl)
+            && !previewImageUrl.StartsWith("http://")
             && !previewImageUrl.StartsWith("https://"))
         {
             try
@@ -107,8 +107,8 @@ public class StorageService : IStorageService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, 
-                    "Failed to generate presigned download URL for preview image: {StorageKey}", 
+                _logger.LogWarning(ex,
+                    "Failed to generate presigned download URL for preview image: {StorageKey}",
                     previewImageUrl);
                 return null;
             }

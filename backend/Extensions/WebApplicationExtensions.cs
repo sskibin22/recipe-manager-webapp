@@ -31,8 +31,8 @@ public static class WebApplicationExtensions
 
         // Authentication and Authorization
         var firebaseProjectId = configuration["Firebase:ProjectId"];
-        if (!string.IsNullOrEmpty(firebaseProjectId) 
-            && firebaseProjectId != "your-firebase-project-id")
+        if (!string.IsNullOrEmpty(firebaseProjectId) &&
+            firebaseProjectId != "your-firebase-project-id")
         {
             app.UseAuthentication();
             app.UseAuthorization();

@@ -76,8 +76,8 @@ public static class ServiceCollectionExtensions
         var firebaseProjectId = configuration["Firebase:ProjectId"];
         var firebaseAudience = configuration["Firebase:Audience"];
 
-        if (!string.IsNullOrEmpty(firebaseProjectId) 
-            && firebaseProjectId != "your-firebase-project-id")
+        if (!string.IsNullOrEmpty(firebaseProjectId) &&
+            firebaseProjectId != "your-firebase-project-id")
         {
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
