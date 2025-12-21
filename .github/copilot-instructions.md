@@ -143,7 +143,8 @@ npm run format
 ```
 
 **Environment Variables** (create `.env.local` file in `/frontend`):
-- `VITE_API_BASE_URL` - Backend API URL (e.g., `http://localhost:5000`)
+- `VITE_API_BASE_URL` - Backend API URL (e.g., `http://localhost:5172`)
+- `VITE_BYPASS_AUTH` - Set to `"true"` for development mode auth bypass (required for Playwright tests)
 - `VITE_FIREBASE_API_KEY` - Firebase API key
 - `VITE_FIREBASE_AUTH_DOMAIN` - Firebase auth domain
 - `VITE_FIREBASE_PROJECT_ID` - Firebase project ID
@@ -437,13 +438,81 @@ npm run format
 **Playwright E2E Testing Guidelines**:
 - Use Playwright MCP server for all browser automation testing
 - Write E2E tests for critical user journeys: authentication, recipe CRUD, search, favorites
-- Test files located in `/frontend/e2e/` directory
+- Test files located in `/frontend/tests/e2e/` directory (NOT `/frontend/e2e/`)
 - Use descriptive test names: `test('user can add recipe via external link', ...)`
 - Ensure backend is running before executing E2E tests
 - Use page object model pattern for maintainable tests
 - Set appropriate timeouts for async operations (Firebase auth, API calls)
 - Clean up test data after test runs (delete created recipes)
 - Run E2E tests in CI/CD before deployment
+
+**CRITICAL: Playwright Testing Setup for Copilot Agents** ⚠️
+When running Playwright tests, you MUST follow these steps in order to avoid repeated failures:
+
+1. **Enable Development Authentication Bypass**:
+   - BEFORE running tests, set `VITE_BYPASS_AUTH=true` in `/frontend/.env.local`
+   - This is REQUIRED because Playwright tests cannot handle Firebase authentication flows
+   - Without this, tests will fail because they cannot log in
+   - After changing `.env.local`, you MUST restart the frontend dev server for changes to take effect
+
+2. **Start Backend with SQLite and Auth Bypass**:
+   ```powershell
+   cd backend
+   dotnet run --project C:\src\Projects\RecipeManager\recipe-manager-webapp\backend\RecipeManager.Api.csproj
+   ```
+   - Backend MUST be running on `http://localhost:5172` (or update frontend `.env.local` to match)
+   - Backend automatically uses SQLite in development mode
+   - Backend automatically bypasses JWT validation when `Development:BypassAuthentication: true` in `appsettings.Development.json`
+   - Use FULL PROJECT PATH with `--project` flag to avoid "Couldn't find a project to run" errors
+   - Let backend run in background terminal
+
+3. **Start Frontend Dev Server**:
+   ```powershell
+   Set-Location -Path "C:\src\Projects\RecipeManager\recipe-manager-webapp\frontend"
+   npm run dev
+   ```
+   - Frontend MUST be running on `http://localhost:5173` before tests run
+   - Vite dev server will use the `VITE_BYPASS_AUTH=true` setting from `.env.local`
+   - Verify the app shows "Dev User" logged in when you visit `http://localhost:5173`
+   - Let frontend run in background terminal
+   - Use `Set-Location -Path` with absolute path to ensure correct directory
+
+4. **Run Playwright Tests**:
+   ```powershell
+   Set-Location -Path "C:\src\Projects\RecipeManager\recipe-manager-webapp\frontend"
+   npx playwright test --workers=1
+   ```
+   - Use `--workers=1` to avoid conflicts with shared SQLite database
+   - Tests will automatically use the running frontend server (configured in `playwright.config.js`)
+   - Playwright config has `webServer.reuseExistingServer: true` so it won't start a new server
+   - Use absolute path with `Set-Location` to ensure correct directory
+
+5. **Verify Tests Are Running Correctly**:
+   - Tests should show "Dev User" logged in (not authentication forms)
+   - Most tests (48+) should pass; a few may fail due to test logic issues (not auth issues)
+   - If tests fail with "authentication form not found" errors, it means `VITE_BYPASS_AUTH` is not set correctly
+   - If tests timeout or cannot connect, verify both backend and frontend are running
+
+6. **Common Playwright Test Failures and Solutions**:
+   - **"authentication form when not logged in" test fails**: This is EXPECTED with auth bypass enabled (test expects no auth)
+   - **"strict mode violation" errors**: Tests need to use more specific locators (e.g., use `first()` or filter by role)
+   - **Timeout errors**: Increase timeout or ensure backend/frontend are responding quickly
+   - **Connection refused errors**: Verify backend is running on expected port and frontend `.env.local` has correct `VITE_API_BASE_URL`
+
+7. **Taking Screenshots During Tests**:
+   - Playwright automatically captures screenshots on test failures
+   - Screenshots saved to `/frontend/test-results/` directory
+   - Use Playwright MCP browser tools to manually take screenshots for verification
+   - Verify screenshots show the app in logged-in state with "Dev User" visible
+
+8. **Environment Variables Checklist**:
+   - `/frontend/.env.local`: `VITE_BYPASS_AUTH=true` ✅
+   - `/frontend/.env.local`: `VITE_API_BASE_URL=http://localhost:5172` ✅
+   - `/backend/appsettings.Development.json`: `Development.BypassAuthentication: true` ✅
+   - `/backend/appsettings.Development.json`: `ConnectionStrings.DefaultConnection: "Data Source=recipemanager.db"` ✅
+
+**Summary for Copilot Agents**:
+The #1 reason Playwright tests fail is **not enabling VITE_BYPASS_AUTH=true** in the frontend .env.local file. ALWAYS check this first when tests fail with authentication-related errors. Tests cannot log in via Firebase, so development mode auth bypass MUST be enabled.
 
 **Cost Awareness**:
 - Keep document uploads under 10MB (R2 free tier consideration)
