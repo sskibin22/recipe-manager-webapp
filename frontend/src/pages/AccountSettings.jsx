@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { getUserProfile, updateUserProfile } from "../services/api";
+import { getUserProfile, updateUserProfile, getErrorMessage } from "../services/api";
 import { updateEmail, updatePassword, updateProfile } from "firebase/auth";
 import { getAuth } from "firebase/auth";
 
@@ -75,7 +75,7 @@ const AccountSettings = () => {
       console.error("Error updating profile:", error);
       setMessage({
         type: "error",
-        text: error.message || "Failed to update profile. Please try again.",
+        text: getErrorMessage(error),
       });
     } finally {
       setLoading(false);

@@ -31,6 +31,39 @@ apiClient.interceptors.request.use(
   },
 );
 
+// Helper function to extract error message from response
+// Supports both RFC 7807 Problem Details format and legacy format
+export const getErrorMessage = (error) => {
+  if (error.response?.data) {
+    // RFC 7807 Problem Details format (new)
+    if (error.response.data.detail) {
+      return error.response.data.detail;
+    }
+    // Problem Details with title only (fallback)
+    if (error.response.data.title) {
+      return error.response.data.title;
+    }
+    // Legacy format (old)
+    if (error.response.data.message) {
+      return error.response.data.message;
+    }
+  }
+  // Default fallback message
+  return error.message || "An unexpected error occurred";
+};
+
+// Add response interceptor to enhance error objects with user-friendly messages
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Attach a user-friendly message to the error object
+    if (error.response) {
+      error.userMessage = getErrorMessage(error);
+    }
+    return Promise.reject(error);
+  },
+);
+
 // Recipe API
 export const fetchRecipes = async (searchQuery = "", categoryId = null, tagIds = []) => {
   const params = {};
