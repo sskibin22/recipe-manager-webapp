@@ -21,8 +21,16 @@ public static class FavoriteEndpoints
             var existingFavorite = await db.Favorites
                 .FirstOrDefaultAsync(f => f.UserId == userId.Value && f.RecipeId == id);
 
-            if (existingFavorite != null) 
-                return ProblemDetailsExtensions.ConflictProblem("Already Favorited", "This recipe is already in your favorites.");
+            if (existingFavorite != null)
+            {
+                // Already favorited - return success (idempotent behavior)
+                return Results.Ok(new
+                {
+                    existingFavorite.UserId,
+                    existingFavorite.RecipeId,
+                    existingFavorite.CreatedAt
+                });
+            }
 
             var favorite = new Favorite
             {

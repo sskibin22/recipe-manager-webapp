@@ -52,18 +52,6 @@ export const getErrorMessage = (error) => {
   return error.message || "An unexpected error occurred";
 };
 
-// Add response interceptor to enhance error objects with user-friendly messages
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // Attach a user-friendly message to the error object
-    if (error.response) {
-      error.userMessage = getErrorMessage(error);
-    }
-    return Promise.reject(error);
-  },
-);
-
 // Recipe API
 export const fetchRecipes = async (searchQuery = "", categoryId = null, tagIds = []) => {
   const params = {};
