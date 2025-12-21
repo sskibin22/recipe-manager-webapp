@@ -136,10 +136,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const getToken = async () => {
-    if (auth.currentUser) {
-      return await auth.currentUser.getIdToken();
-    }
-    return null;
+    // Use the auth service for consistency
+    return await authService.getIdToken(auth.currentUser);
   };
 
   const value = {
