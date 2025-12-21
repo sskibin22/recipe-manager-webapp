@@ -2,6 +2,10 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
+/**
+ * Auth callback page component - handles OAuth callback
+ * @returns {JSX.Element}
+ */
 export default function AuthCallback() {
   const { completeEmailSignIn } = useAuth();
   const navigate = useNavigate();

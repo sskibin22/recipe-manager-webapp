@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
 
+/**
+ * Document preview component - displays document content with preview and download
+ * @param {Object} props
+ * @param {string} props.fileContent - Base64 encoded file content
+ * @param {string} props.fileContentType - MIME type of the file
+ * @param {string} props.title - Document title for download filename
+ * @returns {JSX.Element}
+ */
 const DocumentPreview = ({ fileContent, fileContentType, title }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);

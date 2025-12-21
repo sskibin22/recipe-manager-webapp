@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../types/recipe').RecipeContent} RecipeContent
+ */
+
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
@@ -9,7 +13,12 @@ import TagBadge from "../components/TagBadge";
 import CategorySelector from "../components/CategorySelector";
 import TagSelector from "../components/TagSelector";
 
-// Component to display manual recipe content in readonly mode
+/**
+ * Component to display manual recipe content in readonly mode
+ * @param {Object} props
+ * @param {string} props.content - JSON string of recipe content
+ * @returns {JSX.Element|null}
+ */
 function ManualRecipeReadonlyView({ content }) {
   if (!content) return null;
   
@@ -86,7 +95,14 @@ const ALLOWED_IMAGE_TYPES = {
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB for images
 
-// Helper function for generic file validation
+/**
+ * Helper function for generic file validation
+ * @param {File} file - File to validate
+ * @param {number} maxSize - Maximum file size in bytes
+ * @param {Object} allowedTypes - Object mapping MIME types to extensions
+ * @param {string} typeDescription - Human-readable description of allowed types
+ * @returns {string|null} Error message or null if valid
+ */
 const validateFileGeneric = (file, maxSize, allowedTypes, typeDescription) => {
   if (!file) {
     return "No file selected";
@@ -119,6 +135,10 @@ const validateFileGeneric = (file, maxSize, allowedTypes, typeDescription) => {
   return null; // Valid file
 };
 
+/**
+ * Recipe detail page component - displays and edits single recipe
+ * @returns {JSX.Element}
+ */
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();

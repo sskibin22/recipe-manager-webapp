@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../types/recipe').RecipeType} RecipeType
+ */
+
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategories } from "../services/api";
@@ -8,6 +12,20 @@ const RECIPE_TYPES = [
   { value: "Document", label: "Document" },
 ];
 
+/**
+ * @typedef {Object} FilterState
+ * @property {number[]} categories - Array of category IDs
+ * @property {RecipeType[]} types - Array of recipe types
+ */
+
+/**
+ * Filter panel component - side panel for filtering recipes
+ * @param {Object} props
+ * @param {FilterState} props.filters - Current filter state
+ * @param {(filters: FilterState) => void} props.onFiltersChange - Callback when filters are applied
+ * @param {() => void} props.onClose - Callback when panel is closed
+ * @returns {JSX.Element}
+ */
 const FilterPanel = ({ filters, onFiltersChange, onClose }) => {
   const panelRef = useRef(null);
   const [selectedCategories, setSelectedCategories] = useState(

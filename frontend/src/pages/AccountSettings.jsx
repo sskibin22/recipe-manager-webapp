@@ -5,6 +5,10 @@ import { getUserProfile, updateUserProfile, getErrorMessage } from "../services/
 import { updateEmail, updatePassword, updateProfile } from "firebase/auth";
 import { getAuth } from "firebase/auth";
 
+/**
+ * Account settings page component - user profile and password management
+ * @returns {JSX.Element}
+ */
 const AccountSettings = () => {
   const { user } = useAuth();
   const navigate = useNavigate();

@@ -1,6 +1,22 @@
+/**
+ * @typedef {import('../types/recipe').RecipeType} RecipeType
+ * @typedef {Object} FilterState
+ * @property {number[]} [categories] - Array of category IDs
+ * @property {RecipeType[]} [types] - Array of recipe types
+ */
+
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategories } from "../services/api";
 
+/**
+ * Filter chips component - displays active filters as removable chips
+ * @param {Object} props
+ * @param {FilterState} props.filters - Current filter state
+ * @param {(categoryId: number) => void} props.onRemoveCategory - Callback to remove category filter
+ * @param {(type: RecipeType) => void} props.onRemoveType - Callback to remove type filter
+ * @param {() => void} props.onClearAll - Callback to clear all filters
+ * @returns {JSX.Element|null}
+ */
 const FilterChips = ({ filters, onRemoveCategory, onRemoveType, onClearAll }) => {
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
