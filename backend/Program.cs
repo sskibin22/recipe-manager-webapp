@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.Endpoints;
+using RecipeManager.Api.Mapping;
 using RecipeManager.Api.Middleware;
 using RecipeManager.Api.Services;
 using System.Text.Json.Serialization;
@@ -65,6 +66,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IMetadataService, MetadataService>();
+builder.Services.AddScoped<RecipeMapper>();
 builder.Services.AddHttpClient("MetadataClient")
     .ConfigureHttpClient(client =>
     {
