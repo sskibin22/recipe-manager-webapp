@@ -25,14 +25,6 @@ public class RecipeQueryParameters
     [FromQuery(Name = "tags")]
     public string? Tags { get; set; }
     
-    // Future expansion possibilities:
-    // public int PageNumber { get; set; } = 1;
-    // public int PageSize { get; set; } = 20;
-    // public string? SortBy { get; set; }
-    // public string? SortOrder { get; set; } = "desc";
-    // public bool? FavoritesOnly { get; set; }
-    // public RecipeType? Type { get; set; }
-    
     /// <summary>
     /// Parse comma-separated tag IDs into integer list
     /// </summary>
