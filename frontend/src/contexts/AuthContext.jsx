@@ -1,9 +1,30 @@
+/**
+ * @typedef {import('../types/user').User} User
+ */
+
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { authService } from "../services/firebase/firebaseAuth";
 import { auth } from "../services/firebase/firebaseConfig";
 
 const AuthContext = createContext(null);
 
+/**
+ * Custom hook to access authentication context
+ * @returns {{
+ *   user: User|null,
+ *   loading: boolean,
+ *   idToken: string|null,
+ *   signInWithGoogle: () => Promise<void>,
+ *   signInWithGithub: () => Promise<void>,
+ *   signInWithEmail: (email: string, password: string) => Promise<void>,
+ *   signUpWithEmail: (email: string, password: string, displayName: string) => Promise<void>,
+ *   sendEmailLink: (email: string) => Promise<void>,
+ *   completeEmailSignIn: () => Promise<void>,
+ *   signOut: () => Promise<void>,
+ *   getToken: () => Promise<string|null>
+ * }} Authentication context object
+ * @throws {Error} If used outside of AuthProvider
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -12,6 +33,12 @@ export const useAuth = () => {
   return context;
 };
 
+/**
+ * Authentication provider component - wraps app with Firebase auth
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - Child components
+ * @returns {JSX.Element}
+ */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

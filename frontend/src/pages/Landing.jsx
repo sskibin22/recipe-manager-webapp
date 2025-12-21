@@ -11,6 +11,10 @@ import SearchBar from "../components/SearchBar";
 import FilterPanel from "../components/FilterPanel";
 import FilterChips from "../components/FilterChips";
 
+/**
+ * Landing page component - main recipe list view
+ * @returns {JSX.Element}
+ */
 export default function Landing() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();

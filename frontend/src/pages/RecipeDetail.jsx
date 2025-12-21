@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../types/recipe').RecipeContent} RecipeContent
+ */
+
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
@@ -10,7 +14,12 @@ import TagBadge from "../components/TagBadge";
 import CategorySelector from "../components/CategorySelector";
 import TagSelector from "../components/TagSelector";
 
-// Component to display manual recipe content in readonly mode
+/**
+ * Component to display manual recipe content in readonly mode
+ * @param {Object} props
+ * @param {string} props.content - JSON string of recipe content
+ * @returns {JSX.Element|null}
+ */
 function ManualRecipeReadonlyView({ content }) {
   if (!content) return null;
   
@@ -65,6 +74,10 @@ function ManualRecipeReadonlyView({ content }) {
   );
 }
 
+/**
+ * Recipe detail page component - displays and edits single recipe
+ * @returns {JSX.Element}
+ */
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();

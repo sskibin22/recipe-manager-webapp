@@ -1,7 +1,18 @@
+/**
+ * @typedef {import('../types/recipe').Tag} Tag
+ */
+
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { tagsApi } from "../services/api";
 
+/**
+ * Tag selector component - searchable multi-select for recipe tags
+ * @param {Object} props
+ * @param {number[]} [props.selectedTagIds=[]] - Array of selected tag IDs
+ * @param {(tagIds: number[]) => void} props.onChange - Callback when tag selection changes
+ * @returns {JSX.Element}
+ */
 const TagSelector = ({ selectedTagIds = [], onChange }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);

@@ -1,3 +1,13 @@
+/**
+ * @typedef {import('../types/recipe').Category} Category
+ */
+
+/**
+ * Category badge component - displays a category label with color styling
+ * @param {Object} props
+ * @param {Category|null} props.category - Category object to display
+ * @returns {JSX.Element|null}
+ */
 const CategoryBadge = ({ category }) => {
   if (!category) return null;
 

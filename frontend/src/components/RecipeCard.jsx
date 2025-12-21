@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../types/recipe').Recipe} Recipe
+ */
+
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi } from "../services/api";
@@ -5,7 +9,11 @@ import { parseRecipeContent } from "../utils/recipeContent";
 import CategoryBadge from "./CategoryBadge";
 import TagBadge from "./TagBadge";
 
-// Helper function to extract preview text from Manual recipe content
+/**
+ * Helper function to extract preview text from Manual recipe content
+ * @param {string} content - Raw recipe content string
+ * @returns {string} Preview text
+ */
 const getManualRecipePreview = (content) => {
   const parsedContent = parseRecipeContent(content);
   // Try description first, then ingredients, then instructions
@@ -15,6 +23,12 @@ const getManualRecipePreview = (content) => {
          "";
 };
 
+/**
+ * Recipe card component - displays a recipe in card format
+ * @param {Object} props
+ * @param {Recipe} props.recipe - Recipe object to display
+ * @returns {JSX.Element}
+ */
 const RecipeCard = ({ recipe }) => {
   const queryClient = useQueryClient();
 

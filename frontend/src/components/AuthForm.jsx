@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
+/**
+ * Authentication form component - handles sign in and sign up
+ * @returns {JSX.Element}
+ */
 const AuthForm = () => {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);

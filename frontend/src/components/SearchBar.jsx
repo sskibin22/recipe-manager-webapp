@@ -1,3 +1,11 @@
+/**
+ * Search bar component - input field with search icon
+ * @param {Object} props
+ * @param {string} props.value - Current search value
+ * @param {(value: string) => void} props.onChange - Callback when search value changes
+ * @param {string} [props.placeholder="Search recipes..."] - Placeholder text
+ * @returns {JSX.Element}
+ */
 const SearchBar = ({ value, onChange, placeholder = "Search recipes..." }) => {
   return (
     <div className="relative">

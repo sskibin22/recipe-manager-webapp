@@ -1,3 +1,9 @@
+/**
+ * @typedef {import('../types/recipe').RecipeCreateData} RecipeCreateData
+ * @typedef {import('../types/recipe').RecipeType} RecipeType
+ * @typedef {import('../types/recipe').MetadataResponse} MetadataResponse
+ */
+
 import { useState, useEffect, useRef } from "react";
 import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -6,6 +12,13 @@ import { validateRecipeDocument, validateRecipeImage } from "../utils/fileValida
 import CategorySelector from "./CategorySelector";
 import TagSelector from "./TagSelector";
 
+/**
+ * Recipe form component for creating new recipes
+ * @param {Object} props
+ * @param {() => void} props.onClose - Callback when form is closed
+ * @param {() => void} [props.onSuccess] - Callback when recipe is successfully created
+ * @returns {JSX.Element}
+ */
 const RecipeForm = ({ onClose, onSuccess }) => {
   const queryClient = useQueryClient();
   const [recipeType, setRecipeType] = useState("link");
