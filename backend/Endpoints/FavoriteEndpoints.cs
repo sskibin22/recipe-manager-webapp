@@ -23,8 +23,8 @@ public static class FavoriteEndpoints
 
             if (existingFavorite != null)
             {
-                // Already favorited - return success (idempotent behavior)
-                return Results.Ok(new
+                // Already favorited - return same format as new favorite (idempotent behavior)
+                return Results.Created($"/api/recipes/{id}/favorite", new
                 {
                     existingFavorite.UserId,
                     existingFavorite.RecipeId,

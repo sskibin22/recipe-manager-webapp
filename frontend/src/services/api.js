@@ -31,8 +31,34 @@ apiClient.interceptors.request.use(
   },
 );
 
-// Helper function to extract error message from response
-// Supports both RFC 7807 Problem Details format and legacy format
+/**
+ * Extracts a user-friendly error message from an error object.
+ * Supports both RFC 7807 Problem Details format and legacy error format.
+ * 
+ * @param {Error} error - The error object from an API call
+ * @param {Object} [error.response] - The HTTP response object (Axios format)
+ * @param {Object} [error.response.data] - The response body
+ * @param {string} [error.response.data.detail] - RFC 7807 Problem Details: detailed error message
+ * @param {string} [error.response.data.title] - RFC 7807 Problem Details: error title
+ * @param {string} [error.response.data.message] - Legacy format: error message
+ * @param {string} [error.message] - Fallback error message
+ * @returns {string} User-friendly error message
+ * 
+ * @example
+ * // RFC 7807 format
+ * getErrorMessage({ response: { data: { title: "Not Found", detail: "Recipe not found" } } })
+ * // Returns: "Recipe not found"
+ * 
+ * @example
+ * // Legacy format
+ * getErrorMessage({ response: { data: { message: "Recipe not found" } } })
+ * // Returns: "Recipe not found"
+ * 
+ * @example
+ * // Fallback
+ * getErrorMessage({ message: "Network Error" })
+ * // Returns: "Network Error"
+ */
 export const getErrorMessage = (error) => {
   if (error.response?.data) {
     // RFC 7807 Problem Details format (new)
