@@ -10,7 +10,7 @@ public static class RecipeEndpoints
 {
     public static IEndpointRouteBuilder MapRecipeEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache, IStorageService storageService, ILogger<Program> logger) =>
+        app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, IFileCacheService fileCache, IStorageService storageService, ILogger<Program> logger) =>
         {
             var userId = EndpointHelpers.GetUserId(user);
             if (userId == null) return Results.Unauthorized();
@@ -35,24 +35,24 @@ public static class RecipeEndpoints
             // If this is a document upload and the file is in the cache, save it to the database
             if (request.Type == RecipeType.Document && !string.IsNullOrEmpty(request.StorageKey))
             {
-                if (fileCache.TryGetValue(request.StorageKey, out var fileData))
+                if (fileCache.TryGetFromCache(request.StorageKey, out var fileContent, out var fileContentType))
                 {
-                    recipe.FileContent = fileData.content;
-                    recipe.FileContentType = fileData.contentType;
+                    recipe.FileContent = fileContent;
+                    recipe.FileContentType = fileContentType;
                     // Remove from cache after saving
-                    fileCache.Remove(request.StorageKey);
+                    fileCache.RemoveFromCache(request.StorageKey);
                 }
             }
 
             // If preview image URL is provided and the file is in the cache, save it to the database
             if (!string.IsNullOrEmpty(request.PreviewImageUrl))
             {
-                if (fileCache.TryGetValue(request.PreviewImageUrl, out var imageData))
+                if (fileCache.TryGetFromCache(request.PreviewImageUrl, out var imageContent, out var imageContentType))
                 {
-                    recipe.PreviewImageContent = imageData.content;
-                    recipe.PreviewImageContentType = imageData.contentType;
+                    recipe.PreviewImageContent = imageContent;
+                    recipe.PreviewImageContentType = imageContentType;
                     // Remove from cache after saving
-                    fileCache.Remove(request.PreviewImageUrl);
+                    fileCache.RemoveFromCache(request.PreviewImageUrl);
                 }
             }
 
@@ -254,7 +254,7 @@ public static class RecipeEndpoints
         .WithName("GetRecipe")
         .WithOpenApi();
 
-        app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache, IStorageService storageService, ILogger<Program> logger) =>
+        app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, IFileCacheService fileCache, IStorageService storageService, ILogger<Program> logger) =>
         {
             var userId = EndpointHelpers.GetUserId(user);
             if (userId == null) return Results.Unauthorized();
@@ -280,12 +280,12 @@ public static class RecipeEndpoints
                 recipe.StorageKey = request.StorageKey;
 
                 // If this is a document upload and the file is in the cache, save it to the database
-                if (request.Type == RecipeType.Document && fileCache.TryGetValue(request.StorageKey, out var fileData))
+                if (request.Type == RecipeType.Document && fileCache.TryGetFromCache(request.StorageKey, out var fileContent, out var fileContentType))
                 {
-                    recipe.FileContent = fileData.content;
-                    recipe.FileContentType = fileData.contentType;
+                    recipe.FileContent = fileContent;
+                    recipe.FileContentType = fileContentType;
                     // Remove from cache after saving
-                    fileCache.Remove(request.StorageKey);
+                    fileCache.RemoveFromCache(request.StorageKey);
                 }
             }
 
@@ -293,14 +293,14 @@ public static class RecipeEndpoints
             if (!string.IsNullOrEmpty(request.PreviewImageUrl))
             {
                 recipe.PreviewImageUrl = request.PreviewImageUrl;
-                
+
                 // If the preview image is in the cache, save it to the database
-                if (fileCache.TryGetValue(request.PreviewImageUrl, out var imageData))
+                if (fileCache.TryGetFromCache(request.PreviewImageUrl, out var imageContent, out var imageContentType))
                 {
-                    recipe.PreviewImageContent = imageData.content;
-                    recipe.PreviewImageContentType = imageData.contentType;
+                    recipe.PreviewImageContent = imageContent;
+                    recipe.PreviewImageContentType = imageContentType;
                     // Remove from cache after saving
-                    fileCache.Remove(request.PreviewImageUrl);
+                    fileCache.RemoveFromCache(request.PreviewImageUrl);
                 }
             }
 

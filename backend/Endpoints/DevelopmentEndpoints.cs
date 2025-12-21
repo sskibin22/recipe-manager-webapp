@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
+using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
 
@@ -8,7 +9,7 @@ public static class DevelopmentEndpoints
 {
     public static IEndpointRouteBuilder MapDevelopmentEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPut("/placeholder-upload/{*key}", async (HttpRequest request, string key, Dictionary<string, (byte[] content, string contentType)> fileCache) =>
+        app.MapPut("/placeholder-upload/{*key}", async (HttpRequest request, string key, IFileCacheService fileCache) =>
         {
             // Read the uploaded file content
             using var memoryStream = new MemoryStream();
@@ -18,7 +19,7 @@ public static class DevelopmentEndpoints
             var contentType = request.ContentType ?? "application/octet-stream";
 
             // Store in cache for later retrieval when recipe is created
-            fileCache[key] = (fileContent, contentType);
+            fileCache.AddToCache(key, fileContent, contentType);
 
             return Results.Ok(new { message = "File uploaded successfully (development mode)", size = fileContent.Length });
         })
