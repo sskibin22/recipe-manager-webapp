@@ -1,5 +1,6 @@
 using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Requests;
+using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
 

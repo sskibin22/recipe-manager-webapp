@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Requests;
@@ -11,7 +12,7 @@ public static class RecipeEndpoints
 {
     public static IEndpointRouteBuilder MapRecipeEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, IFileCacheService fileCache, IStorageService storageService, ILogger<Program> logger) =>
+        app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, IUserContextService userContext, IFileCacheService fileCache, IStorageService storageService, ILogger<Program> logger) =>
         {
             var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
@@ -255,7 +256,7 @@ public static class RecipeEndpoints
         .WithName("GetRecipe")
         .WithOpenApi();
 
-        app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, IFileCacheService fileCache, IStorageService storageService, ILogger<Program> logger) =>
+        app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, IUserContextService userContext, IFileCacheService fileCache, IStorageService storageService, ILogger<Program> logger) =>
         {
             var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
