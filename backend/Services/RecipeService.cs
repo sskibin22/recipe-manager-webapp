@@ -140,8 +140,6 @@ public class RecipeService : IRecipeService
         // Handle preview image update
         if (!string.IsNullOrEmpty(request.PreviewImageUrl))
         {
-            recipe.PreviewImageUrl = request.PreviewImageUrl;
-
             // If the preview image is in the cache, save it to the database
             if (_fileCache.TryGetFromCache(request.PreviewImageUrl, out var imageContent, out var imageContentType))
             {
