@@ -11,11 +11,13 @@ public class StorageService : IStorageService
     private readonly IAmazonS3? _s3Client;
     private readonly string _bucketName;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<StorageService> _logger;
 
-    public StorageService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+    public StorageService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ILogger<StorageService> logger)
     {
         _configuration = configuration;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
 
         var accountId = _configuration["R2:AccountId"];
         var accessKeyId = _configuration["R2:AccessKeyId"];
@@ -84,5 +86,35 @@ public class StorageService : IStorageService
         };
 
         return await Task.FromResult(_s3Client.GetPreSignedURL(request));
+    }
+
+    /// <summary>
+    /// Converts storage keys to presigned URLs with error handling.
+    /// If PreviewImageUrl is a storage key (not an external URL), generates presigned download URL.
+    /// </summary>
+    /// <param name="previewImageUrl">The preview image URL or storage key.</param>
+    /// <returns>A presigned URL for storage keys, or the original URL for external URLs.</returns>
+    public async Task<string?> GetPreviewImageUrlAsync(string? previewImageUrl)
+    {
+        // If PreviewImageUrl is a storage key (not an external URL), generate presigned download URL
+        if (!string.IsNullOrEmpty(previewImageUrl) 
+            && !previewImageUrl.StartsWith("http://") 
+            && !previewImageUrl.StartsWith("https://"))
+        {
+            try
+            {
+                return await GetPresignedDownloadUrlAsync(previewImageUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, 
+                    "Failed to generate presigned download URL for preview image: {StorageKey}", 
+                    previewImageUrl);
+                return null;
+            }
+        }
+
+        // External URL or null - return as-is
+        return previewImageUrl;
     }
 }

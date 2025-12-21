@@ -52,6 +52,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             mockStorageService
                 .Setup(s => s.GetPresignedDownloadUrlAsync(It.IsAny<string>()))
                 .ReturnsAsync("https://test-download-url.com/test");
+            mockStorageService
+                .Setup(s => s.GetPreviewImageUrlAsync(It.IsAny<string?>()))
+                .ReturnsAsync((string? url) => url?.StartsWith("http") == true ? url : "https://test-download-url.com/test");
 
             // Remove existing IStorageService registration
             var storageDescriptor = services.SingleOrDefault(

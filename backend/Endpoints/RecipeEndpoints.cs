@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.Models;
@@ -10,9 +9,9 @@ public static class RecipeEndpoints
 {
     public static IEndpointRouteBuilder MapRecipeEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache, IStorageService storageService, ILogger<Program> logger) =>
+        app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, IUserContextService userContext, Dictionary<string, (byte[] content, string contentType)> fileCache, IStorageService storageService, ILogger<Program> logger) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var recipe = new Recipe
@@ -95,7 +94,7 @@ public static class RecipeEndpoints
             else
             {
                 // Otherwise, convert storage key to presigned URL for preview image
-                previewImageUrl = await EndpointHelpers.GetPreviewImageUrlAsync(recipe.PreviewImageUrl, storageService, logger);
+                previewImageUrl = await storageService.GetPreviewImageUrlAsync(recipe.PreviewImageUrl);
             }
 
             return Results.Created($"/api/recipes/{recipe.Id}", new
@@ -121,9 +120,9 @@ public static class RecipeEndpoints
         .WithName("CreateRecipe")
         .WithOpenApi();
 
-        app.MapGet("/api/recipes", async (ApplicationDbContext db, ClaimsPrincipal user, IStorageService storageService, ILogger<Program> logger, string? q, int? category, string? tags) =>
+        app.MapGet("/api/recipes", async (ApplicationDbContext db, IUserContextService userContext, IStorageService storageService, ILogger<Program> logger, string? q, int? category, string? tags) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var query = db.Recipes
@@ -169,7 +168,7 @@ public static class RecipeEndpoints
                 }
                 else
                 {
-                    previewImageUrl = await EndpointHelpers.GetPreviewImageUrlAsync(r.PreviewImageUrl, storageService, logger);
+                    previewImageUrl = await storageService.GetPreviewImageUrlAsync(r.PreviewImageUrl);
                 }
 
                 recipeDtos.Add(new
@@ -197,9 +196,9 @@ public static class RecipeEndpoints
         .WithName("GetRecipes")
         .WithOpenApi();
 
-        app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, ClaimsPrincipal user, IStorageService storageService, ILogger<Program> logger) =>
+        app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, IUserContextService userContext, IStorageService storageService, ILogger<Program> logger) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var recipe = await db.Recipes
@@ -228,7 +227,7 @@ public static class RecipeEndpoints
             else
             {
                 // Otherwise, convert storage key to presigned URL for preview image if needed
-                previewImageUrl = await EndpointHelpers.GetPreviewImageUrlAsync(recipe.PreviewImageUrl, storageService, logger);
+                previewImageUrl = await storageService.GetPreviewImageUrlAsync(recipe.PreviewImageUrl);
             }
 
             return Results.Ok(new
@@ -254,9 +253,9 @@ public static class RecipeEndpoints
         .WithName("GetRecipe")
         .WithOpenApi();
 
-        app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, ClaimsPrincipal user, Dictionary<string, (byte[] content, string contentType)> fileCache, IStorageService storageService, ILogger<Program> logger) =>
+        app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, IUserContextService userContext, Dictionary<string, (byte[] content, string contentType)> fileCache, IStorageService storageService, ILogger<Program> logger) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var recipe = await db.Recipes
@@ -345,7 +344,7 @@ public static class RecipeEndpoints
             else
             {
                 // Otherwise, convert storage key to presigned URL for preview image
-                previewImageUrl = await EndpointHelpers.GetPreviewImageUrlAsync(recipe.PreviewImageUrl, storageService, logger);
+                previewImageUrl = await storageService.GetPreviewImageUrlAsync(recipe.PreviewImageUrl);
             }
 
             return Results.Ok(new
@@ -370,9 +369,9 @@ public static class RecipeEndpoints
         .WithName("UpdateRecipe")
         .WithOpenApi();
 
-        app.MapDelete("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, ClaimsPrincipal user) =>
+        app.MapDelete("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, IUserContextService userContext) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var recipe = await db.Recipes.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);

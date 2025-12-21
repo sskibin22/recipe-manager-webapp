@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
+using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
 
@@ -26,9 +26,9 @@ public static class DevelopmentEndpoints
         .WithOpenApi()
         .AllowAnonymous();
 
-        app.MapGet("/placeholder-download/{*key}", async (string key, ApplicationDbContext db, ClaimsPrincipal user) =>
+        app.MapGet("/placeholder-download/{*key}", async (string key, ApplicationDbContext db, IUserContextService userContext) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             // Find the recipe with this preview image key or storage key

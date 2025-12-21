@@ -1,7 +1,7 @@
-using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.Models;
+using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
 
@@ -9,9 +9,9 @@ public static class FavoriteEndpoints
 {
     public static IEndpointRouteBuilder MapFavoriteEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/recipes/{id:guid}/favorite", async (Guid id, ApplicationDbContext db, ClaimsPrincipal user) =>
+        app.MapPost("/api/recipes/{id:guid}/favorite", async (Guid id, ApplicationDbContext db, IUserContextService userContext) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var recipe = await db.Recipes.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
@@ -42,9 +42,9 @@ public static class FavoriteEndpoints
         .WithName("AddFavorite")
         .WithOpenApi();
 
-        app.MapDelete("/api/recipes/{id:guid}/favorite", async (Guid id, ApplicationDbContext db, ClaimsPrincipal user) =>
+        app.MapDelete("/api/recipes/{id:guid}/favorite", async (Guid id, ApplicationDbContext db, IUserContextService userContext) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var favorite = await db.Favorites

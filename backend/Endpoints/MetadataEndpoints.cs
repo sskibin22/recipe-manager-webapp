@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
@@ -7,9 +6,9 @@ public static class MetadataEndpoints
 {
     public static IEndpointRouteBuilder MapMetadataEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/recipes/fetch-metadata", async (FetchMetadataRequest request, IMetadataService metadataService, ClaimsPrincipal user) =>
+        app.MapPost("/api/recipes/fetch-metadata", async (FetchMetadataRequest request, IMetadataService metadataService, IUserContextService userContext) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             if (string.IsNullOrWhiteSpace(request.Url))
