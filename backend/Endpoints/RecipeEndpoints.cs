@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
+using RecipeManager.Api.DTOs.Requests;
+using RecipeManager.Api.DTOs.Responses;
 using RecipeManager.Api.Models;
 using RecipeManager.Api.Services;
 
@@ -390,5 +392,3 @@ public static class RecipeEndpoints
     }
 }
 
-record CreateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content, string? PreviewImageUrl, string? Description, string? SiteName, int? CategoryId, List<int>? TagIds);
-record UpdateRecipeRequest(string Title, RecipeType Type, string? Url, string? StorageKey, string? Content, string? PreviewImageUrl, string? Description, string? SiteName, int? CategoryId, List<int>? TagIds);

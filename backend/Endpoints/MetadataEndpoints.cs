@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
@@ -45,4 +46,3 @@ public static class MetadataEndpoints
     }
 }
 
-record FetchMetadataRequest(string Url);
