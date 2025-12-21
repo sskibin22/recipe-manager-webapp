@@ -8,30 +8,9 @@ import { useState, useEffect, useRef } from "react";
 import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { serializeRecipeContent } from "../utils/recipeContent";
+import { validateRecipeDocument, validateRecipeImage } from "../utils/fileValidation";
 import CategorySelector from "./CategorySelector";
 import TagSelector from "./TagSelector";
-
-// File validation constants
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
-const ALLOWED_FILE_TYPES = {
-  "application/pdf": [".pdf"],
-  "application/msword": [".doc"],
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [
-    ".docx",
-  ],
-  "text/plain": [".txt"],
-  "image/jpeg": [".jpg", ".jpeg"],
-  "image/png": [".png"],
-};
-
-const ALLOWED_IMAGE_TYPES = {
-  "image/jpeg": [".jpg", ".jpeg"],
-  "image/png": [".png"],
-  "image/gif": [".gif"],
-  "image/webp": [".webp"],
-};
-
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB for images
 
 /**
  * Recipe form component for creating new recipes
@@ -168,56 +147,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     };
   }, [url, recipeType, title, description, previewImageUrl, siteName]);
 
-  const validateFileGeneric = (file, maxSize, allowedTypes, typeDescription) => {
-    if (!file) {
-      return "No file selected";
-    }
-
-    // Check file size
-    if (file.size > maxSize) {
-      return `File size must be less than ${maxSize / (1024 * 1024)}MB (selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB)`;
-    }
-
-    // Check file type by MIME type first
-    let isValidType = Object.keys(allowedTypes).includes(file.type);
-
-    // If MIME type check fails or is empty, check by file extension
-    if (!isValidType || !file.type) {
-      const fileName = file.name.toLowerCase();
-      const dotIndex = fileName.lastIndexOf(".");
-      if (dotIndex === -1) {
-        return `Invalid file type. Allowed types: ${typeDescription}`;
-      }
-      const fileExtension = fileName.substring(dotIndex);
-      const allowedExtensions = Object.values(allowedTypes).flat();
-      isValidType = allowedExtensions.includes(fileExtension);
-    }
-
-    if (!isValidType) {
-      return `Invalid file type. Allowed types: ${typeDescription}`;
-    }
-
-    return null; // Valid file
-  };
-
-  const validateFile = (file) => {
-    return validateFileGeneric(
-      file,
-      MAX_FILE_SIZE,
-      ALLOWED_FILE_TYPES,
-      "PDF, DOC, DOCX, TXT, JPG, PNG"
-    );
-  };
-
-  const validateImageFile = (file) => {
-    return validateFileGeneric(
-      file,
-      MAX_IMAGE_SIZE,
-      ALLOWED_IMAGE_TYPES,
-      "JPG, PNG, GIF, WEBP"
-    );
-  };
-
   const handleFileChange = (e) => {
     const selectedFile = e.target.files?.[0] || null;
 
@@ -227,7 +156,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
       return;
     }
 
-    const validationError = validateFile(selectedFile);
+    const validationError = validateRecipeDocument(selectedFile);
     if (validationError) {
       setError(validationError);
       setFile(null);
@@ -249,7 +178,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
       return;
     }
 
-    const validationError = validateImageFile(selectedFile);
+    const validationError = validateRecipeImage(selectedFile);
     if (validationError) {
       setError(validationError);
       setDisplayImageFile(null);
