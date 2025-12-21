@@ -81,7 +81,7 @@ public static class RecipeEndpoints
             await db.Entry(recipe).Reference(r => r.Category).LoadAsync();
             await db.Entry(recipe).Collection(r => r.RecipeTags).Query().Include(rt => rt.Tag).LoadAsync();
 
-            var response = await mapper.MapToRecipeResponseAsync(recipe);
+            var response = await mapper.MapToRecipeResponseAsync(recipe, userId.Value);
             return Results.Created($"/api/recipes/{recipe.Id}", response);
         })
         .WithName("CreateRecipe")
@@ -123,7 +123,7 @@ public static class RecipeEndpoints
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
 
-            var recipeDtos = await mapper.MapToRecipeResponseListAsync(recipes);
+            var recipeDtos = await mapper.MapToRecipeResponseListAsync(recipes, userId.Value);
             return Results.Ok(recipeDtos);
         })
         .WithName("GetRecipes")
@@ -143,7 +143,7 @@ public static class RecipeEndpoints
 
             if (recipe == null) return Results.NotFound();
 
-            var response = await mapper.MapToRecipeResponseAsync(recipe);
+            var response = await mapper.MapToRecipeResponseAsync(recipe, userId.Value);
             return Results.Ok(response);
         })
         .WithName("GetRecipe")
@@ -223,7 +223,7 @@ public static class RecipeEndpoints
             await db.Entry(recipe).Reference(r => r.Category).LoadAsync();
             await db.Entry(recipe).Collection(r => r.RecipeTags).Query().Include(rt => rt.Tag).LoadAsync();
 
-            var response = await mapper.MapToRecipeResponseAsync(recipe);
+            var response = await mapper.MapToRecipeResponseAsync(recipe, userId.Value);
             return Results.Ok(response);
         })
         .WithName("UpdateRecipe")

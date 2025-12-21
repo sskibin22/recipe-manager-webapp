@@ -26,10 +26,11 @@ public class RecipeMapperTests
     public async Task MapToRecipeResponseAsync_WithManualRecipe_ReturnsCorrectResponse()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Test Manual Recipe",
             Type = RecipeType.Manual,
             Content = "Recipe instructions",
@@ -40,7 +41,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();
@@ -58,11 +59,12 @@ public class RecipeMapperTests
     public async Task MapToRecipeResponseAsync_WithDocumentRecipe_ConvertsFileContentToBase64()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var fileContent = new byte[] { 0x50, 0x44, 0x46, 0x2D }; // PDF header bytes
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Test Document Recipe",
             Type = RecipeType.Document,
             FileContent = fileContent,
@@ -75,7 +77,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();
@@ -89,10 +91,11 @@ public class RecipeMapperTests
     {
         // Arrange
         var imageContent = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 }; // JPEG header bytes
+        var userId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Test Recipe with Image",
             Type = RecipeType.Link,
             Url = "https://example.com/recipe",
@@ -105,7 +108,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();
@@ -124,10 +127,11 @@ public class RecipeMapperTests
             .Setup(s => s.GetPresignedDownloadUrlAsync(storageKey))
             .ReturnsAsync(presignedUrl);
 
+        var userId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Test Recipe with Storage Key",
             Type = RecipeType.Link,
             Url = "https://example.com/recipe",
@@ -139,7 +143,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();
@@ -152,10 +156,11 @@ public class RecipeMapperTests
     {
         // Arrange
         var externalUrl = "http://example.com/image.jpg";
+        var userId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Test Recipe with External URL",
             Type = RecipeType.Link,
             Url = "https://example.com/recipe",
@@ -167,7 +172,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();
@@ -180,10 +185,11 @@ public class RecipeMapperTests
     {
         // Arrange
         var externalUrl = "https://example.com/image.jpg";
+        var userId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Test Recipe with External HTTPS URL",
             Type = RecipeType.Link,
             Url = "https://example.com/recipe",
@@ -195,7 +201,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();
@@ -213,10 +219,11 @@ public class RecipeMapperTests
             .Setup(s => s.GetPresignedDownloadUrlAsync(storageKey))
             .ThrowsAsync(new Exception("Storage service error"));
 
+        var userId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Test Recipe with Failed Storage",
             Type = RecipeType.Link,
             Url = "https://example.com/recipe",
@@ -228,7 +235,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();
@@ -246,10 +253,11 @@ public class RecipeMapperTests
             Color = "#FF5733"
         };
 
+        var userId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Test Recipe with Category",
             Type = RecipeType.Manual,
             Content = "Recipe content",
@@ -262,7 +270,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();
@@ -279,10 +287,11 @@ public class RecipeMapperTests
         var tag1 = new Tag { Id = 1, Name = "Vegan", Color = "#00FF00", Type = TagType.Dietary };
         var tag2 = new Tag { Id = 2, Name = "Quick", Color = "#0000FF", Type = TagType.PrepTime };
 
+        var userId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Test Recipe with Tags",
             Type = RecipeType.Manual,
             Content = "Recipe content",
@@ -297,7 +306,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();
@@ -332,7 +341,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();
@@ -343,10 +352,11 @@ public class RecipeMapperTests
     public async Task MapToRecipeResponseAsync_WithoutFavorite_SetsFavoriteToFalse()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Test Non-Favorite Recipe",
             Type = RecipeType.Manual,
             Content = "Recipe content",
@@ -357,7 +367,37 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
+
+        // Assert
+        response.Should().NotBeNull();
+        response.IsFavorite.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task MapToRecipeResponseAsync_WithFavoriteByDifferentUser_SetsFavoriteToFalse()
+    {
+        // Arrange
+        var currentUserId = Guid.NewGuid();
+        var otherUserId = Guid.NewGuid();
+        var recipe = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = currentUserId,
+            Title = "Test Recipe Favorited By Other User",
+            Type = RecipeType.Manual,
+            Content = "Recipe content",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Favorites = new List<Favorite>
+            {
+                new Favorite { UserId = otherUserId, RecipeId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow }
+            },
+            RecipeTags = new List<RecipeTag>()
+        };
+
+        // Act
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, currentUserId);
 
         // Assert
         response.Should().NotBeNull();
@@ -368,12 +408,13 @@ public class RecipeMapperTests
     public async Task MapToRecipeResponseListAsync_WithMultipleRecipes_MapsAllRecipes()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var recipes = new List<Recipe>
         {
             new Recipe
             {
                 Id = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
+                UserId = userId,
                 Title = "Recipe 1",
                 Type = RecipeType.Manual,
                 Content = "Content 1",
@@ -385,7 +426,7 @@ public class RecipeMapperTests
             new Recipe
             {
                 Id = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
+                UserId = userId,
                 Title = "Recipe 2",
                 Type = RecipeType.Link,
                 Url = "https://example.com/recipe2",
@@ -397,7 +438,7 @@ public class RecipeMapperTests
             new Recipe
             {
                 Id = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
+                UserId = userId,
                 Title = "Recipe 3",
                 Type = RecipeType.Document,
                 StorageKey = "users/123/recipe3.pdf",
@@ -411,7 +452,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var responses = await _mapper.MapToRecipeResponseListAsync(recipes);
+        var responses = await _mapper.MapToRecipeResponseListAsync(recipes, userId);
 
         // Assert
         responses.Should().HaveCount(3);
@@ -428,10 +469,11 @@ public class RecipeMapperTests
     public async Task MapToRecipeResponseListAsync_WithEmptyList_ReturnsEmptyList()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var recipes = new List<Recipe>();
 
         // Act
-        var responses = await _mapper.MapToRecipeResponseListAsync(recipes);
+        var responses = await _mapper.MapToRecipeResponseListAsync(recipes, userId);
 
         // Assert
         responses.Should().BeEmpty();
@@ -444,10 +486,11 @@ public class RecipeMapperTests
         var category = new Category { Id = 1, Name = "Main Course", Color = "#FF0000" };
         var tag = new Tag { Id = 1, Name = "Vegetarian", Color = "#00FF00", Type = TagType.Dietary };
         
+        var userId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Title = "Complete Recipe",
             Type = RecipeType.Link,
             Url = "https://example.com/recipe",
@@ -462,7 +505,7 @@ public class RecipeMapperTests
             UpdatedAt = DateTime.UtcNow.AddDays(-1),
             Favorites = new List<Favorite>
             {
-                new Favorite { UserId = Guid.NewGuid(), RecipeId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow }
+                new Favorite { UserId = userId, RecipeId = Guid.NewGuid(), CreatedAt = DateTime.UtcNow }
             },
             RecipeTags = new List<RecipeTag>
             {
@@ -471,7 +514,7 @@ public class RecipeMapperTests
         };
 
         // Act
-        var response = await _mapper.MapToRecipeResponseAsync(recipe);
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
 
         // Assert
         response.Should().NotBeNull();

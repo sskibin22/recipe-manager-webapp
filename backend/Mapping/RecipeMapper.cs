@@ -18,7 +18,9 @@ public class RecipeMapper
     /// <summary>
     /// Maps a Recipe entity to a RecipeResponse DTO.
     /// </summary>
-    public async Task<RecipeResponse> MapToRecipeResponseAsync(Recipe recipe)
+    /// <param name="recipe">The recipe entity to map</param>
+    /// <param name="currentUserId">The ID of the current user to check favorite status</param>
+    public async Task<RecipeResponse> MapToRecipeResponseAsync(Recipe recipe, Guid currentUserId)
     {
         // Convert FileContent to base64 for document recipes
         string? fileContentBase64 = null;
@@ -44,7 +46,7 @@ public class RecipeMapper
             UpdatedAt: recipe.UpdatedAt,
             FileContent: fileContentBase64,
             FileContentType: recipe.FileContentType,
-            IsFavorite: recipe.Favorites.Any(),
+            IsFavorite: recipe.Favorites.Any(f => f.UserId == currentUserId),
             Category: recipe.Category != null 
                 ? new CategoryResponse(recipe.Category.Id, recipe.Category.Name, recipe.Category.Color)
                 : null,
@@ -57,9 +59,11 @@ public class RecipeMapper
     /// <summary>
     /// Maps a list of Recipe entities to RecipeResponse DTOs efficiently using Task.WhenAll.
     /// </summary>
-    public async Task<List<RecipeResponse>> MapToRecipeResponseListAsync(List<Recipe> recipes)
+    /// <param name="recipes">The list of recipes to map</param>
+    /// <param name="currentUserId">The ID of the current user to check favorite status</param>
+    public async Task<List<RecipeResponse>> MapToRecipeResponseListAsync(List<Recipe> recipes, Guid currentUserId)
     {
-        var responseTasks = recipes.Select(MapToRecipeResponseAsync);
+        var responseTasks = recipes.Select(r => MapToRecipeResponseAsync(r, currentUserId));
         return (await Task.WhenAll(responseTasks)).ToList();
     }
 
