@@ -60,6 +60,11 @@ apiClient.interceptors.request.use(
  * // Returns: "Network Error"
  */
 export const getErrorMessage = (error) => {
+  // Null/undefined safety check
+  if (!error) {
+    return "An unexpected error occurred";
+  }
+
   if (error.response?.data) {
     // RFC 7807 Problem Details format (new)
     if (error.response.data.detail) {
