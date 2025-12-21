@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
+using RecipeManager.Api.Extensions;
 using RecipeManager.Api.Models;
 using RecipeManager.Api.Services;
 
@@ -12,15 +13,16 @@ public static class FavoriteEndpoints
         app.MapPost("/api/recipes/{id:guid}/favorite", async (Guid id, ApplicationDbContext db, IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var recipe = await db.Recipes.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
-            if (recipe == null) return Results.NotFound();
+            if (recipe == null) return ProblemDetailsExtensions.NotFoundProblem("Recipe", id.ToString());
 
             var existingFavorite = await db.Favorites
                 .FirstOrDefaultAsync(f => f.UserId == userId.Value && f.RecipeId == id);
 
-            if (existingFavorite != null) return Results.Ok(new { message = "Already favorited" });
+            if (existingFavorite != null) 
+                return ProblemDetailsExtensions.ConflictProblem("Already Favorited", "This recipe is already in your favorites.");
 
             var favorite = new Favorite
             {
@@ -45,12 +47,12 @@ public static class FavoriteEndpoints
         app.MapDelete("/api/recipes/{id:guid}/favorite", async (Guid id, ApplicationDbContext db, IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var favorite = await db.Favorites
                 .FirstOrDefaultAsync(f => f.UserId == userId.Value && f.RecipeId == id);
 
-            if (favorite == null) return Results.NotFound();
+            if (favorite == null) return ProblemDetailsExtensions.NotFoundProblem("Favorite");
 
             db.Favorites.Remove(favorite);
             await db.SaveChangesAsync();

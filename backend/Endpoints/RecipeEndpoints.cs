@@ -5,6 +5,7 @@ using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Queries;
 using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.DTOs.Responses;
+using RecipeManager.Api.Extensions;
 using RecipeManager.Api.Mapping;
 using RecipeManager.Api.Models;
 using RecipeManager.Api.Services;
@@ -18,7 +19,7 @@ public static class RecipeEndpoints
         app.MapPost("/api/recipes", async (CreateRecipeRequest request, ApplicationDbContext db, IUserContextService userContext, IFileCacheService fileCache, RecipeMapper mapper, ILogger<Program> logger) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var recipe = new Recipe
             {
@@ -97,7 +98,7 @@ public static class RecipeEndpoints
             ILogger<Program> logger) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var query = db.Recipes
                 .Include(r => r.Favorites)
@@ -142,7 +143,7 @@ public static class RecipeEndpoints
         app.MapGet("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, IUserContextService userContext, RecipeMapper mapper, ILogger<Program> logger) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var recipe = await db.Recipes
                 .Include(r => r.Favorites)
@@ -151,7 +152,7 @@ public static class RecipeEndpoints
                     .ThenInclude(rt => rt.Tag)
                 .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
 
-            if (recipe == null) return Results.NotFound();
+            if (recipe == null) return ProblemDetailsExtensions.NotFoundProblem("Recipe", id.ToString());
 
             var response = await mapper.MapToRecipeResponseAsync(recipe, userId.Value);
             return Results.Ok(response);
@@ -162,13 +163,13 @@ public static class RecipeEndpoints
         app.MapPut("/api/recipes/{id:guid}", async (Guid id, UpdateRecipeRequest request, ApplicationDbContext db, IUserContextService userContext, IFileCacheService fileCache, RecipeMapper mapper, ILogger<Program> logger) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var recipe = await db.Recipes
                 .Include(r => r.Favorites)
                 .Include(r => r.RecipeTags)
                 .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
-            if (recipe == null) return Results.NotFound();
+            if (recipe == null) return ProblemDetailsExtensions.NotFoundProblem("Recipe", id.ToString());
 
             recipe.Title = request.Title;
             recipe.Type = request.Type;
@@ -243,10 +244,10 @@ public static class RecipeEndpoints
         app.MapDelete("/api/recipes/{id:guid}", async (Guid id, ApplicationDbContext db, IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var recipe = await db.Recipes.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
-            if (recipe == null) return Results.NotFound();
+            if (recipe == null) return ProblemDetailsExtensions.NotFoundProblem("Recipe", id.ToString());
 
             db.Recipes.Remove(recipe);
             await db.SaveChangesAsync();
