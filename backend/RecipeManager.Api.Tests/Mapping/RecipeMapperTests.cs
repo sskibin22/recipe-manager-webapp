@@ -375,6 +375,91 @@ public class RecipeMapperTests
     }
 
     [Test]
+    public async Task MapToRecipeResponseAsync_WithNullFavorites_ReturnsFalse()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var recipe = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Title = "Test Recipe with Null Favorites",
+            Type = RecipeType.Manual,
+            Content = "Recipe content",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Favorites = null!, // Explicitly null
+            RecipeTags = new List<RecipeTag>()
+        };
+
+        // Act
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
+
+        // Assert
+        response.Should().NotBeNull();
+        response.IsFavorite.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task MapToRecipeResponseAsync_WithNullRecipeTags_ReturnsEmptyList()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var recipe = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Title = "Test Recipe with Null Tags",
+            Type = RecipeType.Manual,
+            Content = "Recipe content",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Favorites = new List<Favorite>(),
+            RecipeTags = null! // Explicitly null
+        };
+
+        // Act
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
+
+        // Assert
+        response.Should().NotBeNull();
+        response.Tags.Should().NotBeNull();
+        response.Tags.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task MapToRecipeResponseAsync_WithNullTagInRecipeTags_SkipsNullTag()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var validTag = new Tag { Id = 1, Name = "Valid Tag", Color = "#00FF00", Type = TagType.Dietary };
+        var recipe = new Recipe
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Title = "Test Recipe with Null Tag",
+            Type = RecipeType.Manual,
+            Content = "Recipe content",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Favorites = new List<Favorite>(),
+            RecipeTags = new List<RecipeTag>
+            {
+                new RecipeTag { RecipeId = Guid.NewGuid(), TagId = 1, Tag = validTag },
+                new RecipeTag { RecipeId = Guid.NewGuid(), TagId = 2, Tag = null! } // Null tag
+            }
+        };
+
+        // Act
+        var response = await _mapper.MapToRecipeResponseAsync(recipe, userId);
+
+        // Assert
+        response.Should().NotBeNull();
+        response.Tags.Should().HaveCount(1);
+        response.Tags[0].Name.Should().Be("Valid Tag");
+    }
+
+    [Test]
     public async Task MapToRecipeResponseAsync_WithFavoriteByDifferentUser_SetsFavoriteToFalse()
     {
         // Arrange

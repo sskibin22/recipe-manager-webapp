@@ -155,6 +155,7 @@ public static class RecipeEndpoints
             if (userId == null) return Results.Unauthorized();
 
             var recipe = await db.Recipes
+                .Include(r => r.Favorites)
                 .Include(r => r.RecipeTags)
                 .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
             if (recipe == null) return Results.NotFound();

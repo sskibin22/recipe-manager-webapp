@@ -46,13 +46,14 @@ public class RecipeMapper
             UpdatedAt: recipe.UpdatedAt,
             FileContent: fileContentBase64,
             FileContentType: recipe.FileContentType,
-            IsFavorite: recipe.Favorites.Any(f => f.UserId == currentUserId),
+            IsFavorite: recipe.Favorites?.Any(f => f.UserId == currentUserId) ?? false,
             Category: recipe.Category != null 
                 ? new CategoryResponse(recipe.Category.Id, recipe.Category.Name, recipe.Category.Color)
                 : null,
-            Tags: recipe.RecipeTags
+            Tags: recipe.RecipeTags?
+                .Where(rt => rt.Tag != null)
                 .Select(rt => new TagResponse(rt.Tag.Id, rt.Tag.Name, rt.Tag.Color, rt.Tag.Type))
-                .ToList()
+                .ToList() ?? new List<TagResponse>()
         );
     }
 
