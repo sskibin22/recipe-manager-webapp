@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RecipeManager.Api.Data;
+using RecipeManager.Api.Mapping;
 using RecipeManager.Api.Services;
 using System.Text.Json.Serialization;
 
@@ -33,6 +34,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserContextService, UserContextService>();
         services.AddScoped<IStorageService, StorageService>();
         services.AddScoped<IMetadataService, MetadataService>();
+        services.AddScoped<IRecipeService, RecipeService>();
+        services.AddScoped<RecipeMapper>();
 
         // Add HttpClient for metadata fetching
         services.AddHttpClient("MetadataClient")
