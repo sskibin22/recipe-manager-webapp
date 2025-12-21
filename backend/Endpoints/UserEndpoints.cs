@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using RecipeManager.Api.Data;
+using RecipeManager.Api.DTOs.Requests;
 
 namespace RecipeManager.Api.Endpoints;
 
@@ -60,4 +61,3 @@ public static class UserEndpoints
     }
 }
 
-record UpdateUserProfileRequest(string? Email, string? DisplayName);
