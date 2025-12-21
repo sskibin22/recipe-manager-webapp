@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Requests;
 
@@ -8,9 +7,9 @@ public static class UserEndpoints
 {
     public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/user/profile", async (ApplicationDbContext db, ClaimsPrincipal user) =>
+        app.MapGet("/api/user/profile", async (ApplicationDbContext db, IUserContextService userContext) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var userProfile = await db.Users.FindAsync(userId.Value);
@@ -26,9 +25,9 @@ public static class UserEndpoints
         .WithName("GetUserProfile")
         .WithOpenApi();
 
-        app.MapPut("/api/user/profile", async (UpdateUserProfileRequest request, ApplicationDbContext db, ClaimsPrincipal user) =>
+        app.MapPut("/api/user/profile", async (UpdateUserProfileRequest request, ApplicationDbContext db, IUserContextService userContext) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var userProfile = await db.Users.FindAsync(userId.Value);

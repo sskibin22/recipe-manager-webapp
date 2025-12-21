@@ -62,6 +62,7 @@ if (!string.IsNullOrEmpty(firebaseProjectId) && firebaseProjectId != "your-fireb
 
 // Add services
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<IMetadataService, MetadataService>();
 builder.Services.AddHttpClient("MetadataClient")

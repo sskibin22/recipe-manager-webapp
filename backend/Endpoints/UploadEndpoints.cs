@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Requests;
@@ -10,9 +9,9 @@ public static class UploadEndpoints
 {
     public static IEndpointRouteBuilder MapUploadEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/uploads/presign", async (PresignUploadRequest request, IStorageService storageService, ClaimsPrincipal user) =>
+        app.MapPost("/api/uploads/presign", async (PresignUploadRequest request, IStorageService storageService, IUserContextService userContext) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             // Validate file type by content type and extension
@@ -54,9 +53,9 @@ public static class UploadEndpoints
         .WithName("PresignUpload")
         .WithOpenApi();
 
-        app.MapGet("/api/uploads/presign-download", async (Guid recipeId, ApplicationDbContext db, IStorageService storageService, ClaimsPrincipal user) =>
+        app.MapGet("/api/uploads/presign-download", async (Guid recipeId, ApplicationDbContext db, IStorageService storageService, IUserContextService userContext) =>
         {
-            var userId = EndpointHelpers.GetUserId(user);
+            var userId = userContext.GetCurrentUserId();
             if (userId == null) return Results.Unauthorized();
 
             var recipe = await db.Recipes
