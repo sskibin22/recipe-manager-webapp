@@ -1,12 +1,3 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using RecipeManager.Api.Data;
-using RecipeManager.Api.Endpoints;
-using RecipeManager.Api.Mapping;
-using RecipeManager.Api.Middleware;
-using RecipeManager.Api.Services;
-using System.Text.Json.Serialization;
 using RecipeManager.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
