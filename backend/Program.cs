@@ -71,7 +71,7 @@ builder.Services.AddHttpClient("MetadataClient")
         client.Timeout = TimeSpan.FromSeconds(10);
         client.DefaultRequestHeaders.Add("Accept", "text/html");
     });
-builder.Services.AddSingleton<Dictionary<string, (byte[] content, string contentType)>>();
+builder.Services.AddSingleton<IFileCacheService, FileCacheService>();
 
 var app = builder.Build();
 

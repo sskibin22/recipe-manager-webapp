@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
+using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
@@ -74,4 +75,3 @@ public static class UploadEndpoints
     }
 }
 
-record PresignUploadRequest(string FileName, string ContentType);
