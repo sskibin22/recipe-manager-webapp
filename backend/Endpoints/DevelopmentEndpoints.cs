@@ -4,10 +4,27 @@ using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
 
+/// <summary>
+/// Maps development-only endpoints for file upload/download when cloud storage is not configured.
+/// These endpoints should NEVER be available in production.
+/// </summary>
 public static class DevelopmentEndpoints
 {
+    /// <summary>
+    /// Registers development-only placeholder endpoints for file operations.
+    /// These endpoints are only registered when the application is running in Development environment.
+    /// </summary>
+    /// <param name="app">The endpoint route builder.</param>
+    /// <returns>The endpoint route builder for method chaining.</returns>
     public static IEndpointRouteBuilder MapDevelopmentEndpoints(this IEndpointRouteBuilder app)
     {
+        var environment = app.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+        
+        if (!environment.IsDevelopment())
+        {
+            return app;
+        }
+
         app.MapPut("/placeholder-upload/{*key}", async (HttpRequest request, string key, IFileCacheService fileCache) =>
         {
             // Read the uploaded file content
