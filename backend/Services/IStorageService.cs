@@ -4,7 +4,7 @@ public interface IStorageService
 {
     Task<string> GetPresignedUploadUrlAsync(string key, string contentType);
     Task<string> GetPresignedDownloadUrlAsync(string key);
-    
+
     /// <summary>
     /// Converts storage keys to presigned URLs with error handling.
     /// If PreviewImageUrl is a storage key (not an external URL), generates presigned download URL.
