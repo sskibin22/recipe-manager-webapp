@@ -1,5 +1,6 @@
 using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Requests;
+using RecipeManager.Api.Extensions;
 using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
@@ -11,10 +12,10 @@ public static class UserEndpoints
         app.MapGet("/api/user/profile", async (ApplicationDbContext db, IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var userProfile = await db.Users.FindAsync(userId.Value);
-            if (userProfile == null) return Results.NotFound();
+            if (userProfile == null) return ProblemDetailsExtensions.NotFoundProblem("User");
 
             return Results.Ok(new
             {
@@ -29,10 +30,10 @@ public static class UserEndpoints
         app.MapPut("/api/user/profile", async (UpdateUserProfileRequest request, ApplicationDbContext db, IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var userProfile = await db.Users.FindAsync(userId.Value);
-            if (userProfile == null) return Results.NotFound();
+            if (userProfile == null) return ProblemDetailsExtensions.NotFoundProblem("User");
 
             // Update allowed fields
             if (!string.IsNullOrWhiteSpace(request.Email))

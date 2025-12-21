@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { recipesApi, uploadsApi } from "../services/api";
+import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { serializeRecipeContent } from "../utils/recipeContent";
 import CategorySelector from "./CategorySelector";
@@ -64,7 +64,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
       if (onSuccess) onSuccess();
     },
     onError: (err) => {
-      setError(err.response?.data?.message || "Failed to create recipe");
+      setError(getErrorMessage(err));
     },
   });
 
@@ -349,7 +349,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
       createRecipeMutation.mutate(recipeData);
     } catch (err) {
       setUploading(false);
-      setError(err.message || "Failed to create recipe");
+      setError(getErrorMessage(err));
     }
   };
 

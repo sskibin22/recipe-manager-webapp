@@ -31,6 +31,58 @@ apiClient.interceptors.request.use(
   },
 );
 
+/**
+ * Extracts a user-friendly error message from an error object.
+ * Supports both RFC 7807 Problem Details format and legacy error format.
+ * 
+ * @param {Error} error - The error object from an API call
+ * @param {Object} [error.response] - The HTTP response object (Axios format)
+ * @param {Object} [error.response.data] - The response body
+ * @param {string} [error.response.data.detail] - RFC 7807 Problem Details: detailed error message
+ * @param {string} [error.response.data.title] - RFC 7807 Problem Details: error title
+ * @param {string} [error.response.data.message] - Legacy format: error message
+ * @param {string} [error.message] - Fallback error message
+ * @returns {string} User-friendly error message
+ * 
+ * @example
+ * // RFC 7807 format
+ * getErrorMessage({ response: { data: { title: "Not Found", detail: "Recipe not found" } } })
+ * // Returns: "Recipe not found"
+ * 
+ * @example
+ * // Legacy format
+ * getErrorMessage({ response: { data: { message: "Recipe not found" } } })
+ * // Returns: "Recipe not found"
+ * 
+ * @example
+ * // Fallback
+ * getErrorMessage({ message: "Network Error" })
+ * // Returns: "Network Error"
+ */
+export const getErrorMessage = (error) => {
+  // Null/undefined safety check
+  if (!error) {
+    return "An unexpected error occurred";
+  }
+
+  if (error.response?.data) {
+    // RFC 7807 Problem Details format (new)
+    if (error.response.data.detail) {
+      return error.response.data.detail;
+    }
+    // Problem Details with title only (fallback)
+    if (error.response.data.title) {
+      return error.response.data.title;
+    }
+    // Legacy format (old)
+    if (error.response.data.message) {
+      return error.response.data.message;
+    }
+  }
+  // Default fallback message
+  return error.message || "An unexpected error occurred";
+};
+
 // Recipe API
 export const fetchRecipes = async (searchQuery = "", categoryId = null, tagIds = []) => {
   const params = {};

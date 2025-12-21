@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using RecipeManager.Api.DTOs.Requests;
+using RecipeManager.Api.Extensions;
 using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
@@ -11,11 +12,14 @@ public static class MetadataEndpoints
         app.MapPost("/api/recipes/fetch-metadata", async (FetchMetadataRequest request, IMetadataService metadataService, IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             if (string.IsNullOrWhiteSpace(request.Url))
             {
-                return Results.BadRequest(new { message = "URL is required" });
+                return ProblemDetailsExtensions.BadRequestProblem(
+                    title: "Invalid Request",
+                    detail: "URL is required to fetch metadata."
+                );
             }
 
             var metadata = await metadataService.FetchMetadataAsync(request.Url);

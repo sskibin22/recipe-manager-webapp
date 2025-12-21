@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { recipesApi, uploadsApi } from "../services/api";
+import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
 import { useState, useEffect, useRef } from "react";
 import DocumentPreview from "../components/DocumentPreview";
 import { parseRecipeContent, serializeRecipeContent } from "../utils/recipeContent";
@@ -517,7 +517,7 @@ export default function RecipeDetail() {
       setUploading(false);
       setValidationErrors({
         ...validationErrors,
-        upload: err.message || "Failed to upload file",
+        upload: getErrorMessage(err),
       });
     }
   };
@@ -636,7 +636,7 @@ export default function RecipeDetail() {
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-800">
               Failed to update recipe:{" "}
-              {updateMutation.error?.message || "Unknown error"}
+              {getErrorMessage(updateMutation.error)}
             </p>
           </div>
         )}

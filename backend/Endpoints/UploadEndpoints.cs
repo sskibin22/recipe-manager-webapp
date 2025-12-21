@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Requests;
+using RecipeManager.Api.Extensions;
 using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
@@ -12,7 +13,7 @@ public static class UploadEndpoints
         app.MapPost("/api/uploads/presign", async (PresignUploadRequest request, IStorageService storageService, IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             // Validate file type by content type and extension
             var allowedContentTypes = new HashSet<string>
@@ -38,10 +39,10 @@ public static class UploadEndpoints
                 var fileExtension = Path.GetExtension(request.FileName).ToLowerInvariant();
                 if (string.IsNullOrWhiteSpace(fileExtension) || !allowedExtensions.Contains(fileExtension))
                 {
-                    return Results.BadRequest(new
-                    {
-                        message = "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG"
-                    });
+                    return ProblemDetailsExtensions.BadRequestProblem(
+                        title: "Invalid File Type",
+                        detail: "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG"
+                    );
                 }
             }
 
@@ -56,13 +57,13 @@ public static class UploadEndpoints
         app.MapGet("/api/uploads/presign-download", async (Guid recipeId, ApplicationDbContext db, IStorageService storageService, IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var recipe = await db.Recipes
                 .FirstOrDefaultAsync(r => r.Id == recipeId && r.UserId == userId.Value);
 
             if (recipe == null || string.IsNullOrEmpty(recipe.StorageKey))
-                return Results.NotFound();
+                return ProblemDetailsExtensions.NotFoundProblem("Recipe", recipeId.ToString());
 
             var presignedUrl = await storageService.GetPresignedDownloadUrlAsync(recipe.StorageKey);
 

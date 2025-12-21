@@ -5,6 +5,7 @@ using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Queries;
 using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.DTOs.Responses;
+using RecipeManager.Api.Extensions;
 using RecipeManager.Api.Mapping;
 using RecipeManager.Api.Models;
 using RecipeManager.Api.Services;
@@ -21,7 +22,7 @@ public static class RecipeEndpoints
             IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var recipe = await recipeService.CreateRecipeAsync(request, userId.Value);
             return Results.Created($"/api/recipes/{recipe.Id}", recipe);
@@ -35,7 +36,7 @@ public static class RecipeEndpoints
             IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var recipes = await recipeService.GetRecipesAsync(queryParams, userId.Value);
             return Results.Ok(recipes);
@@ -49,7 +50,7 @@ public static class RecipeEndpoints
             IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var recipe = await recipeService.GetRecipeAsync(id, userId.Value);
             if (recipe == null) return Results.NotFound();
@@ -66,7 +67,7 @@ public static class RecipeEndpoints
             IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var recipe = await recipeService.UpdateRecipeAsync(id, request, userId.Value);
             if (recipe == null) return Results.NotFound();
@@ -82,7 +83,7 @@ public static class RecipeEndpoints
             IUserContextService userContext) =>
         {
             var userId = userContext.GetCurrentUserId();
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
             var deleted = await recipeService.DeleteRecipeAsync(id, userId.Value);
             if (!deleted) return Results.NotFound();
