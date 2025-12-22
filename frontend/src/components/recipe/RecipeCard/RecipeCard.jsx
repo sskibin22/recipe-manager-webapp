@@ -2,11 +2,13 @@
  * @typedef {import('../../../types/recipe').Recipe} Recipe
  */
 
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi } from "../../../services/api";
 import { parseRecipeContent } from "../../../utils/recipeContent";
 import { CategoryBadge, TagBadge } from "../../common/Badge";
+import AddToCollectionModal from "../../common/AddToCollectionModal";
 
 /**
  * Helper function to extract preview text from Manual recipe content
@@ -30,6 +32,7 @@ const getManualRecipePreview = (content) => {
  */
 const RecipeCard = ({ recipe }) => {
   const queryClient = useQueryClient();
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: async () => {
@@ -172,26 +175,19 @@ const RecipeCard = ({ recipe }) => {
               <CategoryBadge category={recipe.category} />
             )}
           </div>
-          <button
-            onClick={handleFavoriteClick}
-            disabled={toggleFavoriteMutation.isPending}
-            className={`transition-colors flex-shrink-0 ${
-              recipe.isFavorite
-                ? "text-yellow-500"
-                : "text-gray-300 hover:text-yellow-500"
-            } ${toggleFavoriteMutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
-            aria-label={
-              recipe.isFavorite ? "Remove from favorites" : "Add to favorites"
-            }
-          >
-            {toggleFavoriteMutation.isPending ? (
-              <div className="w-6 h-6 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-              </div>
-            ) : (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setIsCollectionModalOpen(true);
+              }}
+              className="text-gray-400 hover:text-blue-600 transition"
+              aria-label="Add to collection"
+              title="Add to collection"
+            >
               <svg
                 className="w-6 h-6"
-                fill={recipe.isFavorite ? "currentColor" : "none"}
+                fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
@@ -199,11 +195,43 @@ const RecipeCard = ({ recipe }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                  d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"
                 />
               </svg>
-            )}
-          </button>
+            </button>
+            <button
+              onClick={handleFavoriteClick}
+              disabled={toggleFavoriteMutation.isPending}
+              className={`transition-colors ${
+                recipe.isFavorite
+                  ? "text-yellow-500"
+                  : "text-gray-300 hover:text-yellow-500"
+              } ${toggleFavoriteMutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
+              aria-label={
+                recipe.isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
+            >
+              {toggleFavoriteMutation.isPending ? (
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                </div>
+              ) : (
+                <svg
+                  className="w-6 h-6"
+                  fill={recipe.isFavorite ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Title */}
@@ -248,6 +276,13 @@ const RecipeCard = ({ recipe }) => {
           Added {new Date(recipe.createdAt).toLocaleDateString()}
         </p>
       </div>
+
+      {/* Add to Collection Modal */}
+      <AddToCollectionModal
+        recipeId={recipe.id}
+        isOpen={isCollectionModalOpen}
+        onClose={() => setIsCollectionModalOpen(false)}
+      />
     </Link>
   );
 };

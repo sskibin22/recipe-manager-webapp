@@ -50,11 +50,33 @@ export const useCollectionMutations = () => {
     },
   });
 
+  const addRecipesBatchMutation = useMutation({
+    mutationFn: ({ collectionId, recipeIds }) => 
+      collectionService.addRecipesBatch(collectionId, recipeIds),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["collections", variables.collectionId] });
+      queryClient.invalidateQueries({ queryKey: ["collections", variables.collectionId, "recipes"] });
+    },
+  });
+
+  const removeRecipesBatchMutation = useMutation({
+    mutationFn: ({ collectionId, recipeIds }) => 
+      collectionService.removeRecipesBatch(collectionId, recipeIds),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      queryClient.invalidateQueries({ queryKey: ["collections", variables.collectionId] });
+      queryClient.invalidateQueries({ queryKey: ["collections", variables.collectionId, "recipes"] });
+    },
+  });
+
   return {
     createMutation,
     updateMutation,
     deleteMutation,
     addRecipeMutation,
     removeRecipeMutation,
+    addRecipesBatchMutation,
+    removeRecipesBatchMutation,
   };
 };

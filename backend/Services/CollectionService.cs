@@ -203,4 +203,105 @@ public class CollectionService : ICollectionService
 
         return recipeDtos;
     }
+
+    /// <inheritdoc />
+    public async Task<bool> AddRecipesToCollectionBatchAsync(Guid collectionId, List<Guid> recipeIds, Guid userId)
+    {
+        // Verify collection belongs to user
+        var collection = await _db.Collections
+            .FirstOrDefaultAsync(c => c.Id == collectionId && c.UserId == userId);
+
+        if (collection == null)
+            return false;
+
+        // Verify all recipes belong to user
+        var userRecipes = await _db.Recipes
+            .Where(r => recipeIds.Contains(r.Id) && r.UserId == userId)
+            .Select(r => r.Id)
+            .ToListAsync();
+
+        if (userRecipes.Count == 0)
+            return false;
+
+        // Get existing recipe IDs in collection to avoid duplicates
+        var existingRecipeIds = await _db.CollectionRecipes
+            .Where(cr => cr.CollectionId == collectionId)
+            .Select(cr => cr.RecipeId)
+            .ToListAsync();
+
+        // Filter out recipes already in collection
+        var newRecipeIds = userRecipes.Except(existingRecipeIds).ToList();
+
+        if (newRecipeIds.Count == 0)
+            return true; // All recipes already in collection - idempotent
+
+        // Create collection recipe entries
+        var collectionRecipes = newRecipeIds.Select(recipeId => new CollectionRecipe
+        {
+            CollectionId = collectionId,
+            RecipeId = recipeId,
+            AddedAt = DateTime.UtcNow
+        }).ToList();
+
+        _db.CollectionRecipes.AddRange(collectionRecipes);
+
+        // Update collection's UpdatedAt
+        collection.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> RemoveRecipesFromCollectionBatchAsync(Guid collectionId, List<Guid> recipeIds, Guid userId)
+    {
+        // Verify collection belongs to user
+        var collection = await _db.Collections
+            .FirstOrDefaultAsync(c => c.Id == collectionId && c.UserId == userId);
+
+        if (collection == null)
+            return false;
+
+        // Get all matching collection recipes
+        var collectionRecipes = await _db.CollectionRecipes
+            .Where(cr => cr.CollectionId == collectionId && recipeIds.Contains(cr.RecipeId))
+            .ToListAsync();
+
+        if (collectionRecipes.Count == 0)
+            return true; // No recipes to remove - idempotent
+
+        _db.CollectionRecipes.RemoveRange(collectionRecipes);
+
+        // Update collection's UpdatedAt
+        collection.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<List<Guid>> GetCollectionsContainingRecipeAsync(Guid recipeId, Guid userId)
+    {
+        // Verify recipe belongs to user
+        var recipe = await _db.Recipes
+            .FirstOrDefaultAsync(r => r.Id == recipeId && r.UserId == userId);
+
+        if (recipe == null)
+            return new List<Guid>();
+
+        // Get all collections that contain this recipe
+        var collectionIds = await _db.CollectionRecipes
+            .Where(cr => cr.RecipeId == recipeId)
+            .Join(_db.Collections,
+                cr => cr.CollectionId,
+                c => c.Id,
+                (cr, c) => new { cr.CollectionId, c.UserId })
+            .Where(x => x.UserId == userId)
+            .Select(x => x.CollectionId)
+            .ToListAsync();
+
+        return collectionIds;
+    }
 }

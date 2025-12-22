@@ -3,6 +3,7 @@
  * Uses custom hooks and sub-components for cleaner code
  */
 
+import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useRecipeDetail, useRecipeEdit } from "../hooks";
 import { getErrorMessage } from "../services/api";
@@ -12,6 +13,7 @@ import DisplayImageEdit from "../components/recipe/RecipeDetail/DisplayImageEdit
 import RecipeDetailView from "../components/recipe/RecipeDetail/RecipeDetailView";
 import RecipeDetailEdit from "../components/recipe/RecipeDetail/RecipeDetailEdit";
 import RecipeDetailActions from "../components/recipe/RecipeDetail/RecipeDetailActions";
+import AddToCollectionModal from "../components/common/AddToCollectionModal";
 
 
 /**
@@ -21,6 +23,7 @@ import RecipeDetailActions from "../components/recipe/RecipeDetail/RecipeDetailA
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
 
   // Custom hooks for data and edit state
   const {
@@ -135,9 +138,17 @@ export default function RecipeDetail() {
               isDeleting={isDeleting}
               isSaving={editState.isSaving}
               uploading={editState.uploading}
+              onAddToCollection={() => setIsCollectionModalOpen(true)}
             />
           </div>
         </div>
+
+        {/* Add to Collection Modal */}
+        <AddToCollectionModal
+          recipeId={id}
+          isOpen={isCollectionModalOpen}
+          onClose={() => setIsCollectionModalOpen(false)}
+        />
       </main>
     </div>
   );
