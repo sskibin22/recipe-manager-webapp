@@ -16,6 +16,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<RecipeTag> RecipeTags => Set<RecipeTag>();
+    public DbSet<Collection> Collections => Set<Collection>();
+    public DbSet<CollectionRecipe> CollectionRecipes => Set<CollectionRecipe>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -108,6 +110,39 @@ public class ApplicationDbContext : DbContext
             entity.HasOne(e => e.Tag)
                   .WithMany(t => t.RecipeTags)
                   .HasForeignKey(e => e.TagId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Collection configuration
+        modelBuilder.Entity<Collection>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.UserId);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.Collections)
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // CollectionRecipe configuration
+        modelBuilder.Entity<CollectionRecipe>(entity =>
+        {
+            entity.HasKey(e => new { e.CollectionId, e.RecipeId });
+            entity.Property(e => e.AddedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasOne(e => e.Collection)
+                  .WithMany(c => c.CollectionRecipes)
+                  .HasForeignKey(e => e.CollectionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Recipe)
+                  .WithMany(r => r.CollectionRecipes)
+                  .HasForeignKey(e => e.RecipeId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
 

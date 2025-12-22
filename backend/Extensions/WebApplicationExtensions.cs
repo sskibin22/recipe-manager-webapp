@@ -54,6 +54,7 @@ public static class WebApplicationExtensions
         app.MapMetadataEndpoints();
         app.MapRecipeEndpoints();
         app.MapFavoriteEndpoints();
+        app.MapCollectionEndpoints();
         app.MapUploadEndpoints();
         app.MapUserEndpoints();
         app.MapCategoryEndpoints();

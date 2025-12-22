@@ -205,6 +205,12 @@ public class RecipeService : IRecipeService
                 .ThenInclude(rt => rt.Tag)
             .Where(r => r.UserId == userId);
 
+        // Apply favorites filter
+        if (queryParams.FavoritesOnly)
+        {
+            query = query.Where(r => r.Favorites.Any(f => f.UserId == userId));
+        }
+
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
         {

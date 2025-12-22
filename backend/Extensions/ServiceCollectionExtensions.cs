@@ -35,6 +35,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IStorageService, StorageService>();
         services.AddScoped<IMetadataService, MetadataService>();
         services.AddScoped<IRecipeService, RecipeService>();
+        services.AddScoped<ICollectionService, CollectionService>();
         services.AddScoped<RecipeMapper>();
 
         // Add HttpClient for metadata fetching

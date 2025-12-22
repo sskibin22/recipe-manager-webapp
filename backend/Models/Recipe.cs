@@ -52,5 +52,7 @@ public partial class Recipe
 
     public virtual ICollection<RecipeTag> RecipeTags { get; set; } = new List<RecipeTag>();
 
+    public virtual ICollection<CollectionRecipe> CollectionRecipes { get; set; } = new List<CollectionRecipe>();
+
     public virtual User User { get; set; } = null!;
 }

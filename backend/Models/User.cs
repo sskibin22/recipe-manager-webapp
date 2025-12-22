@@ -18,4 +18,6 @@ public partial class User
     public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
 
     public virtual ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
+
+    public virtual ICollection<Collection> Collections { get; set; } = new List<Collection>();
 }

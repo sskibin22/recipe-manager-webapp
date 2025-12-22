@@ -69,6 +69,40 @@ public class RecipeMapper
     }
 
     /// <summary>
+    /// Maps a Recipe entity to a RecipeListItemResponse DTO (used for list views).
+    /// </summary>
+    /// <param name="recipe">The recipe entity to map</param>
+    /// <param name="currentUserId">The ID of the current user to check favorite status</param>
+    public async Task<RecipeListItemResponse> MapToRecipeListItemResponseAsync(Recipe recipe, Guid currentUserId)
+    {
+        // Get preview image URL
+        var previewImageUrl = await GetPreviewImageUrlAsync(recipe);
+
+        return new RecipeListItemResponse(
+            Id: recipe.Id,
+            Title: recipe.Title,
+            Type: recipe.Type,
+            Url: recipe.Url,
+            StorageKey: recipe.StorageKey,
+            Content: recipe.Content,
+            PreviewImageUrl: previewImageUrl,
+            Description: recipe.Description,
+            SiteName: recipe.SiteName,
+            CreatedAt: recipe.CreatedAt,
+            UpdatedAt: recipe.UpdatedAt,
+            FileContentType: recipe.FileContentType,
+            IsFavorite: recipe.Favorites?.Any(f => f.UserId == currentUserId) ?? false,
+            Category: recipe.Category != null 
+                ? new CategoryResponse(recipe.Category.Id, recipe.Category.Name, recipe.Category.Color)
+                : null,
+            Tags: recipe.RecipeTags?
+                .Where(rt => rt.Tag != null)
+                .Select(rt => new TagResponse(rt.Tag.Id, rt.Tag.Name, rt.Tag.Color, rt.Tag.Type))
+                .ToList() ?? new List<TagResponse>()
+        );
+    }
+
+    /// <summary>
     /// Gets the preview image URL for a recipe.
     /// If stored in database as binary, converts to base64 data URL.
     /// If storage key, generates presigned URL.
