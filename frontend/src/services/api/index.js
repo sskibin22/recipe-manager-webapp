@@ -6,6 +6,7 @@ export * from "./tagService";
 export * from "./favoriteService";
 export * from "./uploadService";
 export * from "./userService";
+export * from "./collectionService";
 
 // Import services for unified API object
 import { recipeService } from "./recipeService";
@@ -14,6 +15,7 @@ import { tagService } from "./tagService";
 import { favoriteService } from "./favoriteService";
 import { uploadService } from "./uploadService";
 import { userService } from "./userService";
+import { collectionService } from "./collectionService";
 
 // Unified API object for convenience
 export const api = {
@@ -23,6 +25,7 @@ export const api = {
   favorites: favoriteService,
   uploads: uploadService,
   user: userService,
+  collections: collectionService,
 };
 
 // Re-export individual function names for backward compatibility with existing imports

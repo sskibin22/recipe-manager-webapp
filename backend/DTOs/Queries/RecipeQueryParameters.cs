@@ -26,6 +26,12 @@ public class RecipeQueryParameters
     public string? Tags { get; set; }
     
     /// <summary>
+    /// Filter to show only favorited recipes
+    /// </summary>
+    [FromQuery(Name = "favoritesOnly")]
+    public bool FavoritesOnly { get; set; } = false;
+    
+    /// <summary>
     /// Parse comma-separated tag IDs into integer list
     /// </summary>
     /// <returns>List of valid tag IDs (invalid values are skipped)</returns>

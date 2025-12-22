@@ -7,6 +7,7 @@
  * - Category queries
  * - Tag queries
  * - Favorite mutations
+ * - Collection queries and mutations
  * 
  * All hooks include:
  * - Consistent query keys
@@ -20,6 +21,7 @@ export { useRecipesQuery } from "./useRecipesQuery";
 export { useRecipeQuery } from "./useRecipeQuery";
 export { useCategoriesQuery } from "./useCategoriesQuery";
 export { useTagsQuery } from "./useTagsQuery";
+export { useCollectionsQuery, useCollectionQuery, useCollectionRecipesQuery } from "./useCollectionsQuery";
 
 // Mutation hooks
 export {
@@ -29,6 +31,7 @@ export {
 } from "./useRecipeMutations";
 
 export { useToggleFavoriteMutation } from "./useFavoriteMutation";
+export { useCollectionMutations } from "./useCollectionMutations";
 
 // Component-specific hooks
 export { useRecipeForm } from "./useRecipeForm";

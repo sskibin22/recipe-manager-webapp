@@ -12,13 +12,15 @@ import { apiClient } from "./apiClient";
  * @param {string} [searchQuery=""] - Search term to filter by title
  * @param {number|null} [categoryId=null] - Category ID to filter by
  * @param {number[]} [tagIds=[]] - Tag IDs to filter by (AND logic)
+ * @param {boolean} [favoritesOnly=false] - Filter to show only favorited recipes
  * @returns {Promise<Recipe[]>} Array of recipes
  */
-const getAll = async (searchQuery = "", categoryId = null, tagIds = []) => {
+const getAll = async (searchQuery = "", categoryId = null, tagIds = [], favoritesOnly = false) => {
   const params = {};
   if (searchQuery) params.q = searchQuery;
   if (categoryId) params.category = categoryId;
   if (tagIds && tagIds.length > 0) params.tags = tagIds.join(',');
+  if (favoritesOnly) params.favoritesOnly = true;
   
   const response = await apiClient.get("/api/recipes", { params });
   return response.data;
