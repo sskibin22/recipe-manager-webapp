@@ -51,8 +51,8 @@ const RecipeCard = ({ recipe }) => {
 
       // Optimistically update cache
       queryClient.setQueryData(["recipes"], (old) => {
-        if (!old) return old;
-        return old.map((r) =>
+        if (!old || !Array.isArray(old)) return old;
+        return old.map((/** @type {any} */ r) =>
           r.id === recipe.id ? { ...r, isFavorite: !r.isFavorite } : r
         );
       });
@@ -128,7 +128,7 @@ const RecipeCard = ({ recipe }) => {
     }
   };
 
-  const handleFavoriteClick = (e) => {
+  const handleFavoriteClick = (/** @type {React.MouseEvent} */ e) => {
     e.preventDefault();
     toggleFavoriteMutation.mutate();
   };
@@ -151,7 +151,8 @@ const RecipeCard = ({ recipe }) => {
             loading="lazy"
             onError={(e) => {
               // Use placeholder if image fails to load
-              e.target.src = "/recipe-placeholder.svg";
+              const target = /** @type {HTMLImageElement} */ (e.target);
+              target.src = "/recipe-placeholder.svg";
             }}
           />
         </div>
@@ -277,7 +278,7 @@ const RecipeCard = ({ recipe }) => {
           Added {new Date(recipe.createdAt).toLocaleDateString()}
         </p>
       </div>
-      </Link>
+    </Link>
 
       {/* Add to Collection Modal - Outside Link to prevent navigation on interaction */}
       <AddToCollectionModal
