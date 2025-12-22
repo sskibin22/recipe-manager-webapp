@@ -1,0 +1,1 @@
+Make sure to review the .github/copilot-instructions.md file before development. Always refer to this file for file structure standards, coding best practices for both the frontend and backend, security measures, testing best practices, and tech stask guidelines.
