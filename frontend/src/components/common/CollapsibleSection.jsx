@@ -80,7 +80,7 @@ const CollapsibleSection = ({
       {/* Section Content */}
       <div
         className={`transition-all duration-300 overflow-hidden ${
-          isExpanded ? "max-h-[999999px] opacity-100" : "max-h-0 opacity-0"
+          isExpanded ? "max-h-[50000px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
         {children}

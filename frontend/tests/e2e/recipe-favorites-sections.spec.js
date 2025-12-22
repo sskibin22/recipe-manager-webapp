@@ -327,7 +327,7 @@ test.describe('Collapsible Favorites and All Recipes Sections', () => {
 
       // Check that it toggled
       const ariaExpanded = await firstHeader.getAttribute('aria-expanded');
-      expect(ariaExpanded).toBeTruthy();
+      expect(ariaExpanded).toBe('true');
     }
   });
 });
