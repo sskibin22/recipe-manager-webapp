@@ -15,6 +15,10 @@ public partial class Collection
 
     public string? ImageStorageKey { get; set; }
 
+    public byte[]? PreviewImageContent { get; set; }
+
+    public string? PreviewImageContentType { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

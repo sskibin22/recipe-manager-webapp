@@ -16,4 +16,10 @@ public class UpdateCollectionRequest
 
     [MaxLength(500)]
     public string? ImageStorageKey { get; set; }
+
+    /// <summary>
+    /// Base64-encoded image data (data URI format: "data:image/png;base64,...")
+    /// Used for SQLite storage in local development
+    /// </summary>
+    public string? PreviewImageData { get; set; }
 }

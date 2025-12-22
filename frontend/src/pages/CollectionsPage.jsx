@@ -60,16 +60,31 @@ export default function CollectionsPage() {
     try {
       setIsUploading(true);
       let imageStorageKey = null;
+      let previewImageData = null;
 
       // Upload image if selected
       if (selectedImage) {
         try {
+          // Try to upload to R2 first (production)
           const { uploadUrl, key } = await uploadService.getPresignedCollectionImageUploadUrl(
             selectedImage.name,
             selectedImage.type
           );
-          await uploadService.uploadToPresignedUrl(uploadUrl, selectedImage);
-          imageStorageKey = key;
+          
+          // Check if we got a real presigned URL or a placeholder (local development)
+          // Backend returns placeholder URLs like "http://localhost:5172/placeholder-upload/{key}"
+          // when R2 is not configured (local development mode)
+          const isPlaceholder = uploadUrl.includes('placeholder-upload') || uploadUrl.includes('localhost');
+          
+          if (isPlaceholder) {
+            // Local development: send image as base64 data URI
+            console.log('Local development mode: sending image as base64 data');
+            previewImageData = imagePreview; // imagePreview is already a data URI from FileReader
+          } else {
+            // Production: upload to R2
+            await uploadService.uploadToPresignedUrl(uploadUrl, selectedImage);
+            imageStorageKey = key;
+          }
         } catch (error) {
           console.error("Failed to upload collection image:", error);
           
@@ -95,6 +110,7 @@ export default function CollectionsPage() {
         name: newCollectionName,
         description: newCollectionDescription || undefined,
         imageStorageKey: imageStorageKey || undefined,
+        previewImageData: previewImageData || undefined,
       });
       
       setNewCollectionName("");
