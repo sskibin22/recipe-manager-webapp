@@ -192,7 +192,12 @@ recipe-manager-webapp/
 All endpoints except `/health` require a valid Firebase JWT token in the `Authorization` header.
 
 ### Recipes
-- `GET /api/recipes` - List user's recipes (supports `?q=search` query)
+- `GET /api/recipes` - List user's recipes
+  - Query parameters:
+    - `?q=search` - Search by title
+    - `?category=1` - Filter by category ID
+    - `?tags=1,2,3` - Filter by tag IDs (AND logic)
+    - `?favoritesOnly=true` - Show only favorited recipes
 - `GET /api/recipes/{id}` - Get single recipe
 - `POST /api/recipes` - Create recipe
 - `PUT /api/recipes/{id}` - Update recipe
@@ -202,19 +207,40 @@ All endpoints except `/health` require a valid Firebase JWT token in the `Author
 - `POST /api/recipes/{id}/favorite` - Add to favorites
 - `DELETE /api/recipes/{id}/favorite` - Remove from favorites
 
+### Collections
+- `GET /api/collections` - List user's collections
+- `POST /api/collections` - Create new collection
+- `GET /api/collections/{id}` - Get collection details
+- `PUT /api/collections/{id}` - Update collection
+- `DELETE /api/collections/{id}` - Delete collection
+- `GET /api/collections/{id}/recipes` - Get all recipes in collection
+- `POST /api/collections/{id}/recipes/{recipeId}` - Add recipe to collection
+- `DELETE /api/collections/{id}/recipes/{recipeId}` - Remove recipe from collection
+
+### Categories
+- `GET /api/categories` - List all categories
+
+### Tags
+- `GET /api/tags` - List all tags
+
 ### Uploads
 - `POST /api/uploads/presign` - Get presigned upload URL
 - `GET /api/uploads/presign-download?recipeId={id}` - Get presigned download URL
 
 ## Features
 
-- ✅ User authentication (Email/Password, Google OAuth)
+- ✅ User authentication (Email/Password, Google OAuth, GitHub OAuth)
 - ✅ User registration with email and password
-- ✅ Create recipes from external links
-- ✅ Upload recipe documents
-- ✅ Manually create recipes
+- ✅ Create recipes from external links with metadata extraction
+- ✅ Upload recipe documents (PDF, images)
+- ✅ Manually create recipes with rich content
 - ✅ Search recipes by title
+- ✅ Filter recipes by category and tags
 - ✅ Mark recipes as favorites
+- ✅ **Favorites-only view** - Toggle to show only favorited recipes
+- ✅ **Recipe collections** - Organize recipes into named collections
+- ✅ Category and tag management
+- ✅ Recipe preview images
 - ✅ Responsive design with Tailwind CSS
 - ✅ Real-time auth state management
 - ✅ Secure file uploads to R2

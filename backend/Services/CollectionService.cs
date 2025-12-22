@@ -197,12 +197,9 @@ public class CollectionService : ICollectionService
             .OrderByDescending(r => r.UpdatedAt)
             .ToListAsync();
 
-        var recipeDtos = new List<RecipeListItemResponse>();
-        foreach (var recipe in recipes)
-        {
-            var dto = await _recipeMapper.MapToRecipeListItemResponseAsync(recipe, userId);
-            recipeDtos.Add(dto);
-        }
+        // Map recipes to DTOs in parallel for better performance
+        var mappingTasks = recipes.Select(recipe => _recipeMapper.MapToRecipeListItemResponseAsync(recipe, userId));
+        var recipeDtos = await Task.WhenAll(mappingTasks);
 
         return recipeDtos;
     }
