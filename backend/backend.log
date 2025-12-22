@@ -1,0 +1,2121 @@
+nohup: ignoring input
+Using launch settings from Properties/launchSettings.json...
+Building...
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5172
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /home/runner/work/recipe-manager-webapp/recipe-manager-webapp/backend
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/health - - -
+warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
+      Failed to determine the https port for redirect.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /health'
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type '<>f__AnonymousType9`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /health'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/health - 200 - application/json;+charset=utf-8 985.8096ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 91.0020ms
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 162.4776ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 20.4812ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 22.5805ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 4.9849ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 7.1449ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.9649ms
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 3.0480ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 4.0438ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 3.9453ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.4507ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.8691ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.2235ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.8074ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 3.3969ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.6463ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.0154ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 4.0783ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.8695ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.7336ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.4408ms
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.4367ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.4604ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.0016ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.0903ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.3106ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 5.1877ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 7.9092ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.9383ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 3.7648ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.5636ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.4991ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.4684ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.6276ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.2626ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 3.0984ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.3405ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.3006ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.2928ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.4884ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.0414ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.0952ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.5922ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.4601ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.5755ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.8453ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.9358ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.4267ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.8607ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.1897ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.4649ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.5267ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 7.5082ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 7.0366ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.8034ms
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 6.0075ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.5815ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.3570ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.1598ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 3.6579ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 3.2659ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.4733ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 2.1867ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.6804ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.2827ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.2355ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 2.1335ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 3.0260ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.2403ms
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 3.1076ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/categories - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/categories'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "c"."Id", "c"."Color", "c"."Name"
+      FROM "Categories" AS "c"
+      ORDER BY "c"."Name"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'SelectListIterator`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/categories'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/categories - 200 - application/json;+charset=utf-8 1.3867ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - - -
+info: Microsoft.AspNetCore.Cors.Infrastructure.CorsService[4]
+      CORS policy execution successful.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__authSub_0='?' (Size = 12)], CommandType='Text', CommandTimeout='30']
+      SELECT "u"."Id", "u"."AuthSub", "u"."CreatedAt", "u"."DisplayName", "u"."Email"
+      FROM "Users" AS "u"
+      WHERE "u"."AuthSub" = @__authSub_0
+      LIMIT 1
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__userId_0='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CategoryId", "r"."Content", "r"."CreatedAt", "r"."Description", "r"."FileContent", "r"."FileContentType", "r"."PreviewImageContent", "r"."PreviewImageContentType", "r"."PreviewImageUrl", "r"."SiteName", "r"."StorageKey", "r"."Title", "r"."Type", "r"."UpdatedAt", "r"."Url", "r"."UserId", "c"."Id", "f"."UserId", "f"."RecipeId", "f"."CreatedAt", "c"."Color", "c"."Name", "t0"."RecipeId", "t0"."TagId", "t0"."Id", "t0"."Color", "t0"."Name", "t0"."Type"
+      FROM "Recipes" AS "r"
+      LEFT JOIN "Categories" AS "c" ON "r"."CategoryId" = "c"."Id"
+      LEFT JOIN "Favorites" AS "f" ON "r"."Id" = "f"."RecipeId"
+      LEFT JOIN (
+          SELECT "r0"."RecipeId", "r0"."TagId", "t"."Id", "t"."Color", "t"."Name", "t"."Type"
+          FROM "RecipeTags" AS "r0"
+          INNER JOIN "Tags" AS "t" ON "r0"."TagId" = "t"."Id"
+      ) AS "t0" ON "r"."Id" = "t0"."RecipeId"
+      WHERE "r"."UserId" = @__userId_0
+      ORDER BY "r"."CreatedAt" DESC, "r"."Id", "c"."Id", "f"."UserId", "f"."RecipeId", "t0"."RecipeId", "t0"."TagId"
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type 'List`1' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /api/recipes'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5172/api/recipes?favoritesOnly=false - 200 - application/json;+charset=utf-8 1.1683ms
