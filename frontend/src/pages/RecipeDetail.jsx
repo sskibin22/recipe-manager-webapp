@@ -1,78 +1,19 @@
 /**
- * @typedef {import('../types/recipe').RecipeContent} RecipeContent
+ * Refactored Recipe Detail Page - Orchestrator Component
+ * Uses custom hooks and sub-components for cleaner code
  */
 
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useRecipeQuery, useUpdateRecipeMutation, useDeleteRecipeMutation, useToggleFavoriteMutation } from "../hooks";
-import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
-import { useState, useEffect, useRef } from "react";
-import DocumentPreview from "../components/DocumentPreview";
-import { parseRecipeContent, serializeRecipeContent } from "../utils/recipeContent";
-import { validateRecipeDocument, validateRecipeImage } from "../utils/fileValidation";
-import CategoryBadge from "../components/CategoryBadge";
-import TagBadge from "../components/TagBadge";
-import CategorySelector from "../components/CategorySelector";
-import TagSelector from "../components/TagSelector";
+import { useRecipeDetail } from "../components/RecipeDetail/hooks/useRecipeDetail";
+import { useRecipeEdit } from "../components/RecipeDetail/hooks/useRecipeEdit";
+import { getErrorMessage } from "../services/api";
+import RecipeDetailHeader from "../components/RecipeDetail/RecipeDetailHeader";
+import RecipeDetailImage from "../components/RecipeDetail/RecipeDetailImage";
+import DisplayImageEdit from "../components/RecipeDetail/DisplayImageEdit";
+import RecipeDetailView from "../components/RecipeDetail/RecipeDetailView";
+import RecipeDetailEdit from "../components/RecipeDetail/RecipeDetailEdit";
+import RecipeDetailActions from "../components/RecipeDetail/RecipeDetailActions";
 
-/**
- * Component to display manual recipe content in readonly mode
- * @param {Object} props
- * @param {string} props.content - JSON string of recipe content
- * @returns {JSX.Element|null}
- */
-function ManualRecipeReadonlyView({ content }) {
-  if (!content) return null;
-  
-  const parsedContent = parseRecipeContent(content);
-  
-  return (
-    <div className="prose max-w-none space-y-6">
-      {parsedContent.description && (
-        <div>
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">
-            Description
-          </h2>
-          <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg text-base border border-gray-200">
-            {parsedContent.description}
-          </pre>
-        </div>
-      )}
-
-      {parsedContent.ingredients && (
-        <div>
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">
-            Ingredients
-          </h2>
-          <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg text-base border border-gray-200">
-            {parsedContent.ingredients}
-          </pre>
-        </div>
-      )}
-
-      {parsedContent.instructions && (
-        <div>
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">
-            Instructions
-          </h2>
-          <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg text-base border border-gray-200">
-            {parsedContent.instructions}
-          </pre>
-        </div>
-      )}
-
-      {parsedContent.notes && (
-        <div>
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">
-            Notes
-          </h2>
-          <pre className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed bg-gray-50 p-4 rounded-lg text-base border border-gray-200">
-            {parsedContent.notes}
-          </pre>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /**
  * Recipe detail page component - displays and edits single recipe
@@ -81,367 +22,29 @@ function ManualRecipeReadonlyView({ content }) {
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editedTitle, setEditedTitle] = useState("");
-  const [editedUrl, setEditedUrl] = useState("");
-  const [validationErrors, setValidationErrors] = useState({});
-  const [file, setFile] = useState(null);
-  const [displayImageFile, setDisplayImageFile] = useState(null);
-  const [removeDisplayImage, setRemoveDisplayImage] = useState(false);
-  const [displayImagePreview, setDisplayImagePreview] = useState(null);
-  const [uploading, setUploading] = useState(false);
 
-  // Manual recipe structured fields for edit mode
-  const [editedManualDescription, setEditedManualDescription] = useState("");
-  const [editedManualIngredients, setEditedManualIngredients] = useState("");
-  const [editedManualInstructions, setEditedManualInstructions] = useState("");
-  const [editedManualNotes, setEditedManualNotes] = useState("");
-
-  // Metadata state for Link recipes
-  const [metadata, setMetadata] = useState(null);
-  const [fetchingMetadata, setFetchingMetadata] = useState(false);
-  const [editedMetadataTitle, setEditedMetadataTitle] = useState("");
-  const [editedPreviewImageUrl, setEditedPreviewImageUrl] = useState("");
-  const [editedDescription, setEditedDescription] = useState("");
-  const [editedSiteName, setEditedSiteName] = useState("");
-
-  // Category and tags state for edit mode
-  const [editedCategoryId, setEditedCategoryId] = useState(null);
-  const [editedTagIds, setEditedTagIds] = useState([]);
-
-  const urlDebounceRef = useRef(null);
-
+  // Custom hooks for data and edit state
   const {
-    data: recipe,
+    recipe,
     isLoading,
     error,
-  } = useRecipeQuery(id);
-
-  const deleteMutation = useDeleteRecipeMutation({
-    onSuccess: () => {
-      navigate("/");
-    },
+    deleteRecipe,
+    isDeleting,
+    toggleFavorite,
+    isTogglingFavorite,
+  } = useRecipeDetail(id, {
+    onDeleteSuccess: () => navigate("/"),
   });
 
-  const toggleFavoriteMutation = useToggleFavoriteMutation(id);
-
-  const updateMutation = useUpdateRecipeMutation(id, {
-    onSuccess: () => {
-      setIsEditMode(false);
-      setValidationErrors({});
-    },
-  });
-
-  // Fetch metadata when URL changes in edit mode for Link recipes (debounced)
-  useEffect(() => {
-    if (!isEditMode || !recipe || recipe.type.toLowerCase() !== "link" || !editedUrl.trim()) {
-      return;
-    }
-
-    // Clear previous timeout
-    if (urlDebounceRef.current) {
-      clearTimeout(urlDebounceRef.current);
-    }
-
-    // Set new timeout for fetching metadata
-    urlDebounceRef.current = setTimeout(async () => {
-      try {
-        // Basic URL validation
-        const urlPattern = /^https?:\/\/.+/i;
-        if (!urlPattern.test(editedUrl.trim())) {
-          return; // Don't fetch if URL is not valid
-        }
-
-        setFetchingMetadata(true);
-        const fetchedMetadata = await recipesApi.fetchMetadata(editedUrl.trim());
-
-        if (fetchedMetadata) {
-          setMetadata(fetchedMetadata);
-
-          // Auto-update metadata fields when URL changes
-          // These are shown in the editable metadata section only
-          // The main title field remains unchanged until save
-          if (fetchedMetadata.title) {
-            setEditedMetadataTitle(fetchedMetadata.title);
-          }
-          if (fetchedMetadata.description) {
-            setEditedDescription(fetchedMetadata.description);
-          }
-          if (fetchedMetadata.imageUrl) {
-            setEditedPreviewImageUrl(fetchedMetadata.imageUrl);
-          }
-          if (fetchedMetadata.siteName) {
-            setEditedSiteName(fetchedMetadata.siteName);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching metadata:", err);
-        // Don't show error to user, just log it
-      } finally {
-        setFetchingMetadata(false);
-      }
-    }, 800); // 800ms debounce
-
-    // Cleanup on unmount or when URL changes
-    return () => {
-      if (urlDebounceRef.current) {
-        clearTimeout(urlDebounceRef.current);
-      }
-    };
-  }, [editedUrl, isEditMode, recipe]);
+  const editState = useRecipeEdit(recipe, id);
 
   const handleDelete = () => {
     if (window.confirm("Are you sure you want to delete this recipe?")) {
-      deleteMutation.mutate(id);
+      deleteRecipe(id);
     }
   };
 
-  const handleEdit = () => {
-    setEditedTitle(recipe.title);
-    setEditedUrl(recipe.url || "");
-    setValidationErrors({});
-    setFile(null);
-    setDisplayImageFile(null);
-    setRemoveDisplayImage(false);
-    setDisplayImagePreview(null);
-    setIsEditMode(true);
-    
-    // Initialize metadata fields for Link recipes
-    if (recipe.type.toLowerCase() === "link") {
-      setEditedMetadataTitle(recipe.title || "");
-      setEditedPreviewImageUrl(recipe.previewImageUrl || "");
-      setEditedDescription(recipe.description || "");
-      setEditedSiteName(recipe.siteName || "");
-      setMetadata(null);
-    }
-    
-    // Initialize category and tags
-    setEditedCategoryId(recipe.category?.id || null);
-    setEditedTagIds(recipe.tags?.map(tag => tag.id) || []);
-    
-    // Parse structured content for Manual recipes
-    if (recipe.type.toLowerCase() === "manual") {
-      const parsedContent = parseRecipeContent(recipe.content);
-      setEditedManualDescription(parsedContent.description);
-      setEditedManualIngredients(parsedContent.ingredients);
-      setEditedManualInstructions(parsedContent.instructions);
-      setEditedManualNotes(parsedContent.notes);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditMode(false);
-    setValidationErrors({});
-    setFile(null);
-    setDisplayImageFile(null);
-    setRemoveDisplayImage(false);
-    setDisplayImagePreview(null);
-    setMetadata(null);
-    setEditedMetadataTitle("");
-    setEditedPreviewImageUrl("");
-    setEditedDescription("");
-    setEditedSiteName("");
-    // Reset manual recipe fields
-    setEditedManualDescription("");
-    setEditedManualIngredients("");
-    setEditedManualInstructions("");
-    setEditedManualNotes("");
-    // Reset category and tags
-    setEditedCategoryId(null);
-    setEditedTagIds([]);
-  };
-
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files?.[0] || null;
-
-    if (!selectedFile) {
-      setFile(null);
-      // Remove file error if it exists
-      const { file: _, ...rest } = validationErrors;
-      setValidationErrors(rest);
-      return;
-    }
-
-    const validationError = validateRecipeDocument(selectedFile);
-    if (validationError) {
-      setValidationErrors({ ...validationErrors, file: validationError });
-      setFile(null);
-      // Clear the input
-      e.target.value = "";
-      return;
-    }
-
-    setFile(selectedFile);
-    // Remove file error if it exists
-    const { file: _, ...rest } = validationErrors;
-    setValidationErrors(rest);
-  };
-
-  const handleDisplayImageChange = (e) => {
-    const selectedFile = e.target.files?.[0] || null;
-
-    if (!selectedFile) {
-      setDisplayImageFile(null);
-      setDisplayImagePreview(null);
-      const { displayImage: _, ...rest } = validationErrors;
-      setValidationErrors(rest);
-      return;
-    }
-
-    const validationError = validateRecipeImage(selectedFile);
-    if (validationError) {
-      setValidationErrors({ ...validationErrors, displayImage: validationError });
-      setDisplayImageFile(null);
-      setDisplayImagePreview(null);
-      e.target.value = "";
-      return;
-    }
-
-    setDisplayImageFile(selectedFile);
-    setRemoveDisplayImage(false);
-    
-    // Create preview URL for the selected image
-    const previewUrl = URL.createObjectURL(selectedFile);
-    setDisplayImagePreview(previewUrl);
-    
-    // Remove error if it exists
-    const { displayImage: _, ...rest } = validationErrors;
-    setValidationErrors(rest);
-  };
-
-  const handleRemoveDisplayImage = () => {
-    setRemoveDisplayImage(true);
-    setDisplayImageFile(null);
-    setDisplayImagePreview(null);
-    const { displayImage: _, ...rest } = validationErrors;
-    setValidationErrors(rest);
-  };
-
-  const validateForm = () => {
-    const errors = {};
-
-    if (!editedTitle.trim()) {
-      errors.title = "Title is required";
-    }
-
-    if (recipe.type.toLowerCase() === "link") {
-      if (!editedUrl.trim()) {
-        errors.url = "URL is required for link recipes";
-      } else {
-        try {
-          new URL(editedUrl);
-        } catch {
-          errors.url = "Please enter a valid URL";
-        }
-      }
-    }
-
-    if (recipe.type.toLowerCase() === "manual") {
-      // Validate that at least ingredients or instructions are provided
-      if (!editedManualIngredients.trim() && !editedManualInstructions.trim()) {
-        errors.content = "Either Ingredients or Instructions must be provided";
-      }
-    }
-
-    return errors;
-  };
-
-  const generateImageFilename = (file) => {
-    // Use crypto.randomUUID if available, otherwise fallback to timestamp + random
-    const uniqueId = typeof crypto !== 'undefined' && crypto.randomUUID 
-      ? crypto.randomUUID() 
-      : `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-    return `image-${uniqueId}-${file.name}`;
-  };
-
-  const uploadDisplayImage = async (imageFile) => {
-    const imagePresignData = await uploadsApi.getPresignedUploadUrl(
-      generateImageFilename(imageFile),
-      imageFile.type,
-    );
-    await uploadsApi.uploadToPresignedUrl(
-      imagePresignData.uploadUrl,
-      imageFile,
-    );
-    return imagePresignData.key;
-  };
-
-  const handleSave = async () => {
-    const errors = validateForm();
-
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      return;
-    }
-
-    let updateData = {
-      title: editedTitle,
-      type: recipe.type,
-      url: recipe.type.toLowerCase() === "link" ? editedUrl : recipe.url,
-      content:
-        recipe.type.toLowerCase() === "manual" 
-          ? serializeRecipeContent({
-              description: editedManualDescription,
-              ingredients: editedManualIngredients,
-              instructions: editedManualInstructions,
-              notes: editedManualNotes,
-            })
-          : recipe.content,
-      categoryId: editedCategoryId,
-      tagIds: editedTagIds,
-    };
-
-    try {
-      setUploading(true);
-
-      // Handle document upload if user selected a new file
-      if (recipe.type.toLowerCase() === "document" && file) {
-        // Get presigned upload URL
-        const presignData = await uploadsApi.getPresignedUploadUrl(
-          file.name,
-          file.type,
-        );
-
-        // Upload file to R2
-        await uploadsApi.uploadToPresignedUrl(presignData.uploadUrl, file);
-
-        updateData.storageKey = presignData.key;
-      }
-
-      // Handle display image upload/removal
-      if (removeDisplayImage) {
-        // Clear the preview image
-        updateData.previewImageUrl = null;
-      } else if (displayImageFile) {
-        // Upload new display image
-        updateData.previewImageUrl = await uploadDisplayImage(displayImageFile);
-      } else if (recipe.type.toLowerCase() === "link") {
-        // For Link recipes, use the edited metadata fields
-        // If metadata was fetched (metadata title exists), use it for the title
-        if (editedMetadataTitle.trim()) {
-          updateData.title = editedMetadataTitle.trim();
-        }
-        updateData.previewImageUrl = editedPreviewImageUrl.trim() || null;
-        updateData.description = editedDescription.trim() || null;
-        updateData.siteName = editedSiteName.trim() || null;
-      } else {
-        // Keep existing preview image for Manual/Document recipes
-        updateData.previewImageUrl = recipe.previewImageUrl;
-      }
-
-      setUploading(false);
-
-      // Mutation has its own error handling via onError callback
-      updateMutation.mutate({ id, ...updateData });
-    } catch (err) {
-      setUploading(false);
-      setValidationErrors({
-        ...validationErrors,
-        upload: getErrorMessage(err),
-      });
-    }
-  };
-
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -450,6 +53,7 @@ export default function RecipeDetail() {
     );
   }
 
+  // Error state
   if (error || !recipe) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
@@ -463,709 +67,76 @@ export default function RecipeDetail() {
     );
   }
 
-  // Determine image source (use placeholder if no preview image)
-  const imageSrc = recipe?.previewImageUrl || "/recipe-placeholder.svg";
-
-  const getRecipeTypeIcon = () => {
-    const type = recipe.type.toLowerCase();
-    switch (type) {
-      case "link":
-        return (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-            />
-          </svg>
-        );
-      case "document":
-        return (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-            />
-          </svg>
-        );
-      case "manual":
-        return (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-            />
-          </svg>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16 gap-4">
-            <button
-              onClick={() => navigate("/")}
-              className="text-gray-600 hover:text-gray-900 flex items-center gap-2"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-              Back
-            </button>
-            <h1 className="text-xl font-bold text-blue-600">Recipe Manager</h1>
-          </div>
-        </div>
-      </header>
+      <RecipeDetailHeader onBack={() => navigate("/")} />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {updateMutation.isError && (
+        {/* Update Error Message */}
+        {editState.updateError && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-800">
-              Failed to update recipe:{" "}
-              {getErrorMessage(updateMutation.error)}
+              Failed to update recipe: {getErrorMessage(editState.updateError)}
             </p>
           </div>
         )}
 
-        {updateMutation.isSuccess && !isEditMode && (
+        {/* Update Success Message */}
+        {editState.updateSuccess && !editState.isEditMode && (
           <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-green-800">Recipe updated successfully!</p>
           </div>
         )}
 
-        {validationErrors.upload && (
+        {/* Upload Error Message */}
+        {editState.validationErrors.upload && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800">Upload error: {validationErrors.upload}</p>
+            <p className="text-red-800">Upload error: {editState.validationErrors.upload}</p>
           </div>
         )}
 
         <div className="bg-white rounded-lg shadow-lg overflow-visible">
-          {/* Preview Image Section - Always shown for consistent layout */}
-          <div className="w-full h-64 sm:h-80 bg-gray-200 overflow-hidden relative rounded-t-lg">
-            <img
-              src={displayImagePreview || (removeDisplayImage ? "/recipe-placeholder.svg" : imageSrc)}
-              alt={recipe.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.src = "/recipe-placeholder.svg";
-              }}
+          {/* Recipe Image */}
+          <RecipeDetailImage
+            recipe={recipe}
+            isEditMode={editState.isEditMode}
+            displayImagePreview={editState.displayImagePreview}
+            removeDisplayImage={editState.removeDisplayImage}
+            onToggleFavorite={toggleFavorite}
+            isTogglingFavorite={isTogglingFavorite}
+          />
+
+          {/* Display Image Edit Controls */}
+          {editState.isEditMode && (
+            <DisplayImageEdit
+              recipe={recipe}
+              displayImageFile={editState.displayImageFile}
+              removeDisplayImage={editState.removeDisplayImage}
+              validationErrors={editState.validationErrors}
+              onDisplayImageChange={editState.handleDisplayImageChange}
+              onRemoveDisplayImage={editState.handleRemoveDisplayImage}
             />
-            {/* Favorite button overlay on image */}
-            {!isEditMode && (
-              <button
-                onClick={() => toggleFavoriteMutation.mutate({ recipeId: id, isFavorite: recipe.isFavorite })}
-                className={`absolute top-4 right-4 transition-colors bg-white rounded-full p-2 shadow-lg ${
-                  recipe.isFavorite
-                    ? "text-yellow-500"
-                    : "text-gray-400 hover:text-yellow-500"
-                }`}
-                disabled={toggleFavoriteMutation.isPending}
-                aria-label={
-                  recipe.isFavorite ? "Remove from favorites" : "Add to favorites"
-                }
-              >
-                {toggleFavoriteMutation.isPending ? (
-                  <div className="w-8 h-8 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-current"></div>
-                  </div>
-                ) : (
-                  <svg
-                    className="w-8 h-8"
-                    fill={recipe.isFavorite ? "currentColor" : "none"}
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                    />
-                  </svg>
-                )}
-              </button>
-            )}
-          </div>
-
-          {/* Display Image Upload Controls - Only in Edit Mode */}
-          {isEditMode && (
-            <div className="p-4 bg-blue-50 border-b border-blue-200">
-              <h3 className="text-sm font-semibold text-gray-800 mb-3">
-                Display Image
-              </h3>
-              
-              {recipe.previewImageUrl && !removeDisplayImage && !displayImageFile && (
-                <div className="mb-3 flex items-center gap-3">
-                  <p className="text-sm text-gray-600">Current image is displayed above</p>
-                  <button
-                    type="button"
-                    onClick={handleRemoveDisplayImage}
-                    className="text-sm text-red-600 hover:text-red-700 hover:underline"
-                  >
-                    Remove Image
-                  </button>
-                </div>
-              )}
-
-              {removeDisplayImage && (
-                <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
-                  <p className="text-sm text-yellow-800">
-                    Image will be removed when you save
-                  </p>
-                </div>
-              )}
-
-              <div>
-                <label
-                  htmlFor="displayImageEdit"
-                  className="block text-sm font-medium mb-1"
-                >
-                  {recipe.previewImageUrl && !removeDisplayImage
-                    ? "Replace Display Image (Optional)"
-                    : "Upload Display Image (Optional)"}
-                </label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Max file size: 5MB. Allowed types: JPG, PNG, GIF, WEBP
-                </p>
-                <input
-                  type="file"
-                  id="displayImageEdit"
-                  onChange={handleDisplayImageChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  accept=".jpg,.jpeg,.png,.gif,.webp"
-                />
-                {displayImageFile && (
-                  <p className="text-xs text-green-600 mt-1">
-                    Selected: {displayImageFile.name} (
-                    {(displayImageFile.size / (1024 * 1024)).toFixed(2)}MB)
-                  </p>
-                )}
-                {validationErrors.displayImage && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {validationErrors.displayImage}
-                  </p>
-                )}
-              </div>
-            </div>
           )}
 
-          {/* Title and Metadata Section */}
-          <div className="p-6 border-b border-gray-200">
-            {isEditMode ? (
-              <div className="mb-4">
-                <label
-                  htmlFor="title"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Recipe Title
-                </label>
-                <input
-                  id="title"
-                  type="text"
-                  value={editedTitle}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                  className={`w-full px-4 py-2 text-2xl font-bold border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    validationErrors.title
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  }`}
-                  placeholder="Enter recipe title"
-                />
-                {validationErrors.title && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {validationErrors.title}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <h1 className="text-3xl font-bold text-gray-900 mb-3">
-                {recipe.title}
-              </h1>
-            )}
-
-            {/* Recipe Type, Site Name, and Dates */}
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <div className="flex items-center gap-2 text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-                {getRecipeTypeIcon()}
-                <span className="uppercase tracking-wide font-medium">
-                  {recipe.type}
-                </span>
-              </div>
-              {recipe.siteName && (
-                <span className="text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
-                  {recipe.siteName}
-                </span>
-              )}
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-600">
-                Added {new Date(recipe.createdAt).toLocaleDateString()}
-              </span>
-              {recipe.updatedAt !== recipe.createdAt && (
-                <>
-                  <span className="text-gray-400">•</span>
-                  <span className="text-gray-600">
-                    Updated {new Date(recipe.updatedAt).toLocaleDateString()}
-                  </span>
-                </>
-              )}
-            </div>
-
-            {/* Description Section */}
-            {recipe.description && (
-              <div className="mt-4">
-                <p className="text-gray-700 text-base leading-relaxed">
-                  {recipe.description}
-                </p>
-              </div>
-            )}
-
-            {/* Category and Tags Section */}
-            <div className="mt-4 space-y-3">
-              {recipe.category && (
-                <div>
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Category
-                  </h3>
-                  <CategoryBadge category={recipe.category} />
-                </div>
-              )}
-
-              {recipe.tags && recipe.tags.length > 0 && (
-                <div>
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Tags
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {recipe.tags.map((tag) => (
-                      <TagBadge key={tag.id} tag={tag} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Type-Specific Content Section */}
-          <div className="p-6">
-            {recipe.type.toLowerCase() === "link" && (
-              <div>
-                <h2 className="text-lg font-semibold mb-3 text-gray-700">
-                  Recipe Link
-                </h2>
-                {isEditMode ? (
-                  <div>
-                    <input
-                      type="url"
-                      value={editedUrl}
-                      onChange={(e) => setEditedUrl(e.target.value)}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        validationErrors.url
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      }`}
-                      placeholder="https://example.com/recipe"
-                    />
-                    {fetchingMetadata && (
-                      <p className="text-xs text-blue-500 mt-1 flex items-center gap-1">
-                        <span className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></span>
-                        Fetching recipe preview...
-                      </p>
-                    )}
-                    {validationErrors.url && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {validationErrors.url}
-                      </p>
-                    )}
-
-                    {/* Metadata Preview for Link Recipes */}
-                    {metadata && (
-                      <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-                        <h4 className="text-sm font-medium text-gray-700 mb-3">
-                          Recipe Metadata (Editable)
-                        </h4>
-
-                        {/* Title */}
-                        <div className="mb-3">
-                          <label
-                            htmlFor="editedMetadataTitle"
-                            className="block text-xs font-medium text-gray-600 mb-1"
-                          >
-                            Title
-                          </label>
-                          <input
-                            type="text"
-                            id="editedMetadataTitle"
-                            value={editedMetadataTitle}
-                            onChange={(e) => setEditedMetadataTitle(e.target.value)}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Recipe title from URL"
-                          />
-                        </div>
-
-                        {/* Preview Image URL */}
-                        <div className="mb-3">
-                          <label
-                            htmlFor="editedPreviewImageUrl"
-                            className="block text-xs font-medium text-gray-600 mb-1"
-                          >
-                            Preview Image URL
-                          </label>
-                          <input
-                            type="url"
-                            id="editedPreviewImageUrl"
-                            value={editedPreviewImageUrl}
-                            onChange={(e) => setEditedPreviewImageUrl(e.target.value)}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="https://example.com/image.jpg"
-                          />
-                          {editedPreviewImageUrl && (
-                            <div className="mt-2">
-                              <img
-                                src={editedPreviewImageUrl}
-                                alt="Preview"
-                                className="h-24 w-auto rounded border border-gray-300 object-cover"
-                                onError={(e) => {
-                                  e.target.style.display = "none";
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Description */}
-                        <div className="mb-3">
-                          <label
-                            htmlFor="editedDescription"
-                            className="block text-xs font-medium text-gray-600 mb-1"
-                          >
-                            Description
-                          </label>
-                          <textarea
-                            id="editedDescription"
-                            value={editedDescription}
-                            onChange={(e) => setEditedDescription(e.target.value)}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            rows="2"
-                            maxLength="500"
-                            placeholder="Brief description..."
-                          />
-                          <p className="text-xs text-gray-500 mt-1">
-                            {editedDescription.length}/500 characters
-                          </p>
-                        </div>
-
-                        {/* Site Name */}
-                        <div>
-                          <label
-                            htmlFor="editedSiteName"
-                            className="block text-xs font-medium text-gray-600 mb-1"
-                          >
-                            Site Name
-                          </label>
-                          <input
-                            type="text"
-                            id="editedSiteName"
-                            value={editedSiteName}
-                            onChange={(e) => setEditedSiteName(e.target.value)}
-                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            maxLength="256"
-                            placeholder="Recipe source"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : recipe.url ? (
-                  <a
-                    href={recipe.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-blue-600 hover:underline break-all text-base"
-                  >
-                    {recipe.url}
-                    <svg
-                      className="w-4 h-4 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </a>
-                ) : null}
-              </div>
-            )}
-
-            {recipe.type.toLowerCase() === "document" && (
-              <div>
-                <h2 className="text-lg font-semibold mb-3 text-gray-700">
-                  Recipe Document
-                </h2>
-                {isEditMode ? (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Replace document (optional)
-                    </p>
-                    <p className="text-xs text-gray-500 mb-2">
-                      Max file size: 10MB. Allowed types: PDF, DOC, DOCX, TXT,
-                      JPG, PNG
-                    </p>
-                    <input
-                      type="file"
-                      id="file"
-                      onChange={handleFileChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-                    />
-                    {file && (
-                      <p className="text-xs text-green-600 mt-1">
-                        Selected: {file.name} (
-                        {(file.size / (1024 * 1024)).toFixed(2)}MB)
-                      </p>
-                    )}
-                    {validationErrors.file && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {validationErrors.file}
-                      </p>
-                    )}
-                    {recipe.fileContent && recipe.fileContentType && (
-                      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-600 mb-3">
-                          Current document preview:
-                        </p>
-                        <DocumentPreview
-                          fileContent={recipe.fileContent}
-                          fileContentType={recipe.fileContentType}
-                          title={recipe.title}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ) : recipe.fileContent && recipe.fileContentType ? (
-                  <DocumentPreview
-                    fileContent={recipe.fileContent}
-                    fileContentType={recipe.fileContentType}
-                    title={recipe.title}
-                  />
-                ) : (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <p className="text-yellow-800">
-                      Document content not available
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {recipe.type.toLowerCase() === "manual" && (
-              <div>
-                {isEditMode ? (
-                  <div className="space-y-4">
-                    <h2 className="text-lg font-semibold mb-3 text-gray-700">
-                      Recipe Content
-                    </h2>
-
-                    <div>
-                      <label
-                        htmlFor="editManualDescription"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Description (Optional)
-                      </label>
-                      <textarea
-                        id="editManualDescription"
-                        value={editedManualDescription}
-                        onChange={(e) => setEditedManualDescription(e.target.value)}
-                        rows={3}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans"
-                        placeholder="A brief overview of the recipe..."
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="editManualIngredients"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Ingredients *
-                      </label>
-                      <textarea
-                        id="editManualIngredients"
-                        value={editedManualIngredients}
-                        onChange={(e) => setEditedManualIngredients(e.target.value)}
-                        rows={8}
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans ${
-                          validationErrors.content
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="- 2 cups flour&#10;- 1 cup sugar&#10;- 3 eggs&#10;- ..."
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="editManualInstructions"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Instructions *
-                      </label>
-                      <textarea
-                        id="editManualInstructions"
-                        value={editedManualInstructions}
-                        onChange={(e) => setEditedManualInstructions(e.target.value)}
-                        rows={10}
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans ${
-                          validationErrors.content
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="1. Preheat oven to 350°F&#10;2. Mix dry ingredients...&#10;3. ..."
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="editManualNotes"
-                        className="block text-sm font-medium text-gray-700 mb-1"
-                      >
-                        Notes (Optional)
-                      </label>
-                      <textarea
-                        id="editManualNotes"
-                        value={editedManualNotes}
-                        onChange={(e) => setEditedManualNotes(e.target.value)}
-                        rows={4}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-sans"
-                        placeholder="Additional tips, variations, or storage instructions..."
-                      />
-                    </div>
-
-                    {validationErrors.content && (
-                      <p className="text-sm text-red-600">
-                        {validationErrors.content}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <ManualRecipeReadonlyView content={recipe.content} />
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Category and Tags Section - Only in Edit Mode */}
-          {isEditMode && (
-            <div className="p-6 border-t border-gray-200 space-y-4">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                Category and Tags
-              </h2>
-              
-              {/* Category Selector */}
-              <div>
-                <CategorySelector
-                  selectedCategoryId={editedCategoryId}
-                  onChange={setEditedCategoryId}
-                />
-              </div>
-
-              {/* Tag Selector */}
-              <div>
-                <TagSelector
-                  selectedTagIds={editedTagIds}
-                  onChange={setEditedTagIds}
-                />
-              </div>
-            </div>
+          {/* View or Edit Mode */}
+          {editState.isEditMode ? (
+            <RecipeDetailEdit recipe={recipe} editState={editState} />
+          ) : (
+            <RecipeDetailView recipe={recipe} />
           )}
 
           {/* Action Buttons */}
           <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
-            {isEditMode ? (
-              <>
-                <button
-                  onClick={handleCancelEdit}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors"
-                  disabled={updateMutation.isPending || uploading}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-                  disabled={updateMutation.isPending || uploading}
-                >
-                  {uploading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Uploading...
-                    </>
-                  ) : updateMutation.isPending ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={handleEdit}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Edit Recipe
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                  disabled={deleteMutation.isPending}
-                >
-                  {deleteMutation.isPending ? "Deleting..." : "Delete Recipe"}
-                </button>
-              </>
-            )}
+            <RecipeDetailActions
+              isEditMode={editState.isEditMode}
+              onEdit={editState.enterEditMode}
+              onDelete={handleDelete}
+              onSave={editState.saveChanges}
+              onCancel={editState.cancelEdit}
+              isDeleting={isDeleting}
+              isSaving={editState.isSaving}
+              uploading={editState.uploading}
+            />
           </div>
         </div>
       </main>
