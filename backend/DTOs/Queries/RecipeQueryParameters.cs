@@ -32,6 +32,12 @@ public class RecipeQueryParameters
     public bool FavoritesOnly { get; set; } = false;
     
     /// <summary>
+    /// Exclude recipes that are in the specified collection (by collection ID)
+    /// </summary>
+    [FromQuery(Name = "excludeCollectionId")]
+    public Guid? ExcludeCollectionId { get; set; }
+    
+    /// <summary>
     /// Parse comma-separated tag IDs into integer list
     /// </summary>
     /// <returns>List of valid tag IDs (invalid values are skipped)</returns>
