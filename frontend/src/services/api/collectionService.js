@@ -97,6 +97,32 @@ const removeRecipe = async (collectionId, recipeId) => {
   await apiClient.delete(`/api/collections/${collectionId}/recipes/${recipeId}`);
 };
 
+/**
+ * Add multiple recipes to collection (batch operation)
+ * @param {string} collectionId - Collection ID (GUID)
+ * @param {string[]} recipeIds - Array of recipe IDs (GUIDs)
+ * @returns {Promise<Object>} API response with addedCount
+ */
+const addRecipesBatch = async (collectionId, recipeIds) => {
+  const response = await apiClient.post(
+    `/api/collections/${collectionId}/recipes/batch`,
+    { recipeIds }
+  );
+  return response.data;
+};
+
+/**
+ * Remove multiple recipes from collection (batch operation)
+ * @param {string} collectionId - Collection ID (GUID)
+ * @param {string[]} recipeIds - Array of recipe IDs (GUIDs)
+ * @returns {Promise<void>}
+ */
+const removeRecipesBatch = async (collectionId, recipeIds) => {
+  await apiClient.delete(`/api/collections/${collectionId}/recipes/batch`, {
+    data: { recipeIds },
+  });
+};
+
 export const collectionService = {
   getAll,
   getById,
@@ -106,4 +132,6 @@ export const collectionService = {
   getRecipes,
   addRecipe,
   removeRecipe,
+  addRecipesBatch,
+  removeRecipesBatch,
 };
