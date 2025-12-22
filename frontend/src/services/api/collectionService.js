@@ -83,7 +83,7 @@ const getRecipes = async (collectionId) => {
  * @returns {Promise<Object>} API response
  */
 const addRecipe = async (collectionId, recipeId) => {
-  const response = await apiClient.post(`/api/collections/${collectionId}/recipes`, recipeId);
+  const response = await apiClient.post(`/api/collections/${collectionId}/recipes/${recipeId}`);
   return response.data;
 };
 

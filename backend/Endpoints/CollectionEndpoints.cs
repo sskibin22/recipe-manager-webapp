@@ -105,7 +105,7 @@ public static class CollectionEndpoints
         .WithOpenApi();
 
         // Add recipe to collection
-        app.MapPost("/api/collections/{id:guid}/recipes", async (
+        app.MapPost("/api/collections/{id:guid}/recipes/{recipeId:guid}", async (
             Guid id,
             Guid recipeId,
             ICollectionService collectionService,
