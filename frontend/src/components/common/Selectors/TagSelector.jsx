@@ -1,9 +1,9 @@
 /**
- * @typedef {import('../types/recipe').Tag} Tag
+ * @typedef {import('../../../types/recipe').Tag} Tag
  */
 
 import { useState, useRef, useEffect } from "react";
-import { useTagsQuery } from "../hooks";
+import { useTagsQuery } from "../../../hooks";
 
 /**
  * Tag selector component - searchable multi-select for recipe tags

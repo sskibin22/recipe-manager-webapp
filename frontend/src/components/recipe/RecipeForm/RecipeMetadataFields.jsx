@@ -1,5 +1,4 @@
-import CategorySelector from "../../CategorySelector";
-import TagSelector from "../../TagSelector";
+import { CategorySelector, TagSelector } from "../../common/Selectors";
 
 /**
  * Recipe metadata fields component - Category and tags selectors

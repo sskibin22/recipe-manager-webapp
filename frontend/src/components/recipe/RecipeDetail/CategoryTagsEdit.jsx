@@ -2,8 +2,7 @@
  * Component for editing category and tags
  */
 
-import CategorySelector from "../../CategorySelector";
-import TagSelector from "../../TagSelector";
+import { CategorySelector, TagSelector } from "../../common/Selectors";
 
 export default function CategoryTagsEdit({
   editedCategoryId,

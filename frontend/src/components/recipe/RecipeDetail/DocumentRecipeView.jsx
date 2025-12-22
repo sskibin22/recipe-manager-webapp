@@ -2,7 +2,7 @@
  * Component to display document recipe content in readonly mode
  */
 
-import DocumentPreview from "../../DocumentPreview";
+import DocumentPreview from "../../common/DocumentPreview";
 
 export default function DocumentRecipeView({ recipe }) {
   if (!recipe || recipe.type.toLowerCase() !== "document") return null;

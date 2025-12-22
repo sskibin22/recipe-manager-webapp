@@ -2,7 +2,7 @@
  * Edit component for document recipe fields
  */
 
-import DocumentPreview from "../../DocumentPreview";
+import DocumentPreview from "../../common/DocumentPreview";
 
 export default function DocumentRecipeEdit({
   recipe,

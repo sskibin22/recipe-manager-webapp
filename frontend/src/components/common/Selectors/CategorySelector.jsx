@@ -1,8 +1,8 @@
 /**
- * @typedef {import('../types/recipe').Category} Category
+ * @typedef {import('../../../types/recipe').Category} Category
  */
 
-import { useCategoriesQuery } from "../hooks";
+import { useCategoriesQuery } from "../../../hooks";
 
 /**
  * Category selector component - dropdown for selecting recipe category
