@@ -18,7 +18,6 @@ export default function Landing() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [filters, setFilters] = useState({
     categories: [],
     types: [],
@@ -35,7 +34,7 @@ export default function Landing() {
     data: allRecipes = [],
     isLoading,
     refetch,
-  } = useRecipesQuery(searchQuery, categoryId, [], showFavoritesOnly, { enabled: !!user });
+  } = useRecipesQuery(searchQuery, categoryId, [], false, null, { enabled: !!user });
 
   // Apply client-side filtering for types and multiple categories
   const recipes = allRecipes.filter((recipe) => {
@@ -132,33 +131,6 @@ export default function Landing() {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Recipe Manager</h1>
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
-                  showFavoritesOnly
-                    ? "bg-red-100 text-red-700 hover:bg-red-200"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-                title={showFavoritesOnly ? "Show All Recipes" : "Show Favorites Only"}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill={showFavoritesOnly ? "currentColor" : "none"}
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                  />
-                </svg>
-                <span className="hidden sm:inline">
-                  {showFavoritesOnly ? "Favorites" : "All Recipes"}
-                </span>
-              </button>
               <button
                 onClick={() => navigate("/collections")}
                 className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
@@ -276,53 +248,21 @@ export default function Landing() {
         ) : recipes.length === 0 ? (
           <div className="text-center py-12 px-4">
             <div className="max-w-md mx-auto">
-              {showFavoritesOnly ? (
-                <>
-                  <svg
-                    className="mx-auto h-12 w-12 text-gray-400 mb-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                    />
-                  </svg>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No favorite recipes yet
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Start adding recipes to your favorites by clicking the heart icon on any recipe card.
-                  </p>
-                  <button
-                    onClick={() => setShowFavoritesOnly(false)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                  >
-                    View All Recipes
-                  </button>
-                </>
-              ) : (
-                <>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No recipes found
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    {searchQuery || activeFilterCount > 0
-                      ? "Try adjusting your search or filters"
-                      : "Get started by adding your first recipe"}
-                  </p>
-                  {!searchQuery && activeFilterCount === 0 && (
-                    <button
-                      onClick={() => setIsFormOpen(true)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                    >
-                      Add Recipe
-                    </button>
-                  )}
-                </>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No recipes found
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {searchQuery || activeFilterCount > 0
+                  ? "Try adjusting your search or filters"
+                  : "Get started by adding your first recipe"}
+              </p>
+              {!searchQuery && activeFilterCount === 0 && (
+                <button
+                  onClick={() => setIsFormOpen(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  Add Recipe
+                </button>
               )}
             </div>
           </div>
