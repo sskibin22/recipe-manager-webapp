@@ -5,9 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { AuthButton, AuthForm } from "../components/auth";
 import RecipeList from "../components/RecipeList";
 import RecipeForm from "../components/RecipeForm";
-import SearchBar from "../components/SearchBar";
-import FilterPanel from "../components/FilterPanel";
-import FilterChips from "../components/FilterChips";
+import { SearchBar, FilterPanel, FilterChips } from "../components/recipe/RecipeFilters";
 
 /**
  * Landing page component - main recipe list view
