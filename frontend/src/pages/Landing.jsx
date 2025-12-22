@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecipesQuery } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
@@ -6,6 +6,7 @@ import { AuthButton, AuthForm } from "../components/auth";
 import RecipeList from "../components/recipe/RecipeList";
 import RecipeForm from "../components/recipe/RecipeForm/RecipeForm";
 import { SearchBar, FilterPanel, FilterChips } from "../components/recipe/RecipeFilters";
+import CollapsibleSection from "../components/common/CollapsibleSection";
 
 /**
  * Landing page component - main recipe list view
@@ -54,6 +55,22 @@ export default function Landing() {
 
     return true;
   });
+
+  // Separate recipes into favorites and non-favorites
+  const { favoriteRecipes, otherRecipes } = useMemo(() => {
+    const favorites = [];
+    const others = [];
+    
+    recipes.forEach((recipe) => {
+      if (recipe.isFavorite) {
+        favorites.push(recipe);
+      } else {
+        others.push(recipe);
+      }
+    });
+    
+    return { favoriteRecipes: favorites, otherRecipes: others };
+  }, [recipes]);
 
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
@@ -310,7 +327,44 @@ export default function Landing() {
             </div>
           </div>
         ) : (
-          <RecipeList recipes={recipes} onUpdate={refetch} />
+          <>
+            {/* Favorites Section */}
+            {favoriteRecipes.length > 0 && (
+              <CollapsibleSection
+                title="Favorites"
+                count={favoriteRecipes.length}
+                defaultExpanded={true}
+                storageKey="recipes-favorites-expanded"
+              >
+                <RecipeList recipes={favoriteRecipes} onUpdate={refetch} />
+              </CollapsibleSection>
+            )}
+
+            {/* All Recipes Section */}
+            <CollapsibleSection
+              title="All Recipes"
+              count={otherRecipes.length}
+              defaultExpanded={true}
+              storageKey="recipes-all-expanded"
+            >
+              {otherRecipes.length === 0 ? (
+                <div className="text-center py-12 px-4">
+                  <div className="max-w-md mx-auto">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No other recipes
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {searchQuery || activeFilterCount > 0
+                        ? "All matching recipes are in your favorites"
+                        : "All your recipes are favorited"}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <RecipeList recipes={otherRecipes} onUpdate={refetch} />
+              )}
+            </CollapsibleSection>
+          </>
         )}
 
         {isFormOpen && (
