@@ -1,10 +1,11 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useCollectionQuery, useCollectionRecipesQuery } from "../hooks";
+import { useCollectionQuery, useCollectionRecipesQuery, useCollectionMutations } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
 import { AuthButton } from "../components/auth";
 import RecipeList from "../components/recipe/RecipeList";
 import AddRecipesToCollectionModal from "../components/common/AddRecipesToCollectionModal";
 import RemoveRecipesFromCollectionModal from "../components/common/RemoveRecipesFromCollectionModal";
+import CollectionImageUpload from "../components/common/CollectionImageUpload";
 import { useState, useEffect } from "react";
 
 /**
@@ -20,6 +21,9 @@ export default function CollectionDetailPage() {
   const [successMessage, setSuccessMessage] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [isEditImageModalOpen, setIsEditImageModalOpen] = useState(false);
+
+  const { updateMutation } = useCollectionMutations();
 
   // Check for success message from navigation state
   useEffect(() => {
@@ -32,6 +36,26 @@ export default function CollectionDetailPage() {
       return () => clearTimeout(timer);
     }
   }, [location.state]);
+
+  const handleUpdateCollectionImage = async ({ imageStorageKey, previewImageData }) => {
+    if (!collection) return;
+
+    try {
+      await updateMutation.mutateAsync({
+        id: collection.id,
+        name: collection.name,
+        description: collection.description,
+        imageStorageKey: imageStorageKey || undefined,
+        previewImageData: previewImageData || undefined,
+      });
+
+      setSuccessMessage("Collection thumbnail updated successfully!");
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (error) {
+      console.error("Failed to update collection image:", error);
+      throw error; // Re-throw so modal can show error
+    }
+  };
 
   const { data: collection, isLoading: isLoadingCollection } = useCollectionQuery(id, { enabled: !!user && !!id });
   const { data: recipes = [], isLoading: isLoadingRecipes, refetch } = useCollectionRecipesQuery(id, { enabled: !!user && !!id });
@@ -149,7 +173,27 @@ export default function CollectionDetailPage() {
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3 mb-6">
+        <div className="flex gap-3 mb-6 flex-wrap">
+          <button
+            onClick={() => setIsEditImageModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+              />
+            </svg>
+            {collection.imageUrl ? "Edit" : "Add"} Thumbnail
+          </button>
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
@@ -238,6 +282,13 @@ export default function CollectionDetailPage() {
         recipes={recipes}
         isOpen={isRemoveModalOpen}
         onClose={() => setIsRemoveModalOpen(false)}
+      />
+      <CollectionImageUpload
+        isOpen={isEditImageModalOpen}
+        onClose={() => setIsEditImageModalOpen(false)}
+        onUpload={handleUpdateCollectionImage}
+        collectionName={collection?.name}
+        currentImageUrl={collection?.imageUrl}
       />
     </div>
   );
