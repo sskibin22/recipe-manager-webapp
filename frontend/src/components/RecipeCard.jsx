@@ -6,8 +6,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi } from "../services/api";
 import { parseRecipeContent } from "../utils/recipeContent";
-import CategoryBadge from "./CategoryBadge";
-import TagBadge from "./TagBadge";
+import { CategoryBadge, TagBadge } from "./common/Badge";
 
 /**
  * Helper function to extract preview text from Manual recipe content
