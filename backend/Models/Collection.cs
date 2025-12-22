@@ -13,6 +13,8 @@ public partial class Collection
 
     public string? Description { get; set; }
 
+    public string? ImageStorageKey { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }

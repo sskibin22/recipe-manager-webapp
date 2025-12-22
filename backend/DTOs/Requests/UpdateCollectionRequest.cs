@@ -13,4 +13,7 @@ public class UpdateCollectionRequest
 
     [MaxLength(500)]
     public string? Description { get; set; }
+
+    [MaxLength(500)]
+    public string? ImageStorageKey { get; set; }
 }

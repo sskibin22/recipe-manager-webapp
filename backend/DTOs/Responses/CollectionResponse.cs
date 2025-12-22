@@ -9,6 +9,8 @@ public record CollectionResponse
     public Guid UserId { get; init; }
     public string Name { get; init; } = null!;
     public string? Description { get; init; }
+    public string? ImageStorageKey { get; init; }
+    public string? ImageUrl { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
     public int RecipeCount { get; init; }

@@ -14,15 +14,21 @@ public class CollectionService : ICollectionService
 {
     private readonly ApplicationDbContext _db;
     private readonly RecipeMapper _recipeMapper;
+    private readonly CollectionMapper _collectionMapper;
+    private readonly IStorageService _storageService;
     private readonly ILogger<CollectionService> _logger;
 
     public CollectionService(
         ApplicationDbContext db,
         RecipeMapper recipeMapper,
+        CollectionMapper collectionMapper,
+        IStorageService storageService,
         ILogger<CollectionService> logger)
     {
         _db = db;
         _recipeMapper = recipeMapper;
+        _collectionMapper = collectionMapper;
+        _storageService = storageService;
         _logger = logger;
     }
 
@@ -35,7 +41,8 @@ public class CollectionService : ICollectionService
             .OrderByDescending(c => c.UpdatedAt)
             .ToListAsync();
 
-        return collections.Select(CollectionMapper.ToResponse);
+        var responseTasks = collections.Select(c => _collectionMapper.ToResponseAsync(c));
+        return await Task.WhenAll(responseTasks);
     }
 
     /// <inheritdoc />
@@ -45,7 +52,7 @@ public class CollectionService : ICollectionService
             .Include(c => c.CollectionRecipes)
             .FirstOrDefaultAsync(c => c.Id == collectionId && c.UserId == userId);
 
-        return collection != null ? CollectionMapper.ToResponse(collection) : null;
+        return collection != null ? await _collectionMapper.ToResponseAsync(collection) : null;
     }
 
     /// <inheritdoc />
@@ -57,6 +64,7 @@ public class CollectionService : ICollectionService
             UserId = userId,
             Name = request.Name,
             Description = request.Description,
+            ImageStorageKey = request.ImageStorageKey,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -64,7 +72,7 @@ public class CollectionService : ICollectionService
         _db.Collections.Add(collection);
         await _db.SaveChangesAsync();
 
-        return CollectionMapper.ToResponse(collection);
+        return await _collectionMapper.ToResponseAsync(collection);
     }
 
     /// <inheritdoc />
@@ -76,18 +84,38 @@ public class CollectionService : ICollectionService
         if (collection == null)
             return null;
 
+        // Store old image key for cleanup
+        var oldImageKey = collection.ImageStorageKey;
+
         collection.Name = request.Name;
         collection.Description = request.Description;
+        collection.ImageStorageKey = request.ImageStorageKey;
         collection.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
+
+        // Clean up old image if it was replaced (not null and different from new key)
+        if (!string.IsNullOrEmpty(oldImageKey) && oldImageKey != request.ImageStorageKey)
+        {
+            try
+            {
+                // Note: R2/S3 doesn't have a delete API in the current implementation
+                // The old image will remain in storage but won't be referenced
+                // In a production system, implement cleanup via StorageService
+                _logger.LogInformation("Collection image replaced. Old key: {OldKey}", oldImageKey);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to cleanup old collection image: {Key}", oldImageKey);
+            }
+        }
 
         // Reload with recipe count
         await _db.Entry(collection)
             .Collection(c => c.CollectionRecipes)
             .LoadAsync();
 
-        return CollectionMapper.ToResponse(collection);
+        return await _collectionMapper.ToResponseAsync(collection);
     }
 
     /// <inheritdoc />
@@ -99,8 +127,27 @@ public class CollectionService : ICollectionService
         if (collection == null)
             return false;
 
+        // Store image key for cleanup
+        var imageKey = collection.ImageStorageKey;
+
         _db.Collections.Remove(collection);
         await _db.SaveChangesAsync();
+
+        // Clean up collection image
+        if (!string.IsNullOrEmpty(imageKey))
+        {
+            try
+            {
+                // Note: R2/S3 doesn't have a delete API in the current implementation
+                // The image will remain in storage but won't be referenced
+                // In a production system, implement cleanup via StorageService
+                _logger.LogInformation("Collection deleted. Image key: {Key}", imageKey);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to cleanup collection image: {Key}", imageKey);
+            }
+        }
 
         return true;
     }
