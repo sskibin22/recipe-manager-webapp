@@ -1,24 +1,24 @@
 /**
- * @typedef {import('../types/recipe').RecipeCreateData} RecipeCreateData
- * @typedef {import('../types/recipe').RecipeType} RecipeType
+ * @typedef {import('../../../types/recipe').RecipeCreateData} RecipeCreateData
+ * @typedef {import('../../../types/recipe').RecipeType} RecipeType
  */
 
 import { useEffect } from "react";
-import { getErrorMessage } from "../services/api";
+import { getErrorMessage } from "../../../services/api";
 import {
   useCreateRecipeMutation,
   useRecipeForm,
   useFileUpload,
   useMetadataFetch,
-} from "../hooks";
-import { serializeRecipeContent } from "../utils/recipeContent";
+} from "../../../hooks";
+import { serializeRecipeContent } from "../../../utils/recipeContent";
 import {
   RecipeTypeSelector,
   LinkRecipeFields,
   DocumentRecipeFields,
   ManualRecipeFields,
   RecipeMetadataFields,
-} from "./RecipeForm/index";
+} from "./index";
 
 /**
  * Recipe form component for creating new recipes

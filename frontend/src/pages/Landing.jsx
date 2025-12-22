@@ -4,7 +4,7 @@ import { useRecipesQuery } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
 import { AuthButton, AuthForm } from "../components/auth";
 import RecipeList from "../components/recipe/RecipeList";
-import RecipeForm from "../components/RecipeForm";
+import RecipeForm from "../components/recipe/RecipeForm/RecipeForm";
 import { SearchBar, FilterPanel, FilterChips } from "../components/recipe/RecipeFilters";
 
 /**

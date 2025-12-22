@@ -2,7 +2,7 @@
  * Component to display recipe metadata (type, site name, dates, category, tags)
  */
 
-import { CategoryBadge, TagBadge } from "../common/Badge";
+import { CategoryBadge, TagBadge } from "../../common/Badge";
 
 /**
  * Get icon for recipe type

@@ -2,7 +2,7 @@
  * Component to display manual recipe content in readonly mode
  */
 
-import { parseRecipeContent } from "../../utils/recipeContent";
+import { parseRecipeContent } from "../../../utils/recipeContent";
 
 /**
  * @param {Object} props

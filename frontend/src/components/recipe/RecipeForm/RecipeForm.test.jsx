@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { renderWithProviders } from "../test/testUtils";
+import { renderWithProviders } from "../../../test/testUtils";
 
 // Mock modules before importing components
-vi.mock("../services/api", () => ({
+vi.mock("../../../services/api", () => ({
   recipesApi: {
     create: vi.fn(),
   },
@@ -62,7 +62,7 @@ vi.mock("../contexts/AuthContext", () => ({
 
 // Import after mocking
 import RecipeForm from "./RecipeForm";
-import * as api from "../services/api";
+import * as api from "../../../services/api";
 
 describe("RecipeForm", () => {
   const mockOnClose = vi.fn();
