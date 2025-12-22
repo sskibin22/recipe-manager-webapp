@@ -237,8 +237,8 @@ describe("RecipeForm", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(api.recipesApi.create).toHaveBeenCalled();
-      const callArgs = api.recipesApi.create.mock.calls[0][0];
+      expect(api.recipeService.create).toHaveBeenCalled();
+      const callArgs = api.recipeService.create.mock.calls[0][0];
       expect(callArgs).toEqual({
         title: "Test Recipe",
         type: "link",
@@ -277,8 +277,8 @@ describe("RecipeForm", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(api.recipesApi.create).toHaveBeenCalled();
-      const callArgs = api.recipesApi.create.mock.calls[0][0];
+      expect(api.recipeService.create).toHaveBeenCalled();
+      const callArgs = api.recipeService.create.mock.calls[0][0];
       expect(callArgs.title).toBe("Test Recipe");
       expect(callArgs.type).toBe("manual");
       // Content should be JSON string
@@ -411,8 +411,8 @@ describe("RecipeForm", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(api.recipesApi.create).toHaveBeenCalled();
-      const callArgs = api.recipesApi.create.mock.calls[0][0];
+      expect(api.recipeService.create).toHaveBeenCalled();
+      const callArgs = api.recipeService.create.mock.calls[0][0];
       expect(callArgs.title).toBe("Test Recipe");
     });
   });
@@ -569,8 +569,8 @@ describe("RecipeForm", () => {
 
     // Verify that metadata fields are NOT included in the API call
     await waitFor(() => {
-      expect(api.recipesApi.create).toHaveBeenCalled();
-      const callArgs = api.recipesApi.create.mock.calls[0][0];
+      expect(api.recipeService.create).toHaveBeenCalled();
+      const callArgs = api.recipeService.create.mock.calls[0][0];
       expect(callArgs.title).toBe("Test Recipe");
       expect(callArgs.type).toBe("manual");
       // Content should be JSON string
@@ -625,8 +625,8 @@ describe("RecipeForm", () => {
 
     // Verify that metadata fields are NOT included in the API call
     await waitFor(() => {
-      expect(api.recipesApi.create).toHaveBeenCalled();
-      const callArgs = api.recipesApi.create.mock.calls[0][0];
+      expect(api.recipeService.create).toHaveBeenCalled();
+      const callArgs = api.recipeService.create.mock.calls[0][0];
       expect(callArgs.title).toBe("Test Recipe");
       expect(callArgs.type).toBe("document");
       expect(callArgs.storageKey).toBe("test-key");

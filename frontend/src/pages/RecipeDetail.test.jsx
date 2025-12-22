@@ -650,6 +650,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
     api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.update.mockResolvedValue(updatedRecipe);
+    api.recipeService.update.mockResolvedValue(updatedRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -674,7 +675,7 @@ describe("RecipeDetail - Edit Functionality", () => {
 
     // Should call update API with correct data (as JSON)
     await waitFor(() => {
-      expect(api.recipesApi.update).toHaveBeenCalled();
+      expect(api.recipeService.update).toHaveBeenCalled();
       const callArgs = api.recipesApi.update.mock.calls[0][0];
       expect(callArgs.id).toBe("test-recipe-id");
       expect(callArgs.title).toBe("Updated Recipe");
@@ -1199,6 +1200,7 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
     api.recipesApi.update = vi.fn().mockResolvedValue(updatedRecipe);
+    api.recipeService.update = vi.fn().mockResolvedValue(updatedRecipe);
 
     const user = userEvent.setup();
     render(<RecipeDetail />, { wrapper: createWrapper() });
@@ -1227,8 +1229,8 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
 
     // Verify update was called with metadata fields including title
     await waitFor(() => {
-      expect(api.recipesApi.update).toHaveBeenCalled();
-      const updateCall = api.recipesApi.update.mock.calls[0][0];
+      expect(api.recipeService.update).toHaveBeenCalled();
+      const updateCall = api.recipeService.update.mock.calls[0][0];
       expect(updateCall.title).toBe("New Title");
       expect(updateCall.previewImageUrl).toBe("https://example.com/new-image.jpg");
       expect(updateCall.description).toBe("New description");
