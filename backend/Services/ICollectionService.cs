@@ -57,4 +57,9 @@ public interface ICollectionService
     /// Remove multiple recipes from a collection in batch
     /// </summary>
     Task<bool> RemoveRecipesFromCollectionBatchAsync(Guid collectionId, List<Guid> recipeIds, Guid userId);
+
+    /// <summary>
+    /// Get collection IDs that contain a specific recipe
+    /// </summary>
+    Task<List<Guid>> GetCollectionsContainingRecipeAsync(Guid recipeId, Guid userId);
 }

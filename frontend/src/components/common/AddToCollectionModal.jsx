@@ -23,23 +23,17 @@ const AddToCollectionModal = ({ recipeId, isOpen, onClose }) => {
     if (!isOpen || !recipeId || collections.length === 0) return;
 
     const checkCollections = async () => {
-      const collectionsWithRecipe = new Set();
-      
-      // Check each collection to see if it contains the recipe
-      for (const collection of collections) {
-        try {
-          const recipes = await collectionService.getRecipes(collection.id);
-          
-          if (recipes.some(r => r.id === recipeId)) {
-            collectionsWithRecipe.add(collection.id);
-          }
-        } catch (err) {
-          console.error(`Failed to fetch recipes for collection ${collection.id}:`, err);
-        }
+      try {
+        // Single API call to get all collections containing this recipe
+        const collectionIds = await collectionService.getCollectionsContainingRecipe(recipeId);
+        const collectionsWithRecipe = new Set(collectionIds);
+        
+        setInitialCollections(collectionsWithRecipe);
+        setSelectedCollections(new Set(collectionsWithRecipe));
+      } catch (err) {
+        console.error(`Failed to fetch collections for recipe ${recipeId}:`, err);
+        setError("Failed to load collection membership");
       }
-      
-      setInitialCollections(collectionsWithRecipe);
-      setSelectedCollections(new Set(collectionsWithRecipe));
     };
 
     checkCollections();

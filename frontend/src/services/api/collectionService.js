@@ -123,6 +123,16 @@ const removeRecipesBatch = async (collectionId, recipeIds) => {
   });
 };
 
+/**
+ * Get collection IDs that contain a specific recipe
+ * @param {string} recipeId - Recipe ID (GUID)
+ * @returns {Promise<string[]>} Array of collection IDs that contain the recipe
+ */
+const getCollectionsContainingRecipe = async (recipeId) => {
+  const response = await apiClient.get(`/api/recipes/${recipeId}/collections`);
+  return response.data;
+};
+
 export const collectionService = {
   getAll,
   getById,
@@ -134,4 +144,5 @@ export const collectionService = {
   removeRecipe,
   addRecipesBatch,
   removeRecipesBatch,
+  getCollectionsContainingRecipe,
 };

@@ -280,4 +280,28 @@ public class CollectionService : ICollectionService
 
         return true;
     }
+
+    /// <inheritdoc />
+    public async Task<List<Guid>> GetCollectionsContainingRecipeAsync(Guid recipeId, Guid userId)
+    {
+        // Verify recipe belongs to user
+        var recipe = await _db.Recipes
+            .FirstOrDefaultAsync(r => r.Id == recipeId && r.UserId == userId);
+
+        if (recipe == null)
+            return new List<Guid>();
+
+        // Get all collections that contain this recipe
+        var collectionIds = await _db.CollectionRecipes
+            .Where(cr => cr.RecipeId == recipeId)
+            .Join(_db.Collections,
+                cr => cr.CollectionId,
+                c => c.Id,
+                (cr, c) => new { cr.CollectionId, c.UserId })
+            .Where(x => x.UserId == userId)
+            .Select(x => x.CollectionId)
+            .ToListAsync();
+
+        return collectionIds;
+    }
 }

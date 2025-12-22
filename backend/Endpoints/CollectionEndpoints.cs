@@ -187,6 +187,21 @@ public static class CollectionEndpoints
         .WithName("RemoveRecipesFromCollectionBatch")
         .WithOpenApi();
 
+        // Get collection IDs that contain a specific recipe
+        app.MapGet("/api/recipes/{recipeId:guid}/collections", async (
+            Guid recipeId,
+            ICollectionService collectionService,
+            IUserContextService userContext) =>
+        {
+            var userId = userContext.GetCurrentUserId();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
+
+            var collectionIds = await collectionService.GetCollectionsContainingRecipeAsync(recipeId, userId.Value);
+            return Results.Ok(collectionIds);
+        })
+        .WithName("GetCollectionsContainingRecipe")
+        .WithOpenApi();
+
         return app;
     }
 }
