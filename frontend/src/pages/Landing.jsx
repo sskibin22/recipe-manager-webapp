@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useRecipesQuery } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
 import { AuthButton, AuthForm } from "../components/auth";
-import RecipeList from "../components/RecipeList";
+import RecipeList from "../components/recipe/RecipeList";
 import RecipeForm from "../components/RecipeForm";
 import { SearchBar, FilterPanel, FilterChips } from "../components/recipe/RecipeFilters";
 
