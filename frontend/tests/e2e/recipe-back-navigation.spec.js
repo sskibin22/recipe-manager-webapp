@@ -67,7 +67,7 @@ test.describe('RecipeDetail Back Navigation', () => {
     await page.locator('[class*="rounded-lg shadow"]').filter({ hasText: /collection/i }).first().click();
     
     // Wait for collection detail page to load
-    await page.waitForSelector('text=Back to Collections, text=recipes', { timeout: 10000 });
+    await page.waitForSelector('text=Back to Collections', { timeout: 10000 });
     
     // Get the collection URL to verify we return to it
     const collectionUrl = page.url();
