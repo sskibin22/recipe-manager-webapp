@@ -71,6 +71,8 @@ export default function RecipeDetailEdit({ recipe, editState }) {
             file={editState.file}
             validationErrors={editState.validationErrors}
             onFileChange={editState.handleFileChange}
+            description={editState.editedDocumentDescription}
+            onDescriptionChange={editState.setEditedDocumentDescription}
           />
         )}
         {recipeType === "manual" && (

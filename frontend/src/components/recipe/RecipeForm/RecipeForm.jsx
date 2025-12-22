@@ -49,6 +49,8 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     setDescription,
     siteName,
     setSiteName,
+    documentDescription,
+    setDocumentDescription,
     manualDescription,
     setManualDescription,
     manualIngredients,
@@ -179,6 +181,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
 
         const storageKey = await uploadFile(file, file.name, file.type);
         recipeData.storageKey = storageKey;
+        recipeData.description = documentDescription.trim() || null;
 
         if (displayImageFile) {
           recipeData.previewImageUrl = await uploadDisplayImage(displayImageFile);
@@ -267,6 +270,8 @@ const RecipeForm = ({ onClose, onSuccess }) => {
                 onFileChange={handleFileChange}
                 displayImageFile={displayImageFile}
                 onDisplayImageChange={handleDisplayImageChange}
+                description={documentDescription}
+                onDescriptionChange={setDocumentDescription}
               />
             )}
 
