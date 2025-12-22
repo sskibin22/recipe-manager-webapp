@@ -6,6 +6,8 @@ import Landing from "./pages/Landing";
 import AuthCallback from "./pages/AuthCallback";
 import RecipeDetail from "./pages/RecipeDetail";
 import AccountSettings from "./pages/AccountSettings";
+import CollectionsPage from "./pages/CollectionsPage";
+import CollectionDetailPage from "./pages/CollectionDetailPage";
 
 function App() {
   const { getToken } = useAuth();
@@ -21,6 +23,8 @@ function App() {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/recipe/:id" element={<RecipeDetail />} />
         <Route path="/settings" element={<AccountSettings />} />
+        <Route path="/collections" element={<CollectionsPage />} />
+        <Route path="/collections/:id" element={<CollectionDetailPage />} />
       </Routes>
     </div>
   );
