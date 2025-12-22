@@ -234,6 +234,16 @@ public class RecipeService : IRecipeService
             }
         }
 
+        // Apply exclude collection filter
+        if (queryParams.ExcludeCollectionId.HasValue)
+        {
+            var recipesInCollection = _db.CollectionRecipes
+                .Where(cr => cr.CollectionId == queryParams.ExcludeCollectionId.Value)
+                .Select(cr => cr.RecipeId);
+            
+            query = query.Where(r => !recipesInCollection.Contains(r.Id));
+        }
+
         var recipes = await query
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();

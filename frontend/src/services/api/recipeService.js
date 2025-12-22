@@ -13,14 +13,16 @@ import { apiClient } from "./apiClient";
  * @param {number|null} [categoryId=null] - Category ID to filter by
  * @param {number[]} [tagIds=[]] - Tag IDs to filter by (AND logic)
  * @param {boolean} [favoritesOnly=false] - Filter to show only favorited recipes
+ * @param {string|null} [excludeCollectionId=null] - Exclude recipes in this collection (GUID)
  * @returns {Promise<Recipe[]>} Array of recipes
  */
-const getAll = async (searchQuery = "", categoryId = null, tagIds = [], favoritesOnly = false) => {
+const getAll = async (searchQuery = "", categoryId = null, tagIds = [], favoritesOnly = false, excludeCollectionId = null) => {
   const params = {};
   if (searchQuery) params.q = searchQuery;
   if (categoryId) params.category = categoryId;
   if (tagIds && tagIds.length > 0) params.tags = tagIds.join(',');
   params.favoritesOnly = favoritesOnly; // Always send boolean value
+  if (excludeCollectionId) params.excludeCollectionId = excludeCollectionId;
   
   const response = await apiClient.get("/api/recipes", { params });
   return response.data;
