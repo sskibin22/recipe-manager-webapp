@@ -87,6 +87,20 @@ export const validateRecipeImage = (file) => {
 };
 
 /**
+ * Validate collection image files (JPG, PNG, GIF, WEBP)
+ * @param {File} file - The file to validate
+ * @returns {string|null} Error message if invalid, null if valid
+ */
+export const validateCollectionImage = (file) => {
+  return validateFileGeneric(
+    file,
+    MAX_IMAGE_SIZE,
+    ALLOWED_IMAGE_TYPES,
+    "JPG, PNG, GIF, WEBP"
+  );
+};
+
+/**
  * Format file size for display
  * @param {number} bytes - File size in bytes
  * @returns {string} Formatted size (e.g., "2.5MB")
