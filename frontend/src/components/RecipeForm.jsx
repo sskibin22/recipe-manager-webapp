@@ -1,16 +1,24 @@
 /**
  * @typedef {import('../types/recipe').RecipeCreateData} RecipeCreateData
  * @typedef {import('../types/recipe').RecipeType} RecipeType
- * @typedef {import('../types/recipe').MetadataResponse} MetadataResponse
  */
 
-import { useState, useEffect, useRef } from "react";
-import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
+import { useEffect } from "react";
+import { getErrorMessage } from "../services/api";
 import { useCreateRecipeMutation } from "../hooks";
 import { serializeRecipeContent } from "../utils/recipeContent";
-import { validateRecipeDocument, validateRecipeImage } from "../utils/fileValidation";
-import CategorySelector from "./CategorySelector";
-import TagSelector from "./TagSelector";
+import {
+  useRecipeForm,
+  useFileUpload,
+  useMetadataFetch,
+} from "./RecipeForm/hooks";
+import {
+  RecipeTypeSelector,
+  LinkRecipeFields,
+  DocumentRecipeFields,
+  ManualRecipeFields,
+  RecipeMetadataFields,
+} from "./RecipeForm/index";
 
 /**
  * Recipe form component for creating new recipes
@@ -20,33 +28,57 @@ import TagSelector from "./TagSelector";
  * @returns {JSX.Element}
  */
 const RecipeForm = ({ onClose, onSuccess }) => {
-  const [recipeType, setRecipeType] = useState("link");
-  const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
-  const [file, setFile] = useState(null);
-  const [displayImageFile, setDisplayImageFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
+  // Form state management
+  const formState = useRecipeForm();
+  const {
+    recipeType,
+    setRecipeType,
+    title,
+    setTitle,
+    selectedCategoryId,
+    setSelectedCategoryId,
+    selectedTagIds,
+    setSelectedTagIds,
+    error,
+    setError,
+    url,
+    setUrl,
+    previewImageUrl,
+    setPreviewImageUrl,
+    description,
+    setDescription,
+    siteName,
+    setSiteName,
+    manualDescription,
+    setManualDescription,
+    manualIngredients,
+    setManualIngredients,
+    manualInstructions,
+    setManualInstructions,
+    manualNotes,
+    setManualNotes,
+    resetForm,
+  } = formState;
 
-  // Manual recipe structured fields
-  const [manualDescription, setManualDescription] = useState("");
-  const [manualIngredients, setManualIngredients] = useState("");
-  const [manualInstructions, setManualInstructions] = useState("");
-  const [manualNotes, setManualNotes] = useState("");
+  // File upload management
+  const fileUploadState = useFileUpload();
+  const {
+    file,
+    displayImageFile,
+    uploading,
+    uploadFile,
+    uploadDisplayImage,
+    handleFileChange: handleFileChangeBase,
+    handleDisplayImageChange: handleDisplayImageChangeBase,
+  } = fileUploadState;
 
-  // Metadata state
-  const [metadata, setMetadata] = useState(null);
-  const [fetchingMetadata, setFetchingMetadata] = useState(false);
-  const [previewImageUrl, setPreviewImageUrl] = useState("");
-  const [description, setDescription] = useState("");
-  const [siteName, setSiteName] = useState("");
+  // Metadata fetching for link recipes
+  const { metadata, setMetadata, fetching: fetchingMetadata } = useMetadataFetch(
+    url,
+    recipeType,
+  );
 
-  // Category and tags state
-  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-  const [selectedTagIds, setSelectedTagIds] = useState([]);
-
-  const urlDebounceRef = useRef(null);
-
+  // Recipe creation mutation
   const createRecipeMutation = useCreateRecipeMutation({
     onSuccess: () => {
       resetForm();
@@ -57,26 +89,34 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     },
   });
 
-  const resetForm = () => {
-    setTitle("");
-    setUrl("");
-    setFile(null);
-    setDisplayImageFile(null);
-    setError("");
-    setRecipeType("link");
-    setMetadata(null);
-    setPreviewImageUrl("");
-    setDescription("");
-    setSiteName("");
-    // Reset manual recipe fields
-    setManualDescription("");
-    setManualIngredients("");
-    setManualInstructions("");
-    setManualNotes("");
-    // Reset category and tags
-    setSelectedCategoryId(null);
-    setSelectedTagIds([]);
-  };
+  // Auto-fill title and metadata fields when metadata is fetched
+  useEffect(() => {
+    if (metadata && recipeType === "link") {
+      if (!title && metadata.title) {
+        setTitle(metadata.title);
+      }
+      if (!description && metadata.description) {
+        setDescription(metadata.description);
+      }
+      if (!previewImageUrl && metadata.imageUrl) {
+        setPreviewImageUrl(metadata.imageUrl);
+      }
+      if (!siteName && metadata.siteName) {
+        setSiteName(metadata.siteName);
+      }
+    }
+  }, [
+    metadata,
+    recipeType,
+    title,
+    description,
+    previewImageUrl,
+    siteName,
+    setTitle,
+    setDescription,
+    setPreviewImageUrl,
+    setSiteName,
+  ]);
 
   // Clear metadata when switching away from link type
   useEffect(() => {
@@ -86,122 +126,25 @@ const RecipeForm = ({ onClose, onSuccess }) => {
       setDescription("");
       setSiteName("");
     }
-  }, [recipeType]);
+  }, [recipeType, setMetadata, setPreviewImageUrl, setDescription, setSiteName]);
 
-  // Fetch metadata when URL changes (debounced)
-  useEffect(() => {
-    if (recipeType !== "link" || !url.trim()) {
-      return;
-    }
-
-    // Clear previous timeout
-    if (urlDebounceRef.current) {
-      clearTimeout(urlDebounceRef.current);
-    }
-
-    // Set new timeout for fetching metadata
-    urlDebounceRef.current = setTimeout(async () => {
-      try {
-        // Basic URL validation
-        const urlPattern = /^https?:\/\/.+/i;
-        if (!urlPattern.test(url.trim())) {
-          return; // Don't fetch if URL is not valid
-        }
-
-        setFetchingMetadata(true);
-        const fetchedMetadata = await recipesApi.fetchMetadata(url.trim());
-
-        if (fetchedMetadata) {
-          setMetadata(fetchedMetadata);
-
-          // Auto-fill fields if they're empty
-          if (!title && fetchedMetadata.title) {
-            setTitle(fetchedMetadata.title);
-          }
-          if (!description && fetchedMetadata.description) {
-            setDescription(fetchedMetadata.description);
-          }
-          if (!previewImageUrl && fetchedMetadata.imageUrl) {
-            setPreviewImageUrl(fetchedMetadata.imageUrl);
-          }
-          if (!siteName && fetchedMetadata.siteName) {
-            setSiteName(fetchedMetadata.siteName);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching metadata:", err);
-        // Don't show error to user, just log it
-      } finally {
-        setFetchingMetadata(false);
-      }
-    }, 800); // 800ms debounce
-
-    // Cleanup on unmount or when URL changes
-    return () => {
-      if (urlDebounceRef.current) {
-        clearTimeout(urlDebounceRef.current);
-      }
-    };
-  }, [url, recipeType, title, description, previewImageUrl, siteName]);
-
+  // Wrapped file change handlers that update error state
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files?.[0] || null;
-
-    if (!selectedFile) {
-      setFile(null);
+    const errorMsg = handleFileChangeBase(e);
+    if (errorMsg) {
+      setError(errorMsg);
+    } else {
       setError("");
-      return;
     }
-
-    const validationError = validateRecipeDocument(selectedFile);
-    if (validationError) {
-      setError(validationError);
-      setFile(null);
-      // Clear the input
-      e.target.value = "";
-      return;
-    }
-
-    setFile(selectedFile);
-    setError("");
   };
 
   const handleDisplayImageChange = (e) => {
-    const selectedFile = e.target.files?.[0] || null;
-
-    if (!selectedFile) {
-      setDisplayImageFile(null);
+    const errorMsg = handleDisplayImageChangeBase(e);
+    if (errorMsg) {
+      setError(errorMsg);
+    } else {
       setError("");
-      return;
     }
-
-    const validationError = validateRecipeImage(selectedFile);
-    if (validationError) {
-      setError(validationError);
-      setDisplayImageFile(null);
-      // Clear the input
-      e.target.value = "";
-      return;
-    }
-
-    setDisplayImageFile(selectedFile);
-    setError("");
-  };
-
-  const generateImageFilename = (file) => {
-    return `image-${Date.now()}-${file.name}`;
-  };
-
-  const uploadDisplayImage = async (imageFile) => {
-    const imagePresignData = await uploadsApi.getPresignedUploadUrl(
-      generateImageFilename(imageFile),
-      imageFile.type,
-    );
-    await uploadsApi.uploadToPresignedUrl(
-      imagePresignData.uploadUrl,
-      imageFile,
-    );
-    return imagePresignData.key;
   };
 
   const handleSubmit = async (e) => {
@@ -225,7 +168,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
           return;
         }
         recipeData.url = url.trim();
-        // Only include metadata fields for link recipes
         recipeData.previewImageUrl = previewImageUrl.trim() || null;
         recipeData.description = description.trim() || null;
         recipeData.siteName = siteName.trim() || null;
@@ -235,33 +177,20 @@ const RecipeForm = ({ onClose, onSuccess }) => {
           return;
         }
 
-        setUploading(true);
+        const storageKey = await uploadFile(file, file.name, file.type);
+        recipeData.storageKey = storageKey;
 
-        // Get presigned upload URL for document
-        const presignData = await uploadsApi.getPresignedUploadUrl(
-          file.name,
-          file.type,
-        );
-
-        // Upload file to R2
-        await uploadsApi.uploadToPresignedUrl(presignData.uploadUrl, file);
-
-        recipeData.storageKey = presignData.key;
-
-        // Upload display image if provided
         if (displayImageFile) {
           recipeData.previewImageUrl = await uploadDisplayImage(displayImageFile);
         }
-
-        setUploading(false);
       } else if (recipeType === "manual") {
-        // Validate that at least ingredients or instructions are provided
         if (!manualIngredients.trim() && !manualInstructions.trim()) {
-          setError("Either Ingredients or Instructions must be provided for manual recipes");
+          setError(
+            "Either Ingredients or Instructions must be provided for manual recipes",
+          );
           return;
         }
-        
-        // Serialize structured content to JSON
+
         recipeData.content = serializeRecipeContent({
           description: manualDescription,
           ingredients: manualIngredients,
@@ -269,11 +198,8 @@ const RecipeForm = ({ onClose, onSuccess }) => {
           notes: manualNotes,
         });
 
-        // Upload display image if provided
         if (displayImageFile) {
-          setUploading(true);
           recipeData.previewImageUrl = await uploadDisplayImage(displayImageFile);
-          setUploading(false);
         }
       }
 
@@ -287,7 +213,6 @@ const RecipeForm = ({ onClose, onSuccess }) => {
 
       createRecipeMutation.mutate(recipeData);
     } catch (err) {
-      setUploading(false);
       setError(getErrorMessage(err));
     }
   };
@@ -314,315 +239,59 @@ const RecipeForm = ({ onClose, onSuccess }) => {
               />
             </div>
 
-            {/* Recipe Type */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                Recipe Type *
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="link"
-                    checked={recipeType === "link"}
-                    onChange={(e) => setRecipeType(e.target.value)}
-                    className="mr-2"
-                  />
-                  Link
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="document"
-                    checked={recipeType === "document"}
-                    onChange={(e) => setRecipeType(e.target.value)}
-                    className="mr-2"
-                  />
-                  Document
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="manual"
-                    checked={recipeType === "manual"}
-                    onChange={(e) => setRecipeType(e.target.value)}
-                    className="mr-2"
-                  />
-                  Manual
-                </label>
-              </div>
-            </div>
+            {/* Recipe Type Selector */}
+            <RecipeTypeSelector
+              recipeType={recipeType}
+              onChange={setRecipeType}
+            />
 
             {/* Conditional Fields Based on Type */}
             {recipeType === "link" && (
-              <div className="mb-4">
-                <label htmlFor="url" className="block text-sm font-medium mb-1">
-                  Recipe URL *
-                </label>
-                <input
-                  type="url"
-                  id="url"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://example.com/recipe"
-                />
-                {fetchingMetadata && (
-                  <p className="text-xs text-blue-500 mt-1 flex items-center gap-1">
-                    <span className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></span>
-                    Fetching recipe preview...
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Metadata Preview for Link Recipes */}
-            {recipeType === "link" && metadata && (
-              <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">
-                  Recipe Preview (Editable)
-                </h4>
-
-                {/* Preview Image URL */}
-                <div className="mb-3">
-                  <label
-                    htmlFor="previewImageUrl"
-                    className="block text-xs font-medium text-gray-600 mb-1"
-                  >
-                    Preview Image URL
-                  </label>
-                  <input
-                    type="url"
-                    id="previewImageUrl"
-                    value={previewImageUrl}
-                    onChange={(e) => setPreviewImageUrl(e.target.value)}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  {previewImageUrl && (
-                    <div className="mt-2">
-                      <img
-                        src={previewImageUrl}
-                        alt="Preview"
-                        className="h-24 w-auto rounded border border-gray-300 object-cover"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Description */}
-                <div className="mb-3">
-                  <label
-                    htmlFor="description"
-                    className="block text-xs font-medium text-gray-600 mb-1"
-                  >
-                    Description
-                  </label>
-                  <textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    rows="2"
-                    maxLength="500"
-                    placeholder="Brief description..."
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {description.length}/500 characters
-                  </p>
-                </div>
-
-                {/* Site Name */}
-                <div>
-                  <label
-                    htmlFor="siteName"
-                    className="block text-xs font-medium text-gray-600 mb-1"
-                  >
-                    Site Name
-                  </label>
-                  <input
-                    type="text"
-                    id="siteName"
-                    value={siteName}
-                    onChange={(e) => setSiteName(e.target.value)}
-                    className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    maxLength="256"
-                    placeholder="Recipe source"
-                  />
-                </div>
-              </div>
+              <LinkRecipeFields
+                url={url}
+                onUrlChange={setUrl}
+                fetchingMetadata={fetchingMetadata}
+                metadata={metadata}
+                previewImageUrl={previewImageUrl}
+                onPreviewImageUrlChange={setPreviewImageUrl}
+                description={description}
+                onDescriptionChange={setDescription}
+                siteName={siteName}
+                onSiteNameChange={setSiteName}
+              />
             )}
 
             {recipeType === "document" && (
-              <>
-                <div className="mb-4">
-                  <label
-                    htmlFor="file"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Upload Document *
-                  </label>
-                  <p className="text-xs text-gray-500 mb-2">
-                    Max file size: 10MB. Allowed types: PDF, DOC, DOCX, TXT, JPG,
-                    PNG
-                  </p>
-                  <input
-                    type="file"
-                    id="file"
-                    onChange={handleFileChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-                  />
-                  {file && (
-                    <p className="text-xs text-green-600 mt-1">
-                      Selected: {file.name} (
-                      {(file.size / (1024 * 1024)).toFixed(2)}MB)
-                    </p>
-                  )}
-                </div>
-
-                <div className="mb-4">
-                  <label
-                    htmlFor="displayImage"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Display Image (Optional)
-                  </label>
-                  <p className="text-xs text-gray-500 mb-2">
-                    Max file size: 5MB. Allowed types: JPG, PNG, GIF, WEBP
-                  </p>
-                  <input
-                    type="file"
-                    id="displayImage"
-                    onChange={handleDisplayImageChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    accept=".jpg,.jpeg,.png,.gif,.webp"
-                  />
-                  {displayImageFile && (
-                    <p className="text-xs text-green-600 mt-1">
-                      Selected: {displayImageFile.name} (
-                      {(displayImageFile.size / (1024 * 1024)).toFixed(2)}MB)
-                    </p>
-                  )}
-                </div>
-              </>
+              <DocumentRecipeFields
+                file={file}
+                onFileChange={handleFileChange}
+                displayImageFile={displayImageFile}
+                onDisplayImageChange={handleDisplayImageChange}
+              />
             )}
 
             {recipeType === "manual" && (
-              <>
-                <div className="mb-4">
-                  <label
-                    htmlFor="manualDescription"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Description (Optional)
-                  </label>
-                  <textarea
-                    id="manualDescription"
-                    value={manualDescription}
-                    onChange={(e) => setManualDescription(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows="3"
-                    placeholder="A brief overview of the recipe..."
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label
-                    htmlFor="manualIngredients"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Ingredients *
-                  </label>
-                  <textarea
-                    id="manualIngredients"
-                    value={manualIngredients}
-                    onChange={(e) => setManualIngredients(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows="8"
-                    placeholder="- 2 cups flour&#10;- 1 cup sugar&#10;- 3 eggs&#10;- ..."
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label
-                    htmlFor="manualInstructions"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Instructions *
-                  </label>
-                  <textarea
-                    id="manualInstructions"
-                    value={manualInstructions}
-                    onChange={(e) => setManualInstructions(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows="10"
-                    placeholder="1. Preheat oven to 350°F&#10;2. Mix dry ingredients...&#10;3. ..."
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label
-                    htmlFor="manualNotes"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Notes (Optional)
-                  </label>
-                  <textarea
-                    id="manualNotes"
-                    value={manualNotes}
-                    onChange={(e) => setManualNotes(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows="4"
-                    placeholder="Additional tips, variations, or storage instructions..."
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label
-                    htmlFor="displayImage"
-                    className="block text-sm font-medium mb-1"
-                  >
-                    Display Image (Optional)
-                  </label>
-                  <p className="text-xs text-gray-500 mb-2">
-                    Max file size: 5MB. Allowed types: JPG, PNG, GIF, WEBP
-                  </p>
-                  <input
-                    type="file"
-                    id="displayImage"
-                    onChange={handleDisplayImageChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    accept=".jpg,.jpeg,.png,.gif,.webp"
-                  />
-                  {displayImageFile && (
-                    <p className="text-xs text-green-600 mt-1">
-                      Selected: {displayImageFile.name} (
-                      {(displayImageFile.size / (1024 * 1024)).toFixed(2)}MB)
-                    </p>
-                  )}
-                </div>
-              </>
+              <ManualRecipeFields
+                description={manualDescription}
+                onDescriptionChange={setManualDescription}
+                ingredients={manualIngredients}
+                onIngredientsChange={setManualIngredients}
+                instructions={manualInstructions}
+                onInstructionsChange={setManualInstructions}
+                notes={manualNotes}
+                onNotesChange={setManualNotes}
+                displayImageFile={displayImageFile}
+                onDisplayImageChange={handleDisplayImageChange}
+              />
             )}
 
-            {/* Category Selector */}
-            <div className="mb-4">
-              <CategorySelector
-                selectedCategoryId={selectedCategoryId}
-                onChange={setSelectedCategoryId}
-              />
-            </div>
-
-            {/* Tag Selector */}
-            <div className="mb-4">
-              <TagSelector
-                selectedTagIds={selectedTagIds}
-                onChange={setSelectedTagIds}
-              />
-            </div>
+            {/* Category and Tags */}
+            <RecipeMetadataFields
+              selectedCategoryId={selectedCategoryId}
+              onCategoryChange={setSelectedCategoryId}
+              selectedTagIds={selectedTagIds}
+              onTagsChange={setSelectedTagIds}
+            />
 
             {/* Error Message */}
             {error && (
