@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useCollectionsQuery, useCollectionMutations } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
 import { AuthButton } from "../components/auth";
+import { validateCollectionImage } from "../utils/fileValidation";
+import { uploadService } from "../services/api/uploadService";
 
 /**
  * Collections page - list all user collections
@@ -14,27 +16,100 @@ export default function CollectionsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
   const [newCollectionDescription, setNewCollectionDescription] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageError, setImageError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const { data: collections = [], isLoading, refetch } = useCollectionsQuery({ enabled: !!user });
   const { createMutation, deleteMutation } = useCollectionMutations();
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const error = validateCollectionImage(file);
+    if (error) {
+      setImageError(error);
+      setSelectedImage(null);
+      setImagePreview(null);
+      return;
+    }
+
+    setImageError("");
+    setSelectedImage(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    setImageError("");
+  };
 
   const handleCreateCollection = async (e) => {
     e.preventDefault();
     if (!newCollectionName.trim()) return;
 
     try {
+      setIsUploading(true);
+      let imageStorageKey = null;
+
+      // Upload image if selected
+      if (selectedImage) {
+        try {
+          const { uploadUrl, key } = await uploadService.getPresignedCollectionImageUploadUrl(
+            selectedImage.name,
+            selectedImage.type
+          );
+          await uploadService.uploadToPresignedUrl(uploadUrl, selectedImage);
+          imageStorageKey = key;
+        } catch (error) {
+          console.error("Failed to upload collection image:", error);
+          
+          // Provide specific error messages based on error type
+          let errorMessage = "Failed to upload image. Please try again.";
+          if (error.response?.status === 413) {
+            errorMessage = "Image file is too large. Please use an image under 5MB.";
+          } else if (error.response?.status === 400) {
+            errorMessage = "Invalid image format. Please use JPEG, PNG, GIF, or WebP.";
+          } else if (!navigator.onLine) {
+            errorMessage = "No internet connection. Please check your network and try again.";
+          } else if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
+            errorMessage = "Upload timed out. Please try again with a smaller image.";
+          }
+          
+          setImageError(errorMessage);
+          setIsUploading(false);
+          return;
+        }
+      }
+
       const newCollection = await createMutation.mutateAsync({
         name: newCollectionName,
         description: newCollectionDescription || undefined,
+        imageStorageKey: imageStorageKey || undefined,
       });
+      
       setNewCollectionName("");
       setNewCollectionDescription("");
+      setSelectedImage(null);
+      setImagePreview(null);
+      setImageError("");
       setIsCreateModalOpen(false);
+      setIsUploading(false);
       
       // Redirect to bulk selection page
       navigate(`/collections/${newCollection.id}/add-recipes`);
     } catch (error) {
       console.error("Failed to create collection:", error);
+      setIsUploading(false);
     }
   };
 
@@ -49,6 +124,13 @@ export default function CollectionsPage() {
     } catch (error) {
       console.error("Failed to delete collection:", error);
     }
+  };
+
+  // Helper function for submit button text
+  const getSubmitButtonText = () => {
+    if (isUploading) return "Uploading...";
+    if (createMutation.isPending) return "Creating...";
+    return "Create";
   };
 
   return (
@@ -160,46 +242,76 @@ export default function CollectionsPage() {
             {collections.map((collection) => (
               <div
                 key={collection.id}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition p-6 cursor-pointer"
+                className="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden cursor-pointer"
                 onClick={() => navigate(`/collections/${collection.id}`)}
               >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {collection.name}
-                    </h3>
-                    {collection.description && (
-                      <p className="text-sm text-gray-600 mb-2">
-                        {collection.description}
-                      </p>
-                    )}
-                    <p className="text-sm text-gray-500">
-                      {collection.recipeCount} {collection.recipeCount === 1 ? "recipe" : "recipes"}
-                    </p>
+                {/* Collection Image */}
+                {collection.imageUrl ? (
+                  <div className="w-full h-48 bg-gray-100">
+                    <img
+                      src={collection.imageUrl}
+                      alt={collection.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteCollection(collection.id);
-                    }}
-                    className="text-gray-400 hover:text-red-600 transition"
-                    title="Delete collection"
-                  >
+                ) : (
+                  <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
                     <svg
-                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-16 h-16 text-gray-400"
                       fill="none"
                       viewBox="0 0 24 24"
-                      strokeWidth={1.5}
                       stroke="currentColor"
-                      className="w-5 h-5"
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                        strokeWidth={1.5}
+                        d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"
                       />
                     </svg>
-                  </button>
+                  </div>
+                )}
+                
+                {/* Collection Info */}
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {collection.name}
+                      </h3>
+                      {collection.description && (
+                        <p className="text-sm text-gray-600 mb-2">
+                          {collection.description}
+                        </p>
+                      )}
+                      <p className="text-sm text-gray-500">
+                        {collection.recipeCount} {collection.recipeCount === 1 ? "recipe" : "recipes"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCollection(collection.id);
+                      }}
+                      className="text-gray-400 hover:text-red-600 transition"
+                      title="Delete collection"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -241,6 +353,80 @@ export default function CollectionsPage() {
                     maxLength={500}
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Collection Image (optional)
+                  </label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    JPEG, PNG, GIF, or WebP. Max 5MB.
+                  </p>
+                  
+                  {imagePreview ? (
+                    <div className="relative">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition"
+                        title="Remove image"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                          stroke="currentColor"
+                          className="w-4 h-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition">
+                      <input
+                        type="file"
+                        id="collection-image"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="collection-image"
+                        className="cursor-pointer"
+                      >
+                        <svg
+                          className="mx-auto h-12 w-12 text-gray-400 mb-2"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                          />
+                        </svg>
+                        <p className="text-sm text-gray-600">
+                          Click to upload an image
+                        </p>
+                      </label>
+                    </div>
+                  )}
+                  
+                  {imageError && (
+                    <p className="mt-2 text-sm text-red-600">{imageError}</p>
+                  )}
+                </div>
                 <div className="flex gap-3 justify-end">
                   <button
                     type="button"
@@ -248,6 +434,9 @@ export default function CollectionsPage() {
                       setIsCreateModalOpen(false);
                       setNewCollectionName("");
                       setNewCollectionDescription("");
+                      setSelectedImage(null);
+                      setImagePreview(null);
+                      setImageError("");
                     }}
                     className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                   >
@@ -255,10 +444,10 @@ export default function CollectionsPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={createMutation.isPending}
+                    disabled={createMutation.isPending || isUploading}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                   >
-                    {createMutation.isPending ? "Creating..." : "Create"}
+                    {getSubmitButtonText()}
                   </button>
                 </div>
               </form>

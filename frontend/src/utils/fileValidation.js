@@ -73,17 +73,37 @@ export const validateRecipeDocument = (file) => {
 };
 
 /**
- * Validate recipe image files (JPG, PNG, GIF, WEBP)
+ * Validate image files (JPG, PNG, GIF, WEBP)
  * @param {File} file - The file to validate
  * @returns {string|null} Error message if invalid, null if valid
  */
-export const validateRecipeImage = (file) => {
+export const validateImage = (file) => {
   return validateFileGeneric(
     file,
     MAX_IMAGE_SIZE,
     ALLOWED_IMAGE_TYPES,
     "JPG, PNG, GIF, WEBP"
   );
+};
+
+/**
+ * Validate recipe image files (JPG, PNG, GIF, WEBP)
+ * @param {File} file - The file to validate
+ * @returns {string|null} Error message if invalid, null if valid
+ * @deprecated Use validateImage instead
+ */
+export const validateRecipeImage = (file) => {
+  return validateImage(file);
+};
+
+/**
+ * Validate collection image files (JPG, PNG, GIF, WEBP)
+ * @param {File} file - The file to validate
+ * @returns {string|null} Error message if invalid, null if valid
+ * @deprecated Use validateImage instead
+ */
+export const validateCollectionImage = (file) => {
+  return validateImage(file);
 };
 
 /**
