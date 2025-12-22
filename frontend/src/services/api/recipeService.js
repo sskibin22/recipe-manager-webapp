@@ -20,7 +20,7 @@ const getAll = async (searchQuery = "", categoryId = null, tagIds = [], favorite
   if (searchQuery) params.q = searchQuery;
   if (categoryId) params.category = categoryId;
   if (tagIds && tagIds.length > 0) params.tags = tagIds.join(',');
-  if (favoritesOnly) params.favoritesOnly = true;
+  params.favoritesOnly = favoritesOnly; // Always send boolean value
   
   const response = await apiClient.get("/api/recipes", { params });
   return response.data;
