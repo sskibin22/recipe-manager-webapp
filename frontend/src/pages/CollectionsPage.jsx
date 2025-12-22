@@ -72,7 +72,9 @@ export default function CollectionsPage() {
           );
           
           // Check if we got a real presigned URL or a placeholder (local development)
-          const isPlaceholder = uploadUrl.includes('placeholder-upload');
+          // Backend returns placeholder URLs like "http://localhost:5172/placeholder-upload/{key}"
+          // when R2 is not configured (local development mode)
+          const isPlaceholder = uploadUrl.includes('placeholder-upload') || uploadUrl.includes('localhost');
           
           if (isPlaceholder) {
             // Local development: send image as base64 data URI

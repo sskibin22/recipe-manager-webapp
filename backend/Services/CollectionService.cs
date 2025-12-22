@@ -70,31 +70,63 @@ public class CollectionService : ICollectionService
         };
 
         // Handle base64 image data (for SQLite storage in local development)
-        if (!string.IsNullOrEmpty(request.PreviewImageData))
-        {
-            try
-            {
-                // Parse data URI format: "data:image/png;base64,..."
-                var parts = request.PreviewImageData.Split(',');
-                if (parts.Length == 2)
-                {
-                    var contentTypePart = parts[0].Replace("data:", "").Replace(";base64", "");
-                    var base64Data = parts[1];
-                    
-                    collection.PreviewImageContent = Convert.FromBase64String(base64Data);
-                    collection.PreviewImageContentType = contentTypePart;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to parse preview image data for collection");
-            }
-        }
+        ParseAndSetPreviewImage(collection, request.PreviewImageData);
 
         _db.Collections.Add(collection);
         await _db.SaveChangesAsync();
 
         return await _collectionMapper.ToResponseAsync(collection);
+    }
+
+    /// <summary>
+    /// Parses base64 data URI and sets preview image content on collection.
+    /// Data URI format: "data:image/png;base64,iVBORw0KG..."
+    /// </summary>
+    /// <param name="collection">The collection to update</param>
+    /// <param name="previewImageData">The base64 data URI string</param>
+    private void ParseAndSetPreviewImage(Collection collection, string? previewImageData)
+    {
+        if (string.IsNullOrEmpty(previewImageData))
+            return;
+
+        try
+        {
+            // Validate data URI format
+            if (!previewImageData.StartsWith("data:") || !previewImageData.Contains(";base64,"))
+            {
+                _logger.LogWarning("Invalid data URI format for collection preview image");
+                return;
+            }
+
+            // Parse data URI format: "data:image/png;base64,..."
+            var parts = previewImageData.Split(',', 2);
+            if (parts.Length != 2)
+            {
+                _logger.LogWarning("Failed to split data URI into header and data parts");
+                return;
+            }
+
+            var contentTypePart = parts[0].Replace("data:", "").Replace(";base64", "");
+            var base64Data = parts[1];
+
+            // Validate content type
+            if (!contentTypePart.StartsWith("image/"))
+            {
+                _logger.LogWarning("Invalid content type for collection preview image: {ContentType}", contentTypePart);
+                return;
+            }
+
+            collection.PreviewImageContent = Convert.FromBase64String(base64Data);
+            collection.PreviewImageContentType = contentTypePart;
+        }
+        catch (FormatException ex)
+        {
+            _logger.LogWarning(ex, "Invalid base64 format in preview image data");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to parse preview image data for collection");
+        }
     }
 
     /// <inheritdoc />
@@ -115,26 +147,7 @@ public class CollectionService : ICollectionService
         collection.UpdatedAt = DateTime.UtcNow;
 
         // Handle base64 image data (for SQLite storage in local development)
-        if (!string.IsNullOrEmpty(request.PreviewImageData))
-        {
-            try
-            {
-                // Parse data URI format: "data:image/png;base64,..."
-                var parts = request.PreviewImageData.Split(',');
-                if (parts.Length == 2)
-                {
-                    var contentTypePart = parts[0].Replace("data:", "").Replace(";base64", "");
-                    var base64Data = parts[1];
-                    
-                    collection.PreviewImageContent = Convert.FromBase64String(base64Data);
-                    collection.PreviewImageContentType = contentTypePart;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to parse preview image data for collection");
-            }
-        }
+        ParseAndSetPreviewImage(collection, request.PreviewImageData);
 
         await _db.SaveChangesAsync();
 
