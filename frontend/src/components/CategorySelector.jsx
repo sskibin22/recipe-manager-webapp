@@ -2,8 +2,7 @@
  * @typedef {import('../types/recipe').Category} Category
  */
 
-import { useQuery } from "@tanstack/react-query";
-import { categoriesApi } from "../services/api";
+import { useCategoriesQuery } from "../hooks";
 
 /**
  * Category selector component - dropdown for selecting recipe category
@@ -13,10 +12,7 @@ import { categoriesApi } from "../services/api";
  * @returns {JSX.Element}
  */
 const CategorySelector = ({ selectedCategoryId, onChange }) => {
-  const { data: categories, isLoading } = useQuery({
-    queryKey: ["categories"],
-    queryFn: categoriesApi.getAll,
-  });
+  const { data: categories, isLoading } = useCategoriesQuery();
 
   if (isLoading) {
     return <div className="text-sm text-gray-500">Loading categories...</div>;

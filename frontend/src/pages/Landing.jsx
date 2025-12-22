@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { fetchRecipes } from "../services/api";
+import { useRecipesQuery } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
 import AuthButton from "../components/AuthButton";
 import AuthForm from "../components/AuthForm";
@@ -30,20 +29,14 @@ export default function Landing() {
   const activeFilterCount = (filters.categories?.length || 0) + (filters.types?.length || 0);
 
   // Fetch recipes with client-side type filtering since backend doesn't support multiple types
+  // Convert filters to API parameters
+  const categoryId = filters.categories?.length === 1 ? filters.categories[0] : null;
+  
   const {
     data: allRecipes = [],
     isLoading,
     refetch,
-  } = useQuery({
-    queryKey: ["recipes", searchQuery, filters.categories],
-    queryFn: () => {
-      // Convert filters to API parameters
-      const categoryId = filters.categories?.length === 1 ? filters.categories[0] : null;
-      
-      return fetchRecipes(searchQuery, categoryId, []);
-    },
-    enabled: !!user,
-  });
+  } = useRecipesQuery(searchQuery, categoryId, [], { enabled: !!user });
 
   // Apply client-side filtering for types and multiple categories
   const recipes = allRecipes.filter((recipe) => {

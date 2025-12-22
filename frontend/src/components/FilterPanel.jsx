@@ -3,8 +3,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchCategories } from "../services/api";
+import { useCategoriesQuery } from "../hooks";
 
 const RECIPE_TYPES = [
   { value: "Manual", label: "Manual" },
@@ -33,10 +32,7 @@ const FilterPanel = ({ filters, onFiltersChange, onClose }) => {
   );
   const [selectedTypes, setSelectedTypes] = useState(filters.types || []);
 
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
-    queryKey: ["categories"],
-    queryFn: fetchCategories,
-  });
+  const { data: categories = [], isLoading: categoriesLoading } = useCategoriesQuery();
 
   // Close panel when clicking outside
   useEffect(() => {

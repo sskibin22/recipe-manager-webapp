@@ -3,8 +3,7 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { tagsApi } from "../services/api";
+import { useTagsQuery } from "../hooks";
 
 /**
  * Tag selector component - searchable multi-select for recipe tags
@@ -18,10 +17,7 @@ const TagSelector = ({ selectedTagIds = [], onChange }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
-  const { data: allTags, isLoading } = useQuery({
-    queryKey: ["tags"],
-    queryFn: tagsApi.getAll,
-  });
+  const { data: allTags, isLoading } = useTagsQuery();
 
   // Close dropdown when clicking outside
   useEffect(() => {
