@@ -17,6 +17,9 @@ export const useRecipeForm = () => {
   const [description, setDescription] = useState("");
   const [siteName, setSiteName] = useState("");
 
+  // Document recipe specific state
+  const [documentDescription, setDocumentDescription] = useState("");
+
   // Manual recipe specific state
   const [manualDescription, setManualDescription] = useState("");
   const [manualIngredients, setManualIngredients] = useState("");
@@ -33,6 +36,7 @@ export const useRecipeForm = () => {
     setPreviewImageUrl("");
     setDescription("");
     setSiteName("");
+    setDocumentDescription("");
     setManualDescription("");
     setManualIngredients("");
     setManualInstructions("");
@@ -61,6 +65,10 @@ export const useRecipeForm = () => {
     setDescription,
     siteName,
     setSiteName,
+
+    // Document recipe state
+    documentDescription,
+    setDocumentDescription,
 
     // Manual recipe state
     manualDescription,

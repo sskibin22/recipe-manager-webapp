@@ -40,6 +40,9 @@ export const useRecipeEdit = (recipe, recipeId) => {
   const [editedDescription, setEditedDescription] = useState("");
   const [editedSiteName, setEditedSiteName] = useState("");
 
+  // Document recipe description
+  const [editedDocumentDescription, setEditedDocumentDescription] = useState("");
+
   // Category and tags
   const [editedCategoryId, setEditedCategoryId] = useState(null);
   const [editedTagIds, setEditedTagIds] = useState([]);
@@ -115,6 +118,11 @@ export const useRecipeEdit = (recipe, recipeId) => {
       setMetadata(null);
     }
 
+    // Initialize description for Document recipes
+    if (recipe.type.toLowerCase() === "document") {
+      setEditedDocumentDescription(recipe.description || "");
+    }
+
     // Initialize category and tags
     setEditedCategoryId(recipe.category?.id || null);
     setEditedTagIds(recipe.tags?.map(tag => tag.id) || []);
@@ -141,6 +149,7 @@ export const useRecipeEdit = (recipe, recipeId) => {
     setEditedPreviewImageUrl("");
     setEditedDescription("");
     setEditedSiteName("");
+    setEditedDocumentDescription("");
     setEditedManualDescription("");
     setEditedManualIngredients("");
     setEditedManualInstructions("");
@@ -308,6 +317,10 @@ export const useRecipeEdit = (recipe, recipeId) => {
         updateData.previewImageUrl = editedPreviewImageUrl.trim() || null;
         updateData.description = editedDescription.trim() || null;
         updateData.siteName = editedSiteName.trim() || null;
+      } else if (recipe.type.toLowerCase() === "document") {
+        // For Document recipes, include description
+        updateData.description = editedDocumentDescription.trim() || null;
+        updateData.previewImageUrl = recipe.previewImageUrl;
       } else {
         updateData.previewImageUrl = recipe.previewImageUrl;
       }
@@ -356,6 +369,10 @@ export const useRecipeEdit = (recipe, recipeId) => {
     setEditedDescription,
     editedSiteName,
     setEditedSiteName,
+
+    // Document description
+    editedDocumentDescription,
+    setEditedDocumentDescription,
 
     // Category and tags
     editedCategoryId,

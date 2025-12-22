@@ -5,6 +5,8 @@
  * @param {(e: Event) => void} props.onFileChange - Callback when document file changes
  * @param {File|null} props.displayImageFile - Selected display image file
  * @param {(e: Event) => void} props.onDisplayImageChange - Callback when display image changes
+ * @param {string} props.description - Description value
+ * @param {(desc: string) => void} props.onDescriptionChange - Callback for description
  * @returns {JSX.Element}
  */
 const DocumentRecipeFields = ({
@@ -12,6 +14,8 @@ const DocumentRecipeFields = ({
   onFileChange,
   displayImageFile,
   onDisplayImageChange,
+  description,
+  onDescriptionChange,
 }) => {
   return (
     <>
@@ -34,6 +38,27 @@ const DocumentRecipeFields = ({
             Selected: {file.name} ({(file.size / (1024 * 1024)).toFixed(2)}MB)
           </p>
         )}
+      </div>
+
+      <div className="mb-4">
+        <label
+          htmlFor="documentDescription"
+          className="block text-sm font-medium mb-1"
+        >
+          Description (Optional)
+        </label>
+        <textarea
+          id="documentDescription"
+          value={description}
+          onChange={(e) => onDescriptionChange(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          rows="3"
+          maxLength="500"
+          placeholder="Add an optional description for this recipe..."
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          {description.length}/500 characters
+        </p>
       </div>
 
       <div className="mb-4">
