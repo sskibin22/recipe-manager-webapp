@@ -2,13 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRecipesQuery } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
-import AuthButton from "../components/AuthButton";
-import AuthForm from "../components/AuthForm";
-import RecipeList from "../components/RecipeList";
-import RecipeForm from "../components/RecipeForm";
-import SearchBar from "../components/SearchBar";
-import FilterPanel from "../components/FilterPanel";
-import FilterChips from "../components/FilterChips";
+import { AuthButton, AuthForm } from "../components/auth";
+import RecipeList from "../components/recipe/RecipeList";
+import RecipeForm from "../components/recipe/RecipeForm/RecipeForm";
+import { SearchBar, FilterPanel, FilterChips } from "../components/recipe/RecipeFilters";
 
 /**
  * Landing page component - main recipe list view

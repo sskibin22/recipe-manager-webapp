@@ -4,15 +4,14 @@
  */
 
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useRecipeDetail } from "../components/RecipeDetail/hooks/useRecipeDetail";
-import { useRecipeEdit } from "../components/RecipeDetail/hooks/useRecipeEdit";
+import { useRecipeDetail, useRecipeEdit } from "../hooks";
 import { getErrorMessage } from "../services/api";
-import RecipeDetailHeader from "../components/RecipeDetail/RecipeDetailHeader";
-import RecipeDetailImage from "../components/RecipeDetail/RecipeDetailImage";
-import DisplayImageEdit from "../components/RecipeDetail/DisplayImageEdit";
-import RecipeDetailView from "../components/RecipeDetail/RecipeDetailView";
-import RecipeDetailEdit from "../components/RecipeDetail/RecipeDetailEdit";
-import RecipeDetailActions from "../components/RecipeDetail/RecipeDetailActions";
+import RecipeDetailHeader from "../components/recipe/RecipeDetail/RecipeDetailHeader";
+import RecipeDetailImage from "../components/recipe/RecipeDetail/RecipeDetailImage";
+import DisplayImageEdit from "../components/recipe/RecipeDetail/DisplayImageEdit";
+import RecipeDetailView from "../components/recipe/RecipeDetail/RecipeDetailView";
+import RecipeDetailEdit from "../components/recipe/RecipeDetail/RecipeDetailEdit";
+import RecipeDetailActions from "../components/recipe/RecipeDetail/RecipeDetailActions";
 
 
 /**
