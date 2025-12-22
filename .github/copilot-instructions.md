@@ -519,3 +519,404 @@ The #1 reason Playwright tests fail is **not enabling VITE_BYPASS_AUTH=true** in
 - Use pagination for recipe lists (database performance)
 - Implement connection pooling for Neon Postgres (connection limits)
 - Monitor Firebase Auth usage (stay within free MAU limits)
+
+## Coding Standards and Best Practices
+
+### General Principles
+
+**DRY (Don't Repeat Yourself)**:
+- Never duplicate code across multiple files
+- Extract shared logic into reusable utilities, services, or helpers
+- Create custom hooks for repeated React patterns
+- Use shared DTOs for common data structures
+
+**Single Responsibility Principle**:
+- Each class/function should have ONE clear purpose
+- Components should handle ONE concern (view OR edit, not both)
+- Services should handle ONE domain (recipes OR categories, not both)
+- Files should be under 300 lines; refactor if exceeding this
+
+**Separation of Concerns**:
+- Keep business logic separate from presentation logic
+- Separate API calls from UI components
+- Separate validation logic from form components
+- Keep configuration separate from implementation
+
+**Testability**:
+- Write testable code by avoiding tight coupling
+- Dependency inject services for easier mocking
+- Keep functions pure when possible (no side effects)
+- Write unit tests for all business logic
+- Write E2E tests for critical user flows
+
+### Backend (.NET) Standards
+
+**File Organization**:
+```
+/backend
+├── Program.cs              # Service registration, middleware pipeline, MINIMAL endpoint mapping only
+├── Endpoints/              # All API endpoints grouped by domain
+│   ├── RecipeEndpoints.cs
+│   ├── CategoryEndpoints.cs
+│   └── UploadEndpoints.cs
+├── Services/               # Business logic and external service integration
+│   ├── IRecipeService.cs   # Interface first
+│   ├── RecipeService.cs    # Implementation
+│   └── ...
+├── Models/                 # Entity models only
+│   ├── Recipe.cs
+│   └── ...
+├── DTOs/                   # Request/response models separate from entities
+│   ├── RecipeDto.cs
+│   ├── CreateRecipeRequest.cs
+│   └── UpdateRecipeRequest.cs
+├── Mapping/                # Object mapping logic (Entity <-> DTO)
+│   └── RecipeMapper.cs
+├── Extensions/             # Configuration and service registration helpers
+│   ├── ServiceCollectionExtensions.cs
+│   └── ConfigurationExtensions.cs
+├── Middleware/             # Custom middleware
+└── Data/                   # EF Core context and migrations
+```
+
+**Endpoint Guidelines**:
+- Create one class per domain (RecipeEndpoints, CategoryEndpoints)
+- Use `MapGroup` for route prefixes: `var recipes = app.MapGroup("/api/recipes")`
+- Keep endpoint handlers under 30 lines
+- Delegate business logic to services
+- Return proper HTTP status codes (200, 201, 204, 400, 404, 500)
+- Use DTOs for requests/responses, NEVER return entity models directly
+
+**Service Layer Guidelines**:
+- Define interfaces for all services (`IRecipeService`, `IStorageService`)
+- Implement dependency injection via constructor
+- Services should be stateless (no instance fields except injected dependencies)
+- Handle all exceptions and return meaningful error messages
+- Log errors with appropriate severity levels
+- Keep service methods focused and under 50 lines
+
+**DTO Guidelines**:
+- Create separate DTOs for Create, Update, and Response operations
+- Use record types for immutable DTOs: `public record RecipeDto(...)`
+- NEVER expose Entity Framework navigation properties in DTOs
+- Use `[JsonIgnore]` to prevent circular references if needed
+- Validate DTOs using Data Annotations or FluentValidation
+
+**Mapping Guidelines**:
+- Create dedicated mapper classes (RecipeMapper, CategoryMapper)
+- Use static methods for mapping: `RecipeMapper.ToDto(recipe)`, `RecipeMapper.ToEntity(dto)`
+- Keep mappers separate from entities and DTOs
+- Handle null values appropriately
+
+**Configuration Guidelines**:
+- Use extension methods for service registration: `services.AddRecipeServices()`
+- Group related configurations: `AddAuthServices()`, `AddDatabaseServices()`
+- Keep `Program.cs` minimal (under 150 lines)
+- Use `IOptions<T>` pattern for configuration models
+
+**Error Handling**:
+- Use consistent error response format: `{ "error": "message", "details": "..." }`
+- Return appropriate status codes (400 for validation, 404 for not found, 500 for server errors)
+- Log all exceptions with context
+- Never expose sensitive information in error messages
+
+**Testing Guidelines**:
+- Write unit tests for ALL services and business logic
+- Use `CustomWebApplicationFactory` for integration tests
+- Mock external dependencies (Firebase, R2, database)
+- Test happy path AND error scenarios
+- Maintain 80%+ code coverage
+- Run `dotnet test` before every commit
+
+### Frontend (React) Standards
+
+**File Organization**:
+```
+/frontend/src
+├── components/
+│   ├── recipe/              # Feature-based grouping
+│   │   ├── RecipeCard.jsx
+│   │   ├── RecipeList.jsx
+│   │   ├── RecipeForm/      # Complex components get their own folder
+│   │   │   ├── index.jsx
+│   │   │   ├── RecipeTypeSelector.jsx
+│   │   │   ├── LinkRecipeFields.jsx
+│   │   │   └── ManualRecipeFields.jsx
+│   │   └── RecipeDetail/
+│   ├── auth/
+│   │   ├── AuthButton.jsx
+│   │   └── ProtectedRoute.jsx
+│   ├── shared/              # Reusable UI components
+│   │   ├── Button.jsx
+│   │   ├── Modal.jsx
+│   │   └── LoadingSpinner.jsx
+│   └── layout/
+│       ├── Header.jsx
+│       └── Footer.jsx
+├── pages/                   # Route-level components
+│   ├── Landing.jsx
+│   ├── RecipeDetail.jsx
+│   └── AccountSettings.jsx
+├── hooks/                   # Custom React hooks
+│   ├── useRecipeForm.js
+│   ├── useRecipeQuery.js    # React Query wrappers
+│   └── useAuth.js
+├── services/
+│   ├── api/                 # Domain-specific API services
+│   │   ├── recipeService.js
+│   │   ├── categoryService.js
+│   │   ├── tagService.js
+│   │   └── uploadService.js
+│   └── firebase/            # Firebase integration
+│       ├── firebaseConfig.js
+│       └── firebaseAuth.js
+├── contexts/                # React Context providers
+│   └── AuthContext.jsx
+├── utils/                   # Pure utility functions
+│   ├── fileValidation.js
+│   ├── recipeContent.js
+│   └── dateFormatting.js
+└── types/                   # Type definitions (JSDoc or TypeScript)
+    ├── recipe.js
+    ├── category.js
+    └── user.js
+```
+
+**Component Guidelines**:
+- Keep components under 200 lines; split into sub-components if larger
+- One component per file
+- Use functional components with hooks (no class components)
+- Props should be documented with JSDoc: `@param {Recipe} recipe`
+- Extract complex logic into custom hooks
+- Use destructuring for props: `const RecipeCard = ({ recipe, onFavorite }) => { ... }`
+- Keep JSX readable; extract complex conditions into variables
+
+**State Management Guidelines**:
+- Use TanStack Query (React Query) for server state, NOT useState
+- Use Context for global auth state only
+- Use local useState for UI-only state (modals, forms, toggles)
+- Never duplicate server data in useState
+- Use custom hooks to encapsulate complex state logic
+
+**Custom Hooks Guidelines**:
+- Prefix all custom hooks with `use`: `useRecipeForm`, `useFileUpload`
+- Keep hooks focused on ONE responsibility
+- Return object for multiple values: `return { data, loading, error, handleSubmit }`
+- Extract repeated React Query patterns into shared hooks
+- Document parameters and return values with JSDoc
+
+**React Query Patterns**:
+```javascript
+// ✅ GOOD: Shared hook with proper caching
+export const useRecipesQuery = (searchQuery, categoryId, tagIds) => {
+  return useQuery({
+    queryKey: ['recipes', searchQuery, categoryId, tagIds],
+    queryFn: () => recipeService.fetchRecipes(searchQuery, categoryId, tagIds),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+// ✅ GOOD: Shared mutation hook with invalidation
+export const useRecipeMutations = () => {
+  const queryClient = useQueryClient();
+  
+  const createMutation = useMutation({
+    mutationFn: recipeService.createRecipe,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['recipes']);
+    },
+  });
+  
+  return { createMutation };
+};
+
+// ❌ BAD: Inline React Query in component (not reusable)
+const RecipeList = () => {
+  const { data } = useQuery({
+    queryKey: ['recipes'],
+    queryFn: fetchRecipes,
+  });
+  // ...
+};
+```
+
+**API Service Guidelines**:
+- Create one service file per domain: `recipeService.js`, `categoryService.js`
+- Export named functions (not default export)
+- Handle authentication token injection in Axios interceptor
+- Handle errors and return meaningful messages
+- Document all functions with JSDoc (parameters, return types, errors)
+- Keep service files under 200 lines
+
+**Form Handling Guidelines**:
+- Use custom hooks for form state: `useRecipeForm`, `useRecipeEdit`
+- Extract validation logic into `/utils/validation.js`
+- Show user-friendly error messages
+- Disable submit buttons during API calls
+- Clear form after successful submission
+- Handle both client-side and server-side validation errors
+
+**Validation Guidelines**:
+- Extract all validation logic into `/utils/` (never inline in components)
+- Use shared validation functions: `validateRecipeDocument`, `validateRecipeImage`
+- Return objects with `isValid` and `error` properties
+- Provide user-friendly error messages
+- Validate on blur AND on submit
+
+**Styling Guidelines**:
+- Use Tailwind CSS utility classes (no custom CSS unless necessary)
+- Create reusable component classes for common patterns
+- Keep inline styles minimal (use Tailwind instead)
+- Use consistent spacing scale (Tailwind's spacing: 2, 4, 8, 16, 24, 32)
+- Follow mobile-first responsive design
+
+**Testing Guidelines**:
+- Write unit tests using Vitest for utilities and hooks
+- Write E2E tests using Playwright for critical user flows
+- Test both happy path AND error scenarios
+- Mock API calls in unit tests
+- Use real API in E2E tests (with test database)
+- Run `npm run test` before every commit
+- Run `npm run test:e2e` after significant changes
+
+### Type Safety
+
+**JSDoc Type Annotations** (recommended for JavaScript projects):
+```javascript
+/**
+ * @typedef {Object} Recipe
+ * @property {string} id
+ * @property {string} title
+ * @property {'Link'|'Document'|'Manual'} type
+ * @property {string} [url] - Optional for Link type
+ */
+
+/**
+ * Fetch recipes with filters
+ * @param {string} searchQuery - Search term
+ * @param {number|null} categoryId - Category filter
+ * @param {number[]} tagIds - Tag filters
+ * @returns {Promise<Recipe[]>}
+ */
+export const fetchRecipes = async (searchQuery, categoryId, tagIds) => {
+  // implementation
+};
+```
+
+**jsconfig.json** (enable type checking):
+```json
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "strict": true
+  }
+}
+```
+
+### API Contract Standards
+
+**Request/Response Formats**:
+- Use JSON for all requests and responses
+- Use camelCase for JSON properties in frontend
+- Use PascalCase for C# properties (auto-converts to camelCase)
+- Include proper Content-Type headers: `application/json`
+
+**Error Response Format** (standardize across frontend and backend):
+```json
+{
+  "error": "Recipe not found",
+  "details": "No recipe exists with ID: abc-123",
+  "statusCode": 404
+}
+```
+
+**Query Parameter Standards**:
+- Use `?q=` for search queries
+- Use `?category=` for category filters
+- Use `?tags=1,2,3` for multiple tag filters (comma-separated)
+- Use `?page=` and `?pageSize=` for pagination
+
+### Code Review Checklist
+
+Before submitting ANY code changes:
+- [ ] No code duplication (DRY principle followed)
+- [ ] No file exceeds 300 lines
+- [ ] All business logic has unit tests
+- [ ] All tests pass (`dotnet test` or `npm run test`)
+- [ ] No console errors in browser (check DevTools)
+- [ ] E2E tests pass for affected user flows
+- [ ] No circular references or JSON serialization issues
+- [ ] Error handling is consistent and user-friendly
+- [ ] Code is properly formatted (`dotnet format` or `npm run lint`)
+- [ ] JSDoc comments added for public APIs
+- [ ] No hardcoded values (use configuration)
+- [ ] CORS configured correctly for local development
+- [ ] Environment variables documented in README
+- [ ] No sensitive data in code or logs
+
+### Common Anti-Patterns to AVOID
+
+**Backend**:
+- ❌ Returning Entity Framework models directly from endpoints
+- ❌ Embedding business logic in endpoint handlers
+- ❌ Using static helper methods in Program.cs
+- ❌ Mixing configuration with endpoint definitions
+- ❌ Ignoring exceptions without logging
+- ❌ Exposing navigation properties causing circular references
+
+**Frontend**:
+- ❌ Duplicating API calls across components
+- ❌ Mixing view and edit logic in one component
+- ❌ Using 15+ useState hooks in one component
+- ❌ Duplicating validation logic
+- ❌ Storing server data in useState (use React Query)
+- ❌ Putting all API calls in one giant file
+- ❌ Ignoring loading and error states
+
+### Performance Best Practices
+
+**Backend**:
+- Use async/await for all I/O operations
+- Use `AsNoTracking()` for read-only queries
+- Implement query result caching where appropriate
+- Use pagination for large datasets
+- Optimize database queries (avoid N+1 problems)
+
+**Frontend**:
+- Use React.memo for expensive components
+- Debounce search inputs (300ms delay)
+- Lazy load routes with `React.lazy()`
+- Optimize images (compress, use appropriate formats)
+- Use React Query caching to reduce API calls
+- Implement virtual scrolling for large lists
+
+### Security Best Practices
+
+**Backend**:
+- ALWAYS validate user input
+- ALWAYS verify user ownership before allowing operations
+- NEVER trust client-provided IDs (re-fetch from auth token)
+- Use parameterized queries (EF Core does this automatically)
+- Sanitize error messages (don't expose stack traces)
+- Implement rate limiting on sensitive endpoints
+
+**Frontend**:
+- NEVER store sensitive data in localStorage
+- Use short-lived tokens (Firebase ID tokens expire)
+- Validate file uploads (type, size) before sending to server
+- Sanitize user-generated content before rendering
+- Use HTTPS in production (enforce with Netlify/Fly.io)
+
+### Documentation Standards
+
+**Code Comments**:
+- Use JSDoc for all public APIs (functions, components, hooks)
+- Explain WHY, not WHAT (code should be self-explanatory)
+- Document non-obvious behavior or workarounds
+- Keep comments up-to-date with code changes
+
+**README Updates**:
+- Document all new environment variables
+- Update build instructions for new dependencies
+- Document breaking changes
+- Include examples for new features
