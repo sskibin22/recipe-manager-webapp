@@ -16,15 +16,39 @@ vi.mock("../services/api", () => ({
     update: vi.fn(),
     fetchMetadata: vi.fn(),
   },
+  recipeService: {
+    getById: vi.fn(),
+    delete: vi.fn(),
+    addFavorite: vi.fn(),
+    removeFavorite: vi.fn(),
+    update: vi.fn(),
+    fetchMetadata: vi.fn(),
+    getAll: vi.fn(),
+    create: vi.fn(),
+  },
   uploadsApi: {
     getPresignedDownloadUrl: vi.fn(),
+    getPresignedUploadUrl: vi.fn(),
+    uploadToPresignedUrl: vi.fn(),
+  },
+  uploadService: {
+    getPresignedDownloadUrl: vi.fn(),
+    getPresignedUploadUrl: vi.fn(),
+    uploadToPresignedUrl: vi.fn(),
   },
   categoriesApi: {
+    getAll: vi.fn(() => Promise.resolve([])),
+  },
+  categoryService: {
     getAll: vi.fn(() => Promise.resolve([])),
   },
   tagsApi: {
     getAll: vi.fn(() => Promise.resolve([])),
   },
+  tagService: {
+    getAll: vi.fn(() => Promise.resolve([])),
+  },
+  getErrorMessage: vi.fn((error) => error.message || "An error occurred"),
 }));
 
 // Mock react-router-dom hooks
@@ -70,6 +94,7 @@ describe("RecipeDetail - Link Display", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -96,6 +121,7 @@ describe("RecipeDetail - Link Display", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -122,6 +148,7 @@ describe("RecipeDetail - Link Display", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -148,6 +175,7 @@ describe("RecipeDetail - Link Display", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -171,6 +199,7 @@ describe("RecipeDetail - Link Display", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -218,6 +247,7 @@ describe("RecipeDetail - Link Display", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -246,6 +276,7 @@ describe("RecipeDetail - Link Display", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -271,6 +302,7 @@ describe("RecipeDetail - Link Display", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -310,6 +342,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -333,6 +366,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -362,6 +396,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -389,6 +424,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -416,6 +452,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -448,6 +485,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -486,6 +524,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -522,6 +561,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -559,6 +599,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -607,7 +648,9 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.update.mockResolvedValue(updatedRecipe);
+    api.recipeService.update.mockResolvedValue(updatedRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -632,7 +675,7 @@ describe("RecipeDetail - Edit Functionality", () => {
 
     // Should call update API with correct data (as JSON)
     await waitFor(() => {
-      expect(api.recipesApi.update).toHaveBeenCalled();
+      expect(api.recipeService.update).toHaveBeenCalled();
       const callArgs = api.recipesApi.update.mock.calls[0][0];
       expect(callArgs.id).toBe("test-recipe-id");
       expect(callArgs.title).toBe("Updated Recipe");
@@ -668,6 +711,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.update.mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 100)),
     );
@@ -698,6 +742,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.update.mockRejectedValue(new Error("Network error"));
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
@@ -728,6 +773,7 @@ describe("RecipeDetail - Edit Functionality", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
 
     render(<RecipeDetail />, { wrapper: createWrapper() });
 
@@ -781,6 +827,7 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
 
     const user = userEvent.setup();
@@ -822,6 +869,7 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     
     // Mock with a delayed response
     let resolveMetadata;
@@ -874,6 +922,7 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
 
     const user = userEvent.setup();
@@ -925,6 +974,7 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
 
     const user = userEvent.setup();
@@ -974,6 +1024,7 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
 
     const user = userEvent.setup();
@@ -1017,6 +1068,7 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.fetchMetadata = vi.fn();
 
     const user = userEvent.setup();
@@ -1051,6 +1103,7 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.fetchMetadata = vi.fn();
 
     const user = userEvent.setup();
@@ -1083,6 +1136,7 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.fetchMetadata = vi
       .fn()
       .mockRejectedValue(new Error("Network error"));
@@ -1143,8 +1197,10 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
     };
 
     api.recipesApi.getById.mockResolvedValue(mockRecipe);
+    api.recipeService.getById.mockResolvedValue(mockRecipe);
     api.recipesApi.fetchMetadata = vi.fn().mockResolvedValue(mockMetadata);
     api.recipesApi.update = vi.fn().mockResolvedValue(updatedRecipe);
+    api.recipeService.update = vi.fn().mockResolvedValue(updatedRecipe);
 
     const user = userEvent.setup();
     render(<RecipeDetail />, { wrapper: createWrapper() });
@@ -1173,8 +1229,8 @@ describe("RecipeDetail - Metadata Fetching on URL Edit", () => {
 
     // Verify update was called with metadata fields including title
     await waitFor(() => {
-      expect(api.recipesApi.update).toHaveBeenCalled();
-      const updateCall = api.recipesApi.update.mock.calls[0][0];
+      expect(api.recipeService.update).toHaveBeenCalled();
+      const updateCall = api.recipeService.update.mock.calls[0][0];
       expect(updateCall.title).toBe("New Title");
       expect(updateCall.previewImageUrl).toBe("https://example.com/new-image.jpg");
       expect(updateCall.description).toBe("New description");

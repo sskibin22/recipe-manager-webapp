@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCreateRecipeMutation } from "../hooks";
 import { serializeRecipeContent } from "../utils/recipeContent";
 import { validateRecipeDocument, validateRecipeImage } from "../utils/fileValidation";
 import CategorySelector from "./CategorySelector";
@@ -20,7 +20,6 @@ import TagSelector from "./TagSelector";
  * @returns {JSX.Element}
  */
 const RecipeForm = ({ onClose, onSuccess }) => {
-  const queryClient = useQueryClient();
   const [recipeType, setRecipeType] = useState("link");
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
@@ -48,15 +47,13 @@ const RecipeForm = ({ onClose, onSuccess }) => {
 
   const urlDebounceRef = useRef(null);
 
-  const createRecipeMutation = useMutation({
-    mutationFn: recipesApi.create,
+  const createRecipeMutation = useCreateRecipeMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["recipes"] });
       resetForm();
       if (onSuccess) onSuccess();
     },
-    onError: (err) => {
-      setError(getErrorMessage(err));
+    onError: (errorMessage) => {
+      setError(errorMessage);
     },
   });
 

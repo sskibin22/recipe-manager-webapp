@@ -3,7 +3,7 @@
  */
 
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRecipeQuery, useUpdateRecipeMutation, useDeleteRecipeMutation, useToggleFavoriteMutation } from "../hooks";
 import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
 import { useState, useEffect, useRef } from "react";
 import DocumentPreview from "../components/DocumentPreview";
@@ -81,7 +81,6 @@ function ManualRecipeReadonlyView({ content }) {
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [isEditMode, setIsEditMode] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [editedUrl, setEditedUrl] = useState("");
@@ -116,38 +115,18 @@ export default function RecipeDetail() {
     data: recipe,
     isLoading,
     error,
-  } = useQuery({
-    queryKey: ["recipe", id],
-    queryFn: () => recipesApi.getById(id),
-  });
+  } = useRecipeQuery(id);
 
-  const deleteMutation = useMutation({
-    mutationFn: recipesApi.delete,
+  const deleteMutation = useDeleteRecipeMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["recipes"] });
       navigate("/");
     },
   });
 
-  const toggleFavoriteMutation = useMutation({
-    mutationFn: async () => {
-      if (recipe.isFavorite) {
-        await recipesApi.removeFavorite(id);
-      } else {
-        await recipesApi.addFavorite(id);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["recipe", id] });
-      queryClient.invalidateQueries({ queryKey: ["recipes"] });
-    },
-  });
+  const toggleFavoriteMutation = useToggleFavoriteMutation(id);
 
-  const updateMutation = useMutation({
-    mutationFn: (data) => recipesApi.update({ id, ...data }),
-    onSuccess: (updatedRecipe) => {
-      queryClient.setQueryData(["recipe", id], updatedRecipe);
-      queryClient.invalidateQueries({ queryKey: ["recipes"] });
+  const updateMutation = useUpdateRecipeMutation(id, {
+    onSuccess: () => {
       setIsEditMode(false);
       setValidationErrors({});
     },
@@ -453,7 +432,7 @@ export default function RecipeDetail() {
       setUploading(false);
 
       // Mutation has its own error handling via onError callback
-      updateMutation.mutate(updateData);
+      updateMutation.mutate({ id, ...updateData });
     } catch (err) {
       setUploading(false);
       setValidationErrors({
@@ -608,7 +587,7 @@ export default function RecipeDetail() {
             {/* Favorite button overlay on image */}
             {!isEditMode && (
               <button
-                onClick={() => toggleFavoriteMutation.mutate()}
+                onClick={() => toggleFavoriteMutation.mutate({ recipeId: id, isFavorite: recipe.isFavorite })}
                 className={`absolute top-4 right-4 transition-colors bg-white rounded-full p-2 shadow-lg ${
                   recipe.isFavorite
                     ? "text-yellow-500"

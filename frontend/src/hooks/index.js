@@ -1,0 +1,31 @@
+/**
+ * Shared React Query hooks for Recipe Manager
+ * 
+ * This module provides centralized React Query hooks for:
+ * - Recipe queries (list and single)
+ * - Recipe mutations (create, update, delete)
+ * - Category queries
+ * - Tag queries
+ * - Favorite mutations
+ * 
+ * All hooks include:
+ * - Consistent query keys
+ * - Automatic cache invalidation
+ * - Built-in error handling
+ * - Support for custom options
+ */
+
+// Query hooks
+export { useRecipesQuery } from "./useRecipesQuery";
+export { useRecipeQuery } from "./useRecipeQuery";
+export { useCategoriesQuery } from "./useCategoriesQuery";
+export { useTagsQuery } from "./useTagsQuery";
+
+// Mutation hooks
+export {
+  useCreateRecipeMutation,
+  useUpdateRecipeMutation,
+  useDeleteRecipeMutation,
+} from "./useRecipeMutations";
+
+export { useToggleFavoriteMutation } from "./useFavoriteMutation";
