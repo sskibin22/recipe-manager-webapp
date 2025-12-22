@@ -72,7 +72,20 @@ export default function CollectionsPage() {
           imageStorageKey = key;
         } catch (error) {
           console.error("Failed to upload collection image:", error);
-          setImageError("Failed to upload image. Please try again.");
+          
+          // Provide specific error messages based on error type
+          let errorMessage = "Failed to upload image. Please try again.";
+          if (error.response?.status === 413) {
+            errorMessage = "Image file is too large. Please use an image under 5MB.";
+          } else if (error.response?.status === 400) {
+            errorMessage = "Invalid image format. Please use JPEG, PNG, GIF, or WebP.";
+          } else if (!navigator.onLine) {
+            errorMessage = "No internet connection. Please check your network and try again.";
+          } else if (error.code === "ECONNABORTED" || error.message?.includes("timeout")) {
+            errorMessage = "Upload timed out. Please try again with a smaller image.";
+          }
+          
+          setImageError(errorMessage);
           setIsUploading(false);
           return;
         }
@@ -111,6 +124,13 @@ export default function CollectionsPage() {
     } catch (error) {
       console.error("Failed to delete collection:", error);
     }
+  };
+
+  // Helper function for submit button text
+  const getSubmitButtonText = () => {
+    if (isUploading) return "Uploading...";
+    if (createMutation.isPending) return "Creating...";
+    return "Create";
   };
 
   return (
@@ -427,7 +447,7 @@ export default function CollectionsPage() {
                     disabled={createMutation.isPending || isUploading}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
                   >
-                    {isUploading ? "Uploading..." : createMutation.isPending ? "Creating..." : "Create"}
+                    {getSubmitButtonText()}
                   </button>
                 </div>
               </form>
