@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { recipesApi } from "../../../services/api";
+import { recipesApi } from "../services/api";
 
 /**
  * Custom hook for fetching metadata from URL with debouncing

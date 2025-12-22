@@ -4,10 +4,10 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { useUpdateRecipeMutation } from "../../../hooks";
-import { recipesApi, uploadsApi, getErrorMessage } from "../../../services/api";
-import { parseRecipeContent, serializeRecipeContent } from "../../../utils/recipeContent";
-import { validateRecipeDocument, validateRecipeImage } from "../../../utils/fileValidation";
+import { useUpdateRecipeMutation } from "./useRecipeMutations";
+import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
+import { parseRecipeContent, serializeRecipeContent } from "../utils/recipeContent";
+import { validateRecipeDocument, validateRecipeImage } from "../utils/fileValidation";
 
 /**
  * Hook for managing recipe edit state and operations

@@ -3,7 +3,9 @@
  * Centralizes recipe query, delete mutation, and favorite toggle mutation
  */
 
-import { useRecipeQuery, useDeleteRecipeMutation, useToggleFavoriteMutation } from "../../../hooks";
+import { useRecipeQuery } from "./useRecipeQuery";
+import { useDeleteRecipeMutation } from "./useRecipeMutations";
+import { useToggleFavoriteMutation } from "./useFavoriteMutation";
 
 /**
  * Hook for managing recipe detail data and operations

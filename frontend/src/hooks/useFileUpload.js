@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { uploadsApi } from "../../../services/api";
-import { validateRecipeDocument, validateRecipeImage } from "../../../utils/fileValidation";
+import { uploadsApi } from "../services/api";
+import { validateRecipeDocument, validateRecipeImage } from "../utils/fileValidation";
 
 /**
  * Custom hook for file upload management

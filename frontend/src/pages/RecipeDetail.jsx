@@ -4,8 +4,7 @@
  */
 
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useRecipeDetail } from "../components/RecipeDetail/hooks/useRecipeDetail";
-import { useRecipeEdit } from "../components/RecipeDetail/hooks/useRecipeEdit";
+import { useRecipeDetail, useRecipeEdit } from "../hooks";
 import { getErrorMessage } from "../services/api";
 import RecipeDetailHeader from "../components/RecipeDetail/RecipeDetailHeader";
 import RecipeDetailImage from "../components/RecipeDetail/RecipeDetailImage";
