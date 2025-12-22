@@ -4,7 +4,7 @@
  */
 
 import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { useRecipeDetail, useRecipeEdit } from "../hooks";
 import { getErrorMessage } from "../services/api";
 import RecipeDetailHeader from "../components/recipe/RecipeDetail/RecipeDetailHeader";
@@ -23,7 +23,11 @@ import AddToCollectionModal from "../components/common/AddToCollectionModal";
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
+
+  // Determine back navigation path from location state
+  const backPath = location.state?.from || "/";
 
   // Custom hooks for data and edit state
   const {
@@ -35,7 +39,7 @@ export default function RecipeDetail() {
     toggleFavorite,
     isTogglingFavorite,
   } = useRecipeDetail(id, {
-    onDeleteSuccess: () => navigate("/"),
+    onDeleteSuccess: () => navigate(backPath),
   });
 
   const editState = useRecipeEdit(recipe, id);
@@ -71,7 +75,7 @@ export default function RecipeDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <RecipeDetailHeader onBack={() => navigate("/")} />
+      <RecipeDetailHeader onBack={() => navigate(backPath)} />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Update Error Message */}
