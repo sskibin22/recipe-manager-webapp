@@ -3,7 +3,7 @@
  */
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { recipesApi } from "../../../services/api";
 import { parseRecipeContent } from "../../../utils/recipeContent";
@@ -32,6 +32,7 @@ const getManualRecipePreview = (content) => {
  */
 const RecipeCard = ({ recipe }) => {
   const queryClient = useQueryClient();
+  const location = useLocation();
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
 
   const toggleFavoriteMutation = useMutation({
@@ -140,6 +141,7 @@ const RecipeCard = ({ recipe }) => {
     <>
       <Link
         to={`/recipe/${recipe.id}`}
+        state={{ from: location.pathname }}
         className="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden"
       >
         {/* Preview Image - Always shown for consistent layout */}
