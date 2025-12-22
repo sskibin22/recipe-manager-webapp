@@ -8,6 +8,7 @@ import RecipeDetail from "./pages/RecipeDetail";
 import AccountSettings from "./pages/AccountSettings";
 import CollectionsPage from "./pages/CollectionsPage";
 import CollectionDetailPage from "./pages/CollectionDetailPage";
+import BulkSelectRecipesPage from "./pages/BulkSelectRecipesPage";
 
 function App() {
   const { getToken } = useAuth();
@@ -25,6 +26,7 @@ function App() {
         <Route path="/settings" element={<AccountSettings />} />
         <Route path="/collections" element={<CollectionsPage />} />
         <Route path="/collections/:id" element={<CollectionDetailPage />} />
+        <Route path="/collections/:id/add-recipes" element={<BulkSelectRecipesPage />} />
       </Routes>
     </div>
   );

@@ -1,8 +1,9 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useCollectionQuery, useCollectionRecipesQuery, useCollectionMutations } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
 import { AuthButton } from "../components/auth";
 import RecipeList from "../components/recipe/RecipeList";
+import { useState, useEffect } from "react";
 
 /**
  * Collection detail page - view recipes in a collection
@@ -12,9 +13,25 @@ export default function CollectionDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const [successMessage, setSuccessMessage] = useState(null);
+
+  // Check for success message from navigation state
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Clear the message after 5 seconds
+      const timer = setTimeout(() => setSuccessMessage(null), 5000);
+      // Clear navigation state
+      window.history.replaceState({}, document.title);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   const { data: collection, isLoading: isLoadingCollection } = useCollectionQuery(id, { enabled: !!user && !!id });
   const { data: recipes = [], isLoading: isLoadingRecipes, refetch } = useCollectionRecipesQuery(id, { enabled: !!user && !!id });
+  // eslint-disable-next-line no-unused-vars
   const { removeRecipeMutation } = useCollectionMutations();
 
   // Future: handleRemoveRecipe for removing recipes from collection
@@ -110,6 +127,28 @@ export default function CollectionDetailPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Success message */}
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center justify-between">
+            <span>{successMessage}</span>
+            <button
+              onClick={() => setSuccessMessage(null)}
+              className="text-green-700 hover:text-green-800"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {recipes.length === 0 ? (
           <div className="text-center py-12 px-4">
             <div className="max-w-md mx-auto">

@@ -23,14 +23,16 @@ export default function CollectionsPage() {
     if (!newCollectionName.trim()) return;
 
     try {
-      await createMutation.mutateAsync({
+      const newCollection = await createMutation.mutateAsync({
         name: newCollectionName,
         description: newCollectionDescription || undefined,
       });
       setNewCollectionName("");
       setNewCollectionDescription("");
       setIsCreateModalOpen(false);
-      refetch();
+      
+      // Redirect to bulk selection page
+      navigate(`/collections/${newCollection.id}/add-recipes`);
     } catch (error) {
       console.error("Failed to create collection:", error);
     }
