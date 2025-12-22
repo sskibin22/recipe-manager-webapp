@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.Extensions;
 using RecipeManager.Api.Services;
@@ -138,6 +139,52 @@ public static class CollectionEndpoints
             return Results.NoContent();
         })
         .WithName("RemoveRecipeFromCollection")
+        .WithOpenApi();
+
+        // Add multiple recipes to collection (batch operation)
+        app.MapPost("/api/collections/{id:guid}/recipes/batch", async (
+            Guid id,
+            [FromBody] AddRecipesBatchRequest request,
+            ICollectionService collectionService,
+            IUserContextService userContext) =>
+        {
+            var userId = userContext.GetCurrentUserId();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
+
+            if (request.RecipeIds == null || request.RecipeIds.Count == 0)
+            {
+                return Results.BadRequest(new { error = "RecipeIds array cannot be empty" });
+            }
+
+            var added = await collectionService.AddRecipesToCollectionBatchAsync(id, request.RecipeIds, userId.Value);
+            if (!added) return Results.NotFound();
+
+            return Results.Ok(new { collectionId = id, addedCount = request.RecipeIds.Count });
+        })
+        .WithName("AddRecipesToCollectionBatch")
+        .WithOpenApi();
+
+        // Remove multiple recipes from collection (batch operation)
+        app.MapDelete("/api/collections/{id:guid}/recipes/batch", async (
+            Guid id,
+            [FromBody] RemoveRecipesBatchRequest request,
+            ICollectionService collectionService,
+            IUserContextService userContext) =>
+        {
+            var userId = userContext.GetCurrentUserId();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
+
+            if (request.RecipeIds == null || request.RecipeIds.Count == 0)
+            {
+                return Results.BadRequest(new { error = "RecipeIds array cannot be empty" });
+            }
+
+            var removed = await collectionService.RemoveRecipesFromCollectionBatchAsync(id, request.RecipeIds, userId.Value);
+            if (!removed) return Results.NotFound();
+
+            return Results.NoContent();
+        })
+        .WithName("RemoveRecipesFromCollectionBatch")
         .WithOpenApi();
 
         return app;

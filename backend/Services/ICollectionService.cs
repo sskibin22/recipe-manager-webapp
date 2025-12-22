@@ -47,4 +47,14 @@ public interface ICollectionService
     /// Get all recipes in a collection
     /// </summary>
     Task<IEnumerable<RecipeListItemResponse>> GetCollectionRecipesAsync(Guid collectionId, Guid userId);
+
+    /// <summary>
+    /// Add multiple recipes to a collection in batch
+    /// </summary>
+    Task<bool> AddRecipesToCollectionBatchAsync(Guid collectionId, List<Guid> recipeIds, Guid userId);
+
+    /// <summary>
+    /// Remove multiple recipes from a collection in batch
+    /// </summary>
+    Task<bool> RemoveRecipesFromCollectionBatchAsync(Guid collectionId, List<Guid> recipeIds, Guid userId);
 }
