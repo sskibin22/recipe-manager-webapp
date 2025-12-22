@@ -211,10 +211,11 @@ public class RecipeService : IRecipeService
             query = query.Where(r => r.Favorites.Any(f => f.UserId == userId));
         }
 
-        // Apply search filter
+        // Apply search filter (case-insensitive)
         if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
         {
-            query = query.Where(r => r.Title.Contains(queryParams.SearchTerm));
+            var searchTerm = queryParams.SearchTerm.ToLower();
+            query = query.Where(r => EF.Functions.Like(r.Title.ToLower(), $"%{searchTerm}%"));
         }
 
         // Apply category filter
