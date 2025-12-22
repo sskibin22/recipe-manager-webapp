@@ -12,6 +12,11 @@
 *.db-shm
 *.db-wal
 
+# Log files
+*.log
+backend.log
+frontend.log
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
