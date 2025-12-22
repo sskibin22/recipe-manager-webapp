@@ -24,7 +24,7 @@ describe("recipeService", () => {
 
       const result = await recipeService.getAll();
 
-      expect(apiClient.get).toHaveBeenCalledWith("/api/recipes", { params: {} });
+      expect(apiClient.get).toHaveBeenCalledWith("/api/recipes", { params: { favoritesOnly: false } });
       expect(result).toEqual(mockRecipes);
     });
 
@@ -35,7 +35,7 @@ describe("recipeService", () => {
       await recipeService.getAll("pasta");
 
       expect(apiClient.get).toHaveBeenCalledWith("/api/recipes", {
-        params: { q: "pasta" },
+        params: { q: "pasta", favoritesOnly: false },
       });
     });
 
@@ -46,7 +46,7 @@ describe("recipeService", () => {
       await recipeService.getAll("", 1);
 
       expect(apiClient.get).toHaveBeenCalledWith("/api/recipes", {
-        params: { category: 1 },
+        params: { category: 1, favoritesOnly: false },
       });
     });
 
@@ -57,7 +57,7 @@ describe("recipeService", () => {
       await recipeService.getAll("", null, [1, 2, 3]);
 
       expect(apiClient.get).toHaveBeenCalledWith("/api/recipes", {
-        params: { tags: "1,2,3" },
+        params: { tags: "1,2,3", favoritesOnly: false },
       });
     });
 
@@ -68,7 +68,7 @@ describe("recipeService", () => {
       await recipeService.getAll("pasta", 2, [1, 3]);
 
       expect(apiClient.get).toHaveBeenCalledWith("/api/recipes", {
-        params: { q: "pasta", category: 2, tags: "1,3" },
+        params: { q: "pasta", category: 2, tags: "1,3", favoritesOnly: false },
       });
     });
   });

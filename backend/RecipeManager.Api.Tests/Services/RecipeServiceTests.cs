@@ -492,6 +492,110 @@ public class RecipeServiceTests
     }
 
     [Test]
+    public async Task GetRecipesAsync_WithSearchTerm_IsCaseInsensitive()
+    {
+        // Arrange
+        var recipe1 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Chocolate Cake", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var recipe2 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "VANILLA COOKIES", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var recipe3 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "chocolate chip cookies", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        _db.Recipes.AddRange(recipe1, recipe2, recipe3);
+        _db.SaveChanges();
+
+        // Test lowercase search
+        var queryParams = new RecipeQueryParameters { SearchTerm = "chocolate" };
+
+        // Act
+        var result = await _service.GetRecipesAsync(queryParams, _testUserId);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().Contain(r => r.Title == "Chocolate Cake");
+        result.Should().Contain(r => r.Title == "chocolate chip cookies");
+    }
+
+    [Test]
+    public async Task GetRecipesAsync_WithSearchTerm_UppercaseSearchFindsLowercaseTitle()
+    {
+        // Arrange
+        var recipe1 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "chocolate cake", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var recipe2 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Vanilla Cookies", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        _db.Recipes.AddRange(recipe1, recipe2);
+        _db.SaveChanges();
+
+        var queryParams = new RecipeQueryParameters { SearchTerm = "CHOCOLATE" };
+
+        // Act
+        var result = await _service.GetRecipesAsync(queryParams, _testUserId);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result[0].Title.Should().Be("chocolate cake");
+    }
+
+    [Test]
+    public async Task GetRecipesAsync_WithFullRecipeName_ReturnsExactMatch()
+    {
+        // Arrange
+        var recipe1 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Grandma's Apple Pie", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var recipe2 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Apple Tart", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        _db.Recipes.AddRange(recipe1, recipe2);
+        _db.SaveChanges();
+
+        var queryParams = new RecipeQueryParameters { SearchTerm = "Grandma's Apple Pie" };
+
+        // Act
+        var result = await _service.GetRecipesAsync(queryParams, _testUserId);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result[0].Title.Should().Be("Grandma's Apple Pie");
+    }
+
+    [Test]
+    public async Task GetRecipesAsync_WithPartialWord_ReturnsMatches()
+    {
+        // Arrange
+        var recipe1 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Strawberry Shortcake", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var recipe2 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Blueberry Muffins", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var recipe3 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Raspberry Tart", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        _db.Recipes.AddRange(recipe1, recipe2, recipe3);
+        _db.SaveChanges();
+
+        var queryParams = new RecipeQueryParameters { SearchTerm = "berry" };
+
+        // Act
+        var result = await _service.GetRecipesAsync(queryParams, _testUserId);
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().Contain(r => r.Title == "Strawberry Shortcake");
+        result.Should().Contain(r => r.Title == "Blueberry Muffins");
+        result.Should().Contain(r => r.Title == "Raspberry Tart");
+    }
+
+    [Test]
+    public async Task GetRecipesAsync_WithShortSearchTerm_ReturnsRelevantMatches()
+    {
+        // Arrange
+        var recipe1 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Pie", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var recipe2 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Apple Pie", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        var recipe3 = new Recipe { Id = Guid.NewGuid(), UserId = _testUserId, Title = "Cake", Type = RecipeType.Manual, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow };
+        _db.Recipes.AddRange(recipe1, recipe2, recipe3);
+        _db.SaveChanges();
+
+        var queryParams = new RecipeQueryParameters { SearchTerm = "pi" };
+
+        // Act
+        var result = await _service.GetRecipesAsync(queryParams, _testUserId);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().Contain(r => r.Title == "Pie");
+        result.Should().Contain(r => r.Title == "Apple Pie");
+        result.Should().NotContain(r => r.Title == "Cake");
+    }
+
+    [Test]
     public async Task GetRecipesAsync_WithCategoryFilter_FiltersRecipesByCategory()
     {
         // Arrange
