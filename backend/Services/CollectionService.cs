@@ -69,6 +69,28 @@ public class CollectionService : ICollectionService
             UpdatedAt = DateTime.UtcNow
         };
 
+        // Handle base64 image data (for SQLite storage in local development)
+        if (!string.IsNullOrEmpty(request.PreviewImageData))
+        {
+            try
+            {
+                // Parse data URI format: "data:image/png;base64,..."
+                var parts = request.PreviewImageData.Split(',');
+                if (parts.Length == 2)
+                {
+                    var contentTypePart = parts[0].Replace("data:", "").Replace(";base64", "");
+                    var base64Data = parts[1];
+                    
+                    collection.PreviewImageContent = Convert.FromBase64String(base64Data);
+                    collection.PreviewImageContentType = contentTypePart;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to parse preview image data for collection");
+            }
+        }
+
         _db.Collections.Add(collection);
         await _db.SaveChangesAsync();
 
@@ -91,6 +113,28 @@ public class CollectionService : ICollectionService
         collection.Description = request.Description;
         collection.ImageStorageKey = request.ImageStorageKey;
         collection.UpdatedAt = DateTime.UtcNow;
+
+        // Handle base64 image data (for SQLite storage in local development)
+        if (!string.IsNullOrEmpty(request.PreviewImageData))
+        {
+            try
+            {
+                // Parse data URI format: "data:image/png;base64,..."
+                var parts = request.PreviewImageData.Split(',');
+                if (parts.Length == 2)
+                {
+                    var contentTypePart = parts[0].Replace("data:", "").Replace(";base64", "");
+                    var base64Data = parts[1];
+                    
+                    collection.PreviewImageContent = Convert.FromBase64String(base64Data);
+                    collection.PreviewImageContentType = contentTypePart;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to parse preview image data for collection");
+            }
+        }
 
         await _db.SaveChangesAsync();
 
