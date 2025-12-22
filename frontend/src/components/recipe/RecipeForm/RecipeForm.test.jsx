@@ -623,18 +623,68 @@ describe("RecipeForm", () => {
     const submitButton = screen.getByText(/Add Recipe/);
     await user.click(submitButton);
 
-    // Verify that metadata fields are NOT included in the API call
+    // Verify that link-specific metadata fields are NOT included
     await waitFor(() => {
       expect(api.recipeService.create).toHaveBeenCalled();
       const callArgs = api.recipeService.create.mock.calls[0][0];
       expect(callArgs.title).toBe("Test Recipe");
       expect(callArgs.type).toBe("document");
       expect(callArgs.storageKey).toBe("test-key");
-      // Verify metadata fields are NOT included
+      // Verify link-specific fields are NOT included
       expect(callArgs.previewImageUrl).toBeUndefined();
-      expect(callArgs.description).toBeUndefined();
       expect(callArgs.siteName).toBeUndefined();
       expect(callArgs.url).toBeUndefined();
+      // Description can be null for document recipes (optional field)
+      expect(callArgs.description).toBeNull();
+    });
+  });
+
+  it("should include description when creating a document recipe with description", async () => {
+    const user = userEvent.setup();
+    api.recipesApi.create.mockResolvedValue({
+      id: "123",
+      title: "Test Recipe",
+    });
+    api.uploadsApi.getPresignedUploadUrl.mockResolvedValue({
+      uploadUrl: "https://upload.example.com",
+      key: "test-key",
+    });
+    api.uploadsApi.uploadToPresignedUrl.mockResolvedValue({});
+
+    renderWithProviders(
+      <RecipeForm onClose={mockOnClose} onSuccess={mockOnSuccess} />,
+    );
+
+    // Switch to document type
+    const documentRadio = screen.getByLabelText(/^Document$/);
+    await user.click(documentRadio);
+
+    const titleInput = screen.getByLabelText(/Recipe Title/i);
+    await user.type(titleInput, "Test Recipe");
+
+    // Enter description
+    const descriptionInput = screen.getByLabelText(/Description/i);
+    await user.type(descriptionInput, "This is a test description");
+
+    // Upload a file
+    const fileInput = screen.getByLabelText(/Upload Document/i);
+    const file = new File(["test content"], "test.pdf", {
+      type: "application/pdf",
+    });
+    await user.upload(fileInput, file);
+
+    // Submit the form
+    const submitButton = screen.getByText(/Add Recipe/);
+    await user.click(submitButton);
+
+    // Verify that description is included in the API call
+    await waitFor(() => {
+      expect(api.recipeService.create).toHaveBeenCalled();
+      const callArgs = api.recipeService.create.mock.calls[0][0];
+      expect(callArgs.title).toBe("Test Recipe");
+      expect(callArgs.type).toBe("document");
+      expect(callArgs.storageKey).toBe("test-key");
+      expect(callArgs.description).toBe("This is a test description");
     });
   });
 });
