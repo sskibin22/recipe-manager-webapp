@@ -26,6 +26,23 @@ body {
   }
 }
 
+/* Smooth cross-fade animation for collection thumbnails (1 second duration) */
+@keyframes fadeInSmooth {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Tailwind CSS animation utility classes */
+@layer utilities {
+  .animate-fadeInSmooth {
+    animation: fadeInSmooth 1s ease-in-out;
+  }
+}
+
 /* Respect user's preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   * {
