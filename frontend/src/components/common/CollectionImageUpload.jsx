@@ -2,6 +2,9 @@ import { useState } from "react";
 import { validateCollectionImage } from "../../utils/fileValidation";
 import { uploadService } from "../../services/api/uploadService";
 
+// Generate unique ID for file input to avoid conflicts when multiple instances are rendered
+let instanceCounter = 0;
+
 /**
  * Reusable modal component for uploading/editing collection thumbnail images
  * @param {Object} props - Component props
@@ -23,6 +26,7 @@ export default function CollectionImageUpload({
   const [imagePreview, setImagePreview] = useState(null);
   const [imageError, setImageError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [fileInputId] = useState(() => `collection-image-edit-${++instanceCounter}`);
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
@@ -193,13 +197,13 @@ export default function CollectionImageUpload({
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition">
                   <input
                     type="file"
-                    id="collection-image-edit"
+                    id={fileInputId}
                     accept="image/jpeg,image/png,image/gif,image/webp"
                     onChange={handleImageSelect}
                     className="hidden"
                   />
                   <label
-                    htmlFor="collection-image-edit"
+                    htmlFor={fileInputId}
                     className="cursor-pointer"
                   >
                     <svg
@@ -225,13 +229,13 @@ export default function CollectionImageUpload({
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition">
                 <input
                   type="file"
-                  id="collection-image-edit"
+                  id={fileInputId}
                   accept="image/jpeg,image/png,image/gif,image/webp"
                   onChange={handleImageSelect}
                   className="hidden"
                 />
                 <label
-                  htmlFor="collection-image-edit"
+                  htmlFor={fileInputId}
                   className="cursor-pointer"
                 >
                   <svg

@@ -187,6 +187,11 @@ export default function CollectionsPage() {
     return "Create";
   };
 
+  // Get the currently editing collection (optimized to avoid duplicate lookups)
+  const editingCollection = editingCollectionId 
+    ? collections.find(c => c.id === editingCollectionId)
+    : null;
+
   return (
     <div className="min-h-screen">
       <header className="bg-white shadow-sm">
@@ -556,8 +561,8 @@ export default function CollectionsPage() {
           isOpen={isEditImageModalOpen}
           onClose={handleCloseEditImage}
           onUpload={handleUpdateCollectionImage}
-          collectionName={collections.find(c => c.id === editingCollectionId)?.name}
-          currentImageUrl={collections.find(c => c.id === editingCollectionId)?.imageUrl}
+          collectionName={editingCollection?.name}
+          currentImageUrl={editingCollection?.imageUrl}
         />
       </main>
     </div>
