@@ -10,9 +10,19 @@ import RecipeCard from "../RecipeCard/RecipeCard";
  * @param {Recipe[]} props.recipes - Array of recipes to display
  * @param {boolean} props.isLoading - Loading state
  * @param {Error|null} props.error - Error object if fetch failed
+ * @param {boolean} [props.isSelectionMode=false] - Whether bulk selection mode is active
+ * @param {Set<string>} [props.selectedIds] - Set of selected recipe IDs
+ * @param {Function} [props.onToggleSelect] - Callback to toggle recipe selection
  * @returns {JSX.Element}
  */
-const RecipeList = ({ recipes, isLoading, error }) => {
+const RecipeList = ({ 
+  recipes, 
+  isLoading, 
+  error, 
+  isSelectionMode = false,
+  selectedIds = new Set(),
+  onToggleSelect
+}) => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -45,7 +55,13 @@ const RecipeList = ({ recipes, isLoading, error }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {recipes.map((recipe) => (
-        <RecipeCard key={recipe.id} recipe={recipe} />
+        <RecipeCard 
+          key={recipe.id} 
+          recipe={recipe}
+          isSelectionMode={isSelectionMode}
+          isSelected={selectedIds.has(recipe.id)}
+          onToggleSelect={onToggleSelect}
+        />
       ))}
     </div>
   );

@@ -1,12 +1,14 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useRecipesQuery } from "../hooks";
+import { useRecipesQuery, useBulkSelect } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
 import { AuthButton, AuthForm } from "../components/auth";
 import RecipeList from "../components/recipe/RecipeList";
 import RecipeForm from "../components/recipe/RecipeForm/RecipeForm";
 import { SearchBar, FilterPanel, FilterChips } from "../components/recipe/RecipeFilters";
 import CollapsibleSection from "../components/common/CollapsibleSection";
+import { recipesApi } from "../services/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
  * Landing page component - main recipe list view
@@ -15,13 +17,27 @@ import CollapsibleSection from "../components/common/CollapsibleSection";
 export default function Landing() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [filters, setFilters] = useState({
     categories: [],
     types: [],
   });
+
+  // Bulk selection state
+  const {
+    isSelectionMode,
+    selectedIds,
+    selectedCount,
+    toggleSelectionMode,
+    toggleSelect,
+    selectAll,
+    clearSelection,
+    exitSelectionMode,
+  } = useBulkSelect();
 
   // Calculate active filter count
   const activeFilterCount = (filters.categories?.length || 0) + (filters.types?.length || 0);
@@ -70,6 +86,42 @@ export default function Landing() {
     
     return { favoriteRecipes: favorites, otherRecipes: others };
   }, [recipes]);
+
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (recipeIds) => {
+      return await recipesApi.bulkDelete(recipeIds);
+    },
+    onSuccess: (data) => {
+      // Invalidate recipes query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      exitSelectionMode();
+      // Show success message (you could add a toast notification here)
+      console.log(`Successfully deleted ${data.deletedCount} recipes`);
+    },
+    onError: (error) => {
+      console.error("Failed to delete recipes:", error);
+      // Show error message (you could add a toast notification here)
+    },
+  });
+
+  const handleBulkDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmBulkDelete = () => {
+    const idsToDelete = Array.from(selectedIds);
+    bulkDeleteMutation.mutate(idsToDelete);
+    setShowDeleteConfirm(false);
+  };
+
+  const cancelBulkDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
+  const handleSelectAll = () => {
+    selectAll(recipes);
+  };
 
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
@@ -185,50 +237,115 @@ export default function Landing() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 space-y-4">
+          {/* Selection mode banner */}
+          {isSelectionMode && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-blue-900 font-medium">
+                  {selectedCount} recipe{selectedCount !== 1 ? "s" : ""} selected
+                </span>
+                <button
+                  onClick={handleSelectAll}
+                  className="text-blue-700 hover:text-blue-900 font-medium text-sm"
+                >
+                  Select All ({recipes.length})
+                </button>
+                <button
+                  onClick={clearSelection}
+                  className="text-blue-700 hover:text-blue-900 font-medium text-sm"
+                >
+                  Clear Selection
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedCount > 0 && (
+                  <button
+                    onClick={handleBulkDelete}
+                    disabled={bulkDeleteMutation.isPending}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    Delete Selected
+                  </button>
+                )}
+                <button
+                  onClick={exitSelectionMode}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-start">
             <div className="flex-1">
               <SearchBar value={searchQuery} onChange={setSearchQuery} />
             </div>
             <div className="flex gap-4">
-              <div className="relative flex-1 sm:flex-initial">
-                <button
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition whitespace-nowrap flex items-center justify-center gap-2"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+              {!isSelectionMode && (
+                <>
+                  <div className="relative flex-1 sm:flex-initial">
+                    <button
+                      onClick={() => setIsFilterOpen(!isFilterOpen)}
+                      className="w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition whitespace-nowrap flex items-center justify-center gap-2"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                        />
+                      </svg>
+                      <span>Filter</span>
+                      {activeFilterCount > 0 && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-600 rounded-full">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </button>
+                    {isFilterOpen && (
+                      <FilterPanel
+                        filters={filters}
+                        onFiltersChange={handleFiltersChange}
+                        onClose={() => setIsFilterOpen(false)}
+                      />
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setIsFormOpen(true)}
+                    className="flex-1 sm:flex-initial px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                    />
-                  </svg>
-                  <span>Filter</span>
-                  {activeFilterCount > 0 && (
-                    <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-600 rounded-full">
-                      {activeFilterCount}
-                    </span>
-                  )}
+                    Add Recipe
+                  </button>
+                </>
+              )}
+              {!isSelectionMode && recipes.length > 0 && (
+                <button
+                  onClick={toggleSelectionMode}
+                  className="flex-1 sm:flex-initial px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition whitespace-nowrap"
+                >
+                  Select
                 </button>
-                {isFilterOpen && (
-                  <FilterPanel
-                    filters={filters}
-                    onFiltersChange={handleFiltersChange}
-                    onClose={() => setIsFilterOpen(false)}
-                  />
-                )}
-              </div>
-              <button
-                onClick={() => setIsFormOpen(true)}
-                className="flex-1 sm:flex-initial px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
-              >
-                Add Recipe
-              </button>
+              )}
             </div>
           </div>
 
@@ -276,7 +393,13 @@ export default function Landing() {
                 defaultExpanded={true}
                 storageKey="recipes-favorites-expanded"
               >
-                <RecipeList recipes={favoriteRecipes} onUpdate={refetch} />
+                <RecipeList 
+                  recipes={favoriteRecipes} 
+                  onUpdate={refetch}
+                  isSelectionMode={isSelectionMode}
+                  selectedIds={selectedIds}
+                  onToggleSelect={toggleSelect}
+                />
               </CollapsibleSection>
             )}
 
@@ -301,10 +424,73 @@ export default function Landing() {
                   </div>
                 </div>
               ) : (
-                <RecipeList recipes={otherRecipes} onUpdate={refetch} />
+                <RecipeList 
+                  recipes={otherRecipes} 
+                  onUpdate={refetch}
+                  isSelectionMode={isSelectionMode}
+                  selectedIds={selectedIds}
+                  onToggleSelect={toggleSelect}
+                />
               )}
             </CollapsibleSection>
           </>
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Delete {selectedCount} Recipe{selectedCount !== 1 ? "s" : ""}?
+                  </h3>
+                </div>
+              </div>
+              <p className="text-gray-600 mb-6">
+                This action cannot be undone. The selected recipe{selectedCount !== 1 ? "s" : ""} will be
+                permanently deleted from your collection.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={cancelBulkDelete}
+                  disabled={bulkDeleteMutation.isPending}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmBulkDelete}
+                  disabled={bulkDeleteMutation.isPending}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 flex items-center gap-2"
+                >
+                  {bulkDeleteMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {isFormOpen && (
