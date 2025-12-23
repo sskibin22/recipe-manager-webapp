@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Responses;
 using RecipeManager.Api.Models;
 using RecipeManager.Api.Services;
@@ -7,10 +9,12 @@ namespace RecipeManager.Api.Mapping;
 public class CollectionMapper
 {
     private readonly IStorageService _storageService;
+    private readonly ApplicationDbContext _db;
 
-    public CollectionMapper(IStorageService storageService)
+    public CollectionMapper(IStorageService storageService, ApplicationDbContext db)
     {
         _storageService = storageService;
+        _db = db;
     }
 
     /// <summary>
@@ -19,6 +23,7 @@ public class CollectionMapper
     public async Task<CollectionResponse> ToResponseAsync(Collection collection)
     {
         var imageUrl = await GetPreviewImageUrlAsync(collection);
+        var recipePreviewImages = await GetRecipePreviewImagesAsync(collection.Id);
 
         return new CollectionResponse
         {
@@ -30,7 +35,8 @@ public class CollectionMapper
             ImageUrl = imageUrl,
             CreatedAt = collection.CreatedAt,
             UpdatedAt = collection.UpdatedAt,
-            RecipeCount = collection.CollectionRecipes?.Count ?? 0
+            RecipeCount = collection.CollectionRecipes?.Count ?? 0,
+            RecipePreviewImages = recipePreviewImages
         };
     }
 
@@ -60,6 +66,55 @@ public class CollectionMapper
                 // If presigned URL generation fails, leave imageUrl as null
                 return null;
             }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets up to 10 recipe preview image URLs from recipes in the collection.
+    /// Used for auto-rotating thumbnail display when no custom collection image is uploaded.
+    /// </summary>
+    private async Task<List<string>> GetRecipePreviewImagesAsync(Guid collectionId)
+    {
+        var recipeImages = await _db.CollectionRecipes
+            .Where(cr => cr.CollectionId == collectionId)
+            .Include(cr => cr.Recipe)
+            .OrderBy(cr => cr.AddedAt) // Consistent ordering
+            .Take(10) // Limit to first 10 for performance
+            .Select(cr => cr.Recipe)
+            .ToListAsync();
+
+        var imageUrls = new List<string>();
+
+        foreach (var recipe in recipeImages)
+        {
+            var imageUrl = await GetRecipePreviewImageUrlAsync(recipe);
+            if (!string.IsNullOrEmpty(imageUrl))
+            {
+                imageUrls.Add(imageUrl);
+            }
+        }
+
+        return imageUrls;
+    }
+
+    /// <summary>
+    /// Gets the preview image URL for a recipe.
+    /// </summary>
+    private async Task<string?> GetRecipePreviewImageUrlAsync(Recipe recipe)
+    {
+        // If stored in database as binary, convert to base64 data URL
+        if (recipe.PreviewImageContent != null && !string.IsNullOrEmpty(recipe.PreviewImageContentType))
+        {
+            var base64Image = Convert.ToBase64String(recipe.PreviewImageContent);
+            return $"data:{recipe.PreviewImageContentType};base64,{base64Image}";
+        }
+
+        // If external URL, return it directly
+        if (!string.IsNullOrEmpty(recipe.PreviewImageUrl))
+        {
+            return recipe.PreviewImageUrl;
         }
 
         return null;
