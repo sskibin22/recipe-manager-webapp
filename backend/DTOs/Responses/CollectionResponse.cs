@@ -14,4 +14,5 @@ public record CollectionResponse
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
     public int RecipeCount { get; init; }
+    public List<string> RecipePreviewImages { get; init; } = new();
 }

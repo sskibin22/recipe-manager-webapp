@@ -39,3 +39,4 @@ export { useFileUpload } from "./useFileUpload";
 export { useMetadataFetch } from "./useMetadataFetch";
 export { useRecipeDetail } from "./useRecipeDetail";
 export { useRecipeEdit } from "./useRecipeEdit";
+export { useImageRotation } from "./useImageRotation";
