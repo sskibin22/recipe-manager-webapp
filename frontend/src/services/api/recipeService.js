@@ -68,6 +68,16 @@ const deleteRecipe = async (id) => {
 };
 
 /**
+ * Delete multiple recipes
+ * @param {string[]} recipeIds - Array of recipe IDs (GUIDs)
+ * @returns {Promise<{deletedCount: number}>} Object with count of deleted recipes
+ */
+const bulkDelete = async (recipeIds) => {
+  const response = await apiClient.delete("/api/recipes/bulk", { data: recipeIds });
+  return response.data;
+};
+
+/**
  * Add recipe to favorites
  * @param {string} recipeId - Recipe ID (GUID)
  * @returns {Promise<Object>} API response
@@ -102,6 +112,7 @@ export const recipeService = {
   create,
   update,
   delete: deleteRecipe,
+  bulkDelete,
   addFavorite,
   removeFavorite,
   fetchMetadata,

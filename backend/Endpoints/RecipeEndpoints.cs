@@ -93,6 +93,26 @@ public static class RecipeEndpoints
         .WithName("DeleteRecipe")
         .WithOpenApi();
 
+        app.MapDelete("/api/recipes/bulk", async (
+            [FromBody] List<Guid> recipeIds,
+            IRecipeService recipeService,
+            IUserContextService userContext) =>
+        {
+            var userId = userContext.GetCurrentUserId();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
+
+            if (recipeIds == null || recipeIds.Count == 0)
+            {
+                return Results.BadRequest(new { error = "Recipe IDs are required" });
+            }
+
+            var deletedCount = await recipeService.DeleteRecipesAsync(recipeIds, userId.Value);
+            
+            return Results.Ok(new { deletedCount });
+        })
+        .WithName("BulkDeleteRecipes")
+        .WithOpenApi();
+
         return app;
     }
 }

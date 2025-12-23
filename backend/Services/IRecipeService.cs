@@ -49,4 +49,12 @@ public interface IRecipeService
     /// <param name="userId">The ID of the user deleting the recipe</param>
     /// <returns>True if deleted successfully, false if not found or unauthorized</returns>
     Task<bool> DeleteRecipeAsync(Guid id, Guid userId);
+
+    /// <summary>
+    /// Delete multiple recipes
+    /// </summary>
+    /// <param name="recipeIds">List of recipe IDs to delete</param>
+    /// <param name="userId">The ID of the user deleting the recipes</param>
+    /// <returns>The number of recipes successfully deleted</returns>
+    Task<int> DeleteRecipesAsync(List<Guid> recipeIds, Guid userId);
 }

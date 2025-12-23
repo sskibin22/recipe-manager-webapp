@@ -28,9 +28,12 @@ const getManualRecipePreview = (content) => {
  * Recipe card component - displays a recipe in card format
  * @param {Object} props
  * @param {Recipe} props.recipe - Recipe object to display
+ * @param {boolean} [props.isSelectionMode=false] - Whether bulk selection mode is active
+ * @param {boolean} [props.isSelected=false] - Whether this recipe is selected
+ * @param {Function} [props.onToggleSelect] - Callback to toggle selection
  * @returns {JSX.Element}
  */
-const RecipeCard = ({ recipe }) => {
+const RecipeCard = ({ recipe, isSelectionMode = false, isSelected = false, onToggleSelect }) => {
   const queryClient = useQueryClient();
   const location = useLocation();
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
@@ -134,18 +137,65 @@ const RecipeCard = ({ recipe }) => {
     toggleFavoriteMutation.mutate();
   };
 
+  const handleCheckboxClick = (/** @type {React.MouseEvent} */ e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onToggleSelect) {
+      onToggleSelect(recipe.id);
+    }
+  };
+
   // Determine image source (use placeholder if no preview image)
   const imageSrc = recipe.previewImageUrl || "/recipe-placeholder.svg";
 
+  // Wrapper component - conditionally render as Link or div based on selection mode
+  const CardWrapper = isSelectionMode ? "div" : Link;
+  const wrapperProps = isSelectionMode
+    ? {
+        onClick: handleCheckboxClick,
+        className: `block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border-2 overflow-hidden cursor-pointer ${
+          isSelected ? "border-blue-600 ring-2 ring-blue-600" : "border-gray-200"
+        }`,
+      }
+    : {
+        to: `/recipe/${recipe.id}`,
+        state: { from: location.pathname },
+        className: "block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden",
+      };
+
   return (
     <>
-      <Link
-        to={`/recipe/${recipe.id}`}
-        state={{ from: location.pathname }}
-        className="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden"
-      >
+      <CardWrapper {...wrapperProps}>
         {/* Preview Image - Always shown for consistent layout */}
-        <div className="w-full h-48 bg-gray-200 overflow-hidden">
+        <div className="w-full h-48 bg-gray-200 overflow-hidden relative">
+          {/* Checkbox overlay in selection mode */}
+          {isSelectionMode && (
+            <div className="absolute top-2 left-2 z-10">
+              <div
+                className={`w-8 h-8 rounded-md border-2 flex items-center justify-center transition-all ${
+                  isSelected
+                    ? "bg-blue-600 border-blue-600"
+                    : "bg-white bg-opacity-90 border-gray-400"
+                }`}
+              >
+                {isSelected && (
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                )}
+              </div>
+            </div>
+          )}
           <img
             src={imageSrc}
             alt={recipe.title}
@@ -179,20 +229,21 @@ const RecipeCard = ({ recipe }) => {
                 <CategoryBadge category={recipe.category} />
               )}
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsCollectionModalOpen(true);
-                }}
-                className="text-gray-400 hover:text-blue-600 transition"
-                aria-label="Add to collection"
-                title="Add to collection"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
+            {!isSelectionMode && (
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsCollectionModalOpen(true);
+                  }}
+                  className="text-gray-400 hover:text-blue-600 transition"
+                  aria-label="Add to collection"
+                  title="Add to collection"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path
@@ -236,12 +287,13 @@ const RecipeCard = ({ recipe }) => {
               )}
             </button>
           </div>
-        </div>
+            )}
+          </div>
 
-        {/* Title */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-          {recipe.title}
-        </h3>
+          {/* Title */}
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+            {recipe.title}
+          </h3>
 
         {/* Description (if available) */}
         {recipe.description && (
@@ -280,9 +332,9 @@ const RecipeCard = ({ recipe }) => {
           Added {new Date(recipe.createdAt).toLocaleDateString()}
         </p>
       </div>
-    </Link>
+    </CardWrapper>
 
-      {/* Add to Collection Modal - Outside Link to prevent navigation on interaction */}
+      {/* Add to Collection Modal - Outside wrapper to prevent navigation on interaction */}
       <AddToCollectionModal
         recipeId={recipe.id}
         isOpen={isCollectionModalOpen}
