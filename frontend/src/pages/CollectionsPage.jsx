@@ -172,8 +172,7 @@ export default function CollectionsPage() {
         imageStorageKey: imageStorageKey || undefined,
         previewImageData: previewImageData || undefined,
       });
-
-      refetch();
+      // React Query will automatically invalidate and refetch the collections query
     } catch (error) {
       console.error("Failed to update collection image:", error);
       throw error; // Re-throw so modal can show error

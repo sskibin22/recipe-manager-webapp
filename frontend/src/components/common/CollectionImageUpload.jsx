@@ -2,9 +2,6 @@ import { useState } from "react";
 import { validateCollectionImage } from "../../utils/fileValidation";
 import { uploadService } from "../../services/api/uploadService";
 
-// Generate unique ID for file input to avoid conflicts when multiple instances are rendered
-let instanceCounter = 0;
-
 /**
  * Reusable modal component for uploading/editing collection thumbnail images
  * @param {Object} props - Component props
@@ -26,7 +23,8 @@ export default function CollectionImageUpload({
   const [imagePreview, setImagePreview] = useState(null);
   const [imageError, setImageError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [fileInputId] = useState(() => `collection-image-edit-${++instanceCounter}`);
+  // Generate unique ID using crypto API for better uniqueness guarantees
+  const [fileInputId] = useState(() => `collection-image-${crypto.randomUUID()}`);
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
