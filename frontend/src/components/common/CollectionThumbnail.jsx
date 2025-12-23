@@ -15,9 +15,9 @@ export default function CollectionThumbnail({ collection, onEditImage }) {
   // 2. There are recipe images available
   const shouldRotate = !imageUrl && recipePreviewImages.length > 0;
   
-  const { currentImage, isRotating } = useImageRotation(
+  const { currentImage, previousImage, currentIndex, isRotating } = useImageRotation(
     shouldRotate ? recipePreviewImages : [],
-    4000 // 4 second interval
+    5000 // 5 second interval for smoother transitions
   );
 
   // Determine which image to display
@@ -57,25 +57,36 @@ export default function CollectionThumbnail({ collection, onEditImage }) {
     );
   }
 
-  // If rotating recipe images are available, display them with fade transition
+  // If rotating recipe images are available, display them with cross-fade transition
   if (shouldRotate && displayImage) {
     return (
       <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
+        {/* Background layer: previous image stays visible during transition */}
+        {previousImage && previousImage !== currentImage && (
+          <div
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backgroundImage: `url(${previousImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          />
+        )}
+        {/* Foreground layer: current image with cross-fade animation */}
         <img
-          key={currentImage} // Force re-mount on image change for fade effect
+          key={currentIndex}
           src={displayImage}
           alt={`${collection.name} preview`}
-          className="w-full h-full object-cover transition-opacity duration-500 ease-in-out"
-          style={{ animation: isRotating ? 'fadeIn 0.5s ease-in-out' : 'none' }}
+          className="absolute inset-0 w-full h-full object-cover animate-fadeInSmooth"
         />
         {/* Rotating indicator - subtle dot animation */}
         {isRotating && (
-          <div className="absolute bottom-2 right-2 flex gap-1">
+          <div className="absolute bottom-2 right-2 flex gap-1 z-10">
             {recipePreviewImages.slice(0, 5).map((_, index) => (
               <div
                 key={index}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === (currentImage === recipePreviewImages[index] ? 0 : recipePreviewImages.indexOf(currentImage))
+                  index === currentIndex
                     ? 'bg-white'
                     : 'bg-white bg-opacity-50'
                 }`}
@@ -86,7 +97,7 @@ export default function CollectionThumbnail({ collection, onEditImage }) {
         {/* Add Image Button - Shows on hover */}
         <button
           onClick={onEditImage}
-          className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 p-2 rounded-full shadow-md transition opacity-0 group-hover:opacity-100"
+          className="absolute top-2 right-2 bg-white bg-opacity-90 hover:bg-opacity-100 p-2 rounded-full shadow-md transition opacity-0 group-hover:opacity-100 z-10"
           title="Add thumbnail image"
         >
           <svg
