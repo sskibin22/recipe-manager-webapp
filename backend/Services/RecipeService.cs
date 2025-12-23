@@ -267,4 +267,33 @@ public class RecipeService : IRecipeService
 
         return true;
     }
+
+    /// <inheritdoc />
+    public async Task<int> DeleteRecipesAsync(List<Guid> recipeIds, Guid userId)
+    {
+        if (recipeIds == null || recipeIds.Count == 0)
+        {
+            return 0;
+        }
+
+        // Fetch all recipes owned by the user that match the provided IDs
+        var recipesToDelete = await _db.Recipes
+            .Where(r => recipeIds.Contains(r.Id) && r.UserId == userId)
+            .ToListAsync();
+
+        if (recipesToDelete.Count == 0)
+        {
+            return 0;
+        }
+
+        _db.Recipes.RemoveRange(recipesToDelete);
+        await _db.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "User {UserId} deleted {Count} recipes",
+            userId,
+            recipesToDelete.Count);
+
+        return recipesToDelete.Count;
+    }
 }
