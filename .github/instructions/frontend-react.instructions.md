@@ -1,6 +1,6 @@
 ---
 applyTo: "frontend/src/**/*.jsx,frontend/src/**/*.js,frontend/src/**/*.tsx,frontend/src/**/*.ts"
-excludeAgent: "code-review"
+excludeAgent: ["code-review"]
 ---
 
 # Frontend React Instructions

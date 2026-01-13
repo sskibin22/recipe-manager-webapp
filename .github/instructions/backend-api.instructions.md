@@ -1,6 +1,6 @@
 ---
 applyTo: "backend/**/*.cs"
-excludeAgent: "code-review"
+excludeAgent: ["code-review"]
 ---
 
 # Backend API Instructions
