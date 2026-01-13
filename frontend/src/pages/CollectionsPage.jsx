@@ -283,7 +283,7 @@ export default function CollectionsPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate("/")}
-                className="text-gray-700 hover:text-gray-900 transition"
+                className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 title="Back to Recipes"
               >
                 <svg
@@ -303,10 +303,10 @@ export default function CollectionsPage() {
               </button>
               <h1 className="text-2xl font-bold text-gray-900">My Collections</h1>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate("/settings")}
-                className="text-gray-700 hover:text-gray-900 transition"
+                className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 title="Account Settings"
               >
                 <svg
