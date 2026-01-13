@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCollectionsQuery, useCollectionMutations } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
@@ -7,6 +7,12 @@ import { validateCollectionImage } from "../utils/fileValidation";
 import { uploadService } from "../services/api/uploadService";
 import CollectionImageUpload from "../components/common/CollectionImageUpload";
 import CollectionThumbnail from "../components/common/CollectionThumbnail";
+import {
+  sortCollections,
+  filterCollectionsBySearch,
+  SORT_OPTIONS,
+  SORT_STORAGE_KEY,
+} from "../utils/collectionSort";
 
 /**
  * Collections page - list all user collections
@@ -25,8 +31,26 @@ export default function CollectionsPage() {
   const [editingCollectionId, setEditingCollectionId] = useState(null);
   const [isEditImageModalOpen, setIsEditImageModalOpen] = useState(false);
 
+  // Search and sort state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState(() => {
+    // Load sort preference from session storage
+    return sessionStorage.getItem(SORT_STORAGE_KEY) || "updated-newest";
+  });
+
   const { data: collections = [], isLoading, refetch } = useCollectionsQuery({ enabled: !!user });
   const { createMutation, deleteMutation, updateMutation } = useCollectionMutations();
+
+  // Persist sort option to session storage
+  useEffect(() => {
+    sessionStorage.setItem(SORT_STORAGE_KEY, sortOption);
+  }, [sortOption]);
+
+  // Apply search and sort to collections
+  const displayedCollections = useMemo(() => {
+    let filtered = filterCollectionsBySearch(collections, searchQuery);
+    return sortCollections(filtered, sortOption);
+  }, [collections, searchQuery, sortOption]);
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
@@ -253,13 +277,92 @@ export default function CollectionsPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
+        {/* Action Bar: Create button, Search, and Sort */}
+        <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
           <button
             onClick={() => setIsCreateModalOpen(true)}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Create Collection
           </button>
+
+          {/* Search and Sort Controls - only show when collections exist */}
+          {collections.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              {/* Search Input */}
+              <div className="relative flex-1 md:w-64">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search collections..."
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <svg
+                  className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 pointer-events-none"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                    title="Clear search"
+                  >
+                    <svg
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="relative">
+                <select
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                  className="appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer"
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <svg
+                  className="absolute right-3 top-3 h-5 w-5 text-gray-400 pointer-events-none"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </div>
+          )}
         </div>
 
         {isLoading ? (
@@ -296,9 +399,39 @@ export default function CollectionsPage() {
               </button>
             </div>
           </div>
+        ) : displayedCollections.length === 0 ? (
+          <div className="text-center py-12 px-4">
+            <div className="max-w-md mx-auto">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No collections found
+              </h3>
+              <p className="text-gray-600 mb-4">
+                No collections match your search &quot;{searchQuery}&quot;. Try a different search term.
+              </p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Clear Search
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {collections.map((collection) => (
+            {displayedCollections.map((collection) => (
               <div
                 key={collection.id}
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden cursor-pointer relative group"
