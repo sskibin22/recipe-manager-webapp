@@ -57,4 +57,12 @@ public interface IRecipeService
     /// <param name="userId">The ID of the user deleting the recipes</param>
     /// <returns>The number of recipes successfully deleted</returns>
     Task<int> DeleteRecipesAsync(List<Guid> recipeIds, Guid userId);
+
+    /// <summary>
+    /// Get a random recipe from the user's collection
+    /// </summary>
+    /// <param name="userId">The ID of the current user</param>
+    /// <param name="collectionId">Optional collection ID to filter recipes</param>
+    /// <returns>A random recipe response, or null if no recipes available</returns>
+    Task<RecipeResponse?> GetRandomRecipeAsync(Guid userId, Guid? collectionId);
 }
