@@ -1,0 +1,38 @@
+#!/bin/sh
+# Pre-commit hook to prevent committing .env.local files
+# This hook prevents accidental exposure of environment-specific configurations
+
+# Check if any .env.local files are being committed
+if git diff --cached --name-only | grep -E '\.env\.local$'; then
+    echo "❌ ERROR: Attempted to commit .env.local file!"
+    echo ""
+    echo "The following .env.local files were found in the commit:"
+    git diff --cached --name-only | grep -E '\.env\.local$'
+    echo ""
+    echo "These files should never be committed as they may contain sensitive information."
+    echo ""
+    echo "To fix this:"
+    echo "  1. Remove the file from staging: git reset HEAD <file>"
+    echo "  2. Ensure the file is in .gitignore"
+    echo "  3. If already committed, remove from git: git rm --cached <file>"
+    echo ""
+    exit 1
+fi
+
+# Check for any .env.*.local files as well
+if git diff --cached --name-only | grep -E '\.env\..*\.local$'; then
+    echo "❌ ERROR: Attempted to commit .env.*.local file!"
+    echo ""
+    echo "The following environment files were found in the commit:"
+    git diff --cached --name-only | grep -E '\.env\..*\.local$'
+    echo ""
+    echo "These files should never be committed as they may contain sensitive information."
+    echo ""
+    echo "To fix this:"
+    echo "  1. Remove the file from staging: git reset HEAD <file>"
+    echo "  2. Ensure the file is in .gitignore"
+    echo ""
+    exit 1
+fi
+
+exit 0

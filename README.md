@@ -39,7 +39,12 @@ A full-stack web application for managing personal recipe collections. Users can
 ```bash
 git clone <your-repo-url>
 cd recipe-manager-webapp
+
+# Set up git hooks (recommended for security)
+./setup-hooks.sh
 ```
+
+**Note:** The setup script configures git hooks that prevent accidental commits of `.env.local` files containing sensitive information.
 
 ### 2. Backend Setup
 
@@ -298,6 +303,71 @@ All endpoints except `/health` require a valid Firebase JWT token in the `Author
 
 **Issue:** CORS errors
 - **Solution:** Ensure backend `appsettings.Development.json` includes your frontend URL in CORS allowed origins
+
+## Security Best Practices
+
+### 🔒 Protecting Sensitive Information
+
+This project includes multiple layers of protection to prevent accidental exposure of sensitive configuration:
+
+#### Environment Files Protection
+
+**Never commit `.env.local` files!** These files contain environment-specific configurations and may include sensitive information.
+
+**Safeguards in place:**
+1. **`.gitignore`**: The `frontend/.gitignore` includes patterns that ignore `.env.local` and `.env.*.local` files
+2. **Pre-commit Hook**: Run `./setup-hooks.sh` to install a git hook that prevents committing `.env.local` files
+3. **CI/CD Checks**: GitHub Actions automatically verify no `.env.local` files are committed
+4. **Template File**: Use `frontend/.env.local.example` as a template with placeholder values
+
+#### Setting Up Environment Files Securely
+
+```bash
+# 1. Copy the example file
+cd frontend
+cp .env.local.example .env.local
+
+# 2. Edit with your actual values (never commit this file!)
+nano .env.local  # or use your preferred editor
+
+# 3. Verify .env.local is ignored by git
+git status  # Should NOT show .env.local
+```
+
+#### What to Do If You Accidentally Commit `.env.local`
+
+If you accidentally commit a `.env.local` file:
+
+```bash
+# 1. Remove from git tracking (keeps local file)
+git rm --cached frontend/.env.local
+
+# 2. Commit the removal
+git commit -m "Remove .env.local from version control"
+
+# 3. If the file was pushed to remote, consider:
+#    - Rotating any exposed secrets (Firebase keys, API keys, etc.)
+#    - Using git-filter-repo or BFG Repo-Cleaner to remove from history
+```
+
+#### Backend Secrets Management
+
+For backend secrets, use **dotnet user-secrets** (never commit to `appsettings.json`):
+
+```bash
+dotnet user-secrets set "Firebase:ProjectId" "your-project-id"
+dotnet user-secrets set "R2:SecretAccessKey" "your-secret-key"
+```
+
+In production, use environment variables or secure secret management services.
+
+#### Additional Security Tips
+
+- **Regular Audits**: Periodically review `.gitignore` to ensure it's up to date
+- **Code Reviews**: Always review changes before committing to catch sensitive data
+- **Rotate Secrets**: If secrets are exposed, rotate them immediately
+- **Use `.example` Files**: Always provide `.example` files with placeholder values for team members
+- **Monitor CI/CD**: Pay attention to security check warnings in pull requests
 
 ## Production Deployment
 

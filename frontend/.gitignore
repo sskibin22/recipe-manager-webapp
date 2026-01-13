@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Environment files (never commit these)
+.env.local
+.env.*.local
+
 # Playwright
 test-results/
 playwright-report/

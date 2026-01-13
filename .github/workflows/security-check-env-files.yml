@@ -1,0 +1,92 @@
+name: Security Check - Environment Files
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  check-env-files:
+    name: Check for .env.local files
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history to check all commits
+      
+      - name: Check for .env.local files in repository
+        run: |
+          echo "🔍 Checking for .env.local files..."
+          
+          # Check if any .env.local files exist in the repository
+          if find . -name ".env.local" -o -name ".env.*.local" | grep -v node_modules; then
+            echo "❌ ERROR: Found .env.local files in the repository!"
+            echo ""
+            echo "The following files should not be committed:"
+            find . -name ".env.local" -o -name ".env.*.local" | grep -v node_modules
+            echo ""
+            echo "Please remove these files:"
+            echo "  git rm --cached <file>"
+            echo "  git commit -m 'Remove sensitive env files'"
+            exit 1
+          fi
+          
+          echo "✅ No .env.local files found in working directory"
+      
+      - name: Check git history for .env.local files
+        run: |
+          echo "🔍 Checking git history for .env.local files..."
+          
+          # Check if .env.local files were ever committed
+          if git log --all --full-history --pretty=format: --name-only -- "*.env.local" "*.env.*.local" | grep -E '\.env\..*\.local$'; then
+            echo "⚠️  WARNING: .env.local files found in git history!"
+            echo ""
+            echo "Files found:"
+            git log --all --full-history --pretty=format: --name-only -- "*.env.local" "*.env.*.local" | grep -E '\.env\..*\.local$' | sort -u
+            echo ""
+            echo "These files may contain sensitive information."
+            echo "Consider using git-filter-repo or BFG Repo-Cleaner to remove them from history."
+            # Don't fail the build for historical files, just warn
+            exit 0
+          fi
+          
+          echo "✅ No .env.local files found in git history"
+      
+      - name: Verify .gitignore configuration
+        run: |
+          echo "🔍 Verifying .gitignore configuration..."
+          
+          # Check if frontend/.gitignore exists and contains .env.local patterns
+          if [ -f "frontend/.gitignore" ]; then
+            if grep -q "\.env\.local" "frontend/.gitignore" || grep -q "\*\.local" "frontend/.gitignore"; then
+              echo "✅ frontend/.gitignore is properly configured"
+            else
+              echo "⚠️  WARNING: frontend/.gitignore may not be properly configured"
+              echo "Expected to find .env.local or *.local pattern"
+              exit 1
+            fi
+          else
+            echo "⚠️  WARNING: frontend/.gitignore not found"
+            exit 1
+          fi
+      
+      - name: Check for .env.local.example
+        run: |
+          echo "🔍 Checking for .env.local.example template..."
+          
+          if [ -f "frontend/.env.local.example" ]; then
+            echo "✅ frontend/.env.local.example exists"
+            
+            # Verify it doesn't contain real secrets (basic check)
+            if grep -qE "(your-.*-key|your-project-id|example\.com)" "frontend/.env.local.example"; then
+              echo "✅ Template contains placeholder values"
+            else
+              echo "⚠️  WARNING: .env.local.example may contain real values instead of placeholders"
+            fi
+          else
+            echo "⚠️  WARNING: frontend/.env.local.example not found"
+            echo "This template file should exist to guide developers on environment setup"
+          fi
