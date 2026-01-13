@@ -67,6 +67,18 @@ const deleteCollection = async (id) => {
 };
 
 /**
+ * Delete multiple collections (batch operation)
+ * @param {string[]} collectionIds - Array of collection IDs (GUIDs)
+ * @returns {Promise<{deletedCount: number}>} Response with count of deleted collections
+ */
+const deleteBatch = async (collectionIds) => {
+  const response = await apiClient.delete("/api/collections/batch", {
+    data: { collectionIds },
+  });
+  return response.data;
+};
+
+/**
  * Get all recipes in a collection
  * @param {string} collectionId - Collection ID (GUID)
  * @returns {Promise<import('../../types/recipe').Recipe[]>} Array of recipes
@@ -139,6 +151,7 @@ export const collectionService = {
   create,
   update,
   delete: deleteCollection,
+  deleteBatch,
   getRecipes,
   addRecipe,
   removeRecipe,

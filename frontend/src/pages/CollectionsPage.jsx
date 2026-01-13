@@ -31,6 +31,13 @@ export default function CollectionsPage() {
   const [editingCollectionId, setEditingCollectionId] = useState(null);
   const [isEditImageModalOpen, setIsEditImageModalOpen] = useState(false);
 
+  // Bulk selection state
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedCollections, setSelectedCollections] = useState(new Set());
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isSingleDeleteConfirmOpen, setIsSingleDeleteConfirmOpen] = useState(false);
+  const [deletingCollectionId, setDeletingCollectionId] = useState(null);
+
   // Search and sort state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState(() => {
@@ -39,7 +46,7 @@ export default function CollectionsPage() {
   });
 
   const { data: collections = [], isLoading, refetch } = useCollectionsQuery({ enabled: !!user });
-  const { createMutation, deleteMutation, updateMutation } = useCollectionMutations();
+  const { createMutation, deleteMutation, deleteBatchMutation, updateMutation } = useCollectionMutations();
 
   // Persist sort option to session storage
   useEffect(() => {
@@ -158,15 +165,67 @@ export default function CollectionsPage() {
   };
 
   const handleDeleteCollection = async (collectionId) => {
-    if (!confirm("Are you sure you want to delete this collection? Recipes will not be deleted.")) {
-      return;
-    }
+    setDeletingCollectionId(collectionId);
+    setIsSingleDeleteConfirmOpen(true);
+  };
+
+  const confirmSingleDelete = async () => {
+    if (!deletingCollectionId) return;
 
     try {
-      await deleteMutation.mutateAsync(collectionId);
+      await deleteMutation.mutateAsync(deletingCollectionId);
+      setDeletingCollectionId(null);
+      setIsSingleDeleteConfirmOpen(false);
       refetch();
     } catch (error) {
       console.error("Failed to delete collection:", error);
+      alert("Failed to delete collection. Please try again.");
+    }
+  };
+
+  const handleToggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    setSelectedCollections(new Set()); // Clear selections when toggling mode
+  };
+
+  const handleToggleSelection = (collectionId) => {
+    const newSelected = new Set(selectedCollections);
+    if (newSelected.has(collectionId)) {
+      newSelected.delete(collectionId);
+    } else {
+      newSelected.add(collectionId);
+    }
+    setSelectedCollections(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedCollections.size === displayedCollections.length) {
+      // Deselect all
+      setSelectedCollections(new Set());
+    } else {
+      // Select all displayed collections
+      const allIds = new Set(displayedCollections.map(c => c.id));
+      setSelectedCollections(allIds);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedCollections.size === 0) return;
+
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmBulkDelete = async () => {
+    try {
+      const collectionIds = Array.from(selectedCollections);
+      await deleteBatchMutation.mutateAsync(collectionIds);
+      setSelectedCollections(new Set());
+      setIsSelectionMode(false);
+      setIsDeleteConfirmOpen(false);
+      refetch();
+    } catch (error) {
+      console.error("Failed to delete collections:", error);
+      alert("Failed to delete collections. Please try again.");
     }
   };
 
@@ -277,14 +336,65 @@ export default function CollectionsPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Action Bar: Create button, Search, and Sort */}
+        {/* Action Bar: Create button, Select mode, Search, and Sort */}
         <div className="mb-6 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            Create Collection
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              Create Collection
+            </button>
+
+            {collections.length > 0 && (
+              <button
+                onClick={handleToggleSelectionMode}
+                className={`px-6 py-2 rounded-lg transition ${
+                  isSelectionMode
+                    ? "bg-gray-600 text-white hover:bg-gray-700"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {isSelectionMode ? "Cancel" : "Select"}
+              </button>
+            )}
+
+            {isSelectionMode && displayedCollections.length > 0 && (
+              <>
+                <button
+                  onClick={handleSelectAll}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                >
+                  {selectedCollections.size === displayedCollections.length
+                    ? "Deselect All"
+                    : "Select All"}
+                </button>
+
+                {selectedCollections.size > 0 && (
+                  <button
+                    onClick={handleBulkDelete}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                      />
+                    </svg>
+                    Delete ({selectedCollections.size})
+                  </button>
+                )}
+              </>
+            )}
+          </div>
 
           {/* Search and Sort Controls - only show when collections exist */}
           {collections.length > 0 && (
@@ -434,9 +544,30 @@ export default function CollectionsPage() {
             {displayedCollections.map((collection) => (
               <div
                 key={collection.id}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden cursor-pointer relative group"
-                onClick={() => navigate(`/collections/${collection.id}`)}
+                className={`bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden relative group ${
+                  isSelectionMode ? "" : "cursor-pointer"
+                }`}
+                onClick={() => {
+                  if (!isSelectionMode) {
+                    navigate(`/collections/${collection.id}`);
+                  }
+                }}
               >
+                {/* Selection checkbox */}
+                {isSelectionMode && (
+                  <div className="absolute top-4 left-4 z-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedCollections.has(collection.id)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        handleToggleSelection(collection.id);
+                      }}
+                      className="w-6 h-6 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                  </div>
+                )}
+
                 {/* Collection Thumbnail with auto-rotating recipe images */}
                 <CollectionThumbnail
                   collection={collection}
@@ -459,33 +590,144 @@ export default function CollectionsPage() {
                         {collection.recipeCount} {collection.recipeCount === 1 ? "recipe" : "recipes"}
                       </p>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteCollection(collection.id);
-                      }}
-                      className="text-gray-400 hover:text-red-600 transition"
-                      title="Delete collection"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-5 h-5"
+                    {!isSelectionMode && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCollection(collection.id);
+                        }}
+                        className="text-gray-400 hover:text-red-600 transition"
+                        title="Delete collection"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                        />
-                      </svg>
-                    </button>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-5 h-5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                          />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Bulk Delete Confirmation Modal */}
+        {isDeleteConfirmOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Delete {selectedCollections.size} Collection{selectedCollections.size !== 1 ? "s" : ""}?
+              </h2>
+              <div className="mb-6">
+                <p className="text-gray-700 mb-3">
+                  Are you sure you want to delete the selected collection{selectedCollections.size !== 1 ? "s" : ""}?
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-800 flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="w-5 h-5 flex-shrink-0 mt-0.5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                      />
+                    </svg>
+                    <span>
+                      <strong>Your recipes will NOT be deleted.</strong> Only the collection{selectedCollections.size !== 1 ? "s" : ""} will be removed. All recipes will remain accessible in your recipe library.
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsDeleteConfirmOpen(false)}
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmBulkDelete}
+                  disabled={deleteBatchMutation.isPending}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+                >
+                  {deleteBatchMutation.isPending ? "Deleting..." : "Delete Collections"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Single Delete Confirmation Modal */}
+        {isSingleDeleteConfirmOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-md w-full p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Delete Collection?
+              </h2>
+              <div className="mb-6">
+                <p className="text-gray-700 mb-3">
+                  Are you sure you want to delete this collection?
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-800 flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                      className="w-5 h-5 flex-shrink-0 mt-0.5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                      />
+                    </svg>
+                    <span>
+                      <strong>Your recipes will NOT be deleted.</strong> Only the collection will be removed. All recipes will remain accessible in your recipe library.
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSingleDeleteConfirmOpen(false);
+                    setDeletingCollectionId(null);
+                  }}
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmSingleDelete}
+                  disabled={deleteMutation.isPending}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+                >
+                  {deleteMutation.isPending ? "Deleting..." : "Delete Collection"}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 

@@ -30,6 +30,13 @@ export const useCollectionMutations = () => {
     },
   });
 
+  const deleteBatchMutation = useMutation({
+    mutationFn: collectionService.deleteBatch,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+    },
+  });
+
   const addRecipeMutation = useMutation({
     mutationFn: ({ collectionId, recipeId }) => 
       collectionService.addRecipe(collectionId, recipeId),
@@ -74,6 +81,7 @@ export const useCollectionMutations = () => {
     createMutation,
     updateMutation,
     deleteMutation,
+    deleteBatchMutation,
     addRecipeMutation,
     removeRecipeMutation,
     addRecipesBatchMutation,
