@@ -323,10 +323,14 @@ export default function Landing() {
                   <div className="relative flex-1 sm:flex-initial">
                     <button
                       onClick={() => setIsFilterOpen(!isFilterOpen)}
-                      className="w-full sm:w-auto px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition whitespace-nowrap flex items-center justify-center gap-2"
+                      className={`w-full sm:w-auto px-4 py-2 text-gray-700 hover:text-gray-900 transition whitespace-nowrap flex items-center justify-center gap-2 border-b-2 ${
+                        activeFilterCount > 0 || isFilterOpen
+                          ? "border-blue-600"
+                          : "border-transparent hover:border-gray-300"
+                      }`}
                     >
                       <svg
-                        className="w-5 h-5"
+                        className="w-4 h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -338,12 +342,25 @@ export default function Landing() {
                           d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
                         />
                       </svg>
-                      <span>Filter</span>
+                      <span className="text-sm">Filter</span>
                       {activeFilterCount > 0 && (
-                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-600 rounded-full">
+                        <span className="inline-flex items-center justify-center w-4 h-4 text-xs font-medium text-white bg-blue-600 rounded-full">
                           {activeFilterCount}
                         </span>
                       )}
+                      <svg
+                        className={`w-3 h-3 transition-transform ${isFilterOpen ? "rotate-180" : ""}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
                     </button>
                     {isFilterOpen && (
                       <FilterPanel
