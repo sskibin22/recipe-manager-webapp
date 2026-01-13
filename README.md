@@ -277,6 +277,35 @@ All endpoints except `/health` require a valid Firebase JWT token in the `Author
 **Issue:** CORS errors
 - **Solution:** Ensure backend `appsettings.Development.json` includes your frontend URL in CORS allowed origins
 
+## Production Deployment
+
+Ready to deploy your Recipe Manager to production? Follow our comprehensive deployment guides:
+
+### 📚 Deployment Documentation
+
+- **[Production Deployment Guide](./docs/PRODUCTION_DEPLOYMENT_GUIDE.md)** - Complete step-by-step instructions for deploying to production, including:
+  - Firebase authentication setup
+  - Neon PostgreSQL database configuration
+  - Cloudflare R2 storage setup
+  - Fly.io backend deployment
+  - Netlify frontend deployment
+  - Environment configuration
+  - Testing and verification steps
+
+- **[Deployment Checklist](./docs/DEPLOYMENT_CHECKLIST.md)** - Interactive checklist to track your deployment progress
+
+### 🚀 Quick Deployment Summary
+
+1. **Firebase** - User authentication (free tier: 10k MAU)
+2. **Neon PostgreSQL** - Production database (free tier: 10 GB)
+3. **Cloudflare R2** - File storage (free tier: 10 GB)
+4. **Fly.io** - Backend API hosting (free tier: 3 shared VMs)
+5. **Netlify** - Frontend hosting (free tier: 100 GB bandwidth)
+
+**Total Cost**: $0/month on free tiers ✅
+
+For detailed instructions, see the [Production Deployment Guide](./docs/PRODUCTION_DEPLOYMENT_GUIDE.md).
+
 ## License
 
 MIT
