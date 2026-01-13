@@ -88,6 +88,28 @@ npm run dev
 
 The frontend will be available at `http://localhost:5173`.
 
+## GitHub Copilot Instructions
+
+This repository includes comprehensive instructions for GitHub Copilot to help with code understanding and generation:
+
+- **Repository-wide instructions**: `.github/copilot-instructions.md` - Comprehensive guide covering build instructions, project layout, coding standards, and best practices
+- **Path-specific instructions**: Located in `.github/instructions/` directory:
+  - `backend-api.instructions.md` - Backend C# API patterns and rules
+  - `backend-tests.instructions.md` - Backend testing guidelines
+  - `frontend-react.instructions.md` - Frontend React patterns and state management
+  - `frontend-tests.instructions.md` - Frontend testing with Vitest and Playwright
+  - `database-migrations.instructions.md` - EF Core migrations and database operations
+  - `configuration.instructions.md` - Configuration file management
+
+These instructions help Copilot:
+- Understand the project structure and architecture
+- Follow established coding patterns and best practices
+- Generate code that passes CI/CD checks
+- Properly handle build and test commands
+- Make minimal, surgical changes
+
+For more information on using Copilot instructions, see [GitHub's custom instructions documentation](https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot).
+
 ## Firebase Setup
 
 1. Go to [Firebase Console](https://console.firebase.google.com/)
