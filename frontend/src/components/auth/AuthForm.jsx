@@ -105,6 +105,7 @@ const AuthForm = () => {
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
+                autoComplete="given-name"
                 className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                 placeholder="John"
               />
@@ -123,6 +124,7 @@ const AuthForm = () => {
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
+                autoComplete="family-name"
                 className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                 placeholder="Doe"
               />
@@ -143,6 +145,7 @@ const AuthForm = () => {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
             className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
             placeholder="you@example.com"
           />
@@ -161,6 +164,7 @@ const AuthForm = () => {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete={isSignUp ? "new-password" : "current-password"}
             className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
             placeholder="••••••••"
             minLength={6}
@@ -181,6 +185,7 @@ const AuthForm = () => {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
               className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
               placeholder="••••••••"
               minLength={6}
