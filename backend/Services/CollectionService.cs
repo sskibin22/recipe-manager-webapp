@@ -408,4 +408,42 @@ public class CollectionService : ICollectionService
 
         return collectionIds;
     }
+
+    /// <inheritdoc />
+    public async Task<int> DeleteCollectionsBatchAsync(List<Guid> collectionIds, Guid userId)
+    {
+        if (collectionIds == null || collectionIds.Count == 0)
+            return 0;
+
+        // Get all collections that belong to the user and match the provided IDs
+        var collectionsToDelete = await _db.Collections
+            .Where(c => collectionIds.Contains(c.Id) && c.UserId == userId)
+            .ToListAsync();
+
+        if (collectionsToDelete.Count == 0)
+            return 0;
+
+        // Store image keys for potential cleanup
+        var imageKeys = collectionsToDelete
+            .Where(c => !string.IsNullOrEmpty(c.ImageStorageKey))
+            .Select(c => c.ImageStorageKey)
+            .ToList();
+
+        // Delete all collections (cascade delete will handle CollectionRecipes)
+        _db.Collections.RemoveRange(collectionsToDelete);
+        await _db.SaveChangesAsync();
+
+        // Log cleanup info for images
+        if (imageKeys.Count > 0)
+        {
+            _logger.LogInformation("Deleted {Count} collections with images. Image keys: {Keys}", 
+                collectionsToDelete.Count, string.Join(", ", imageKeys));
+        }
+        else
+        {
+            _logger.LogInformation("Deleted {Count} collections", collectionsToDelete.Count);
+        }
+
+        return collectionsToDelete.Count;
+    }
 }

@@ -202,6 +202,26 @@ public static class CollectionEndpoints
         .WithName("GetCollectionsContainingRecipe")
         .WithOpenApi();
 
+        // Delete multiple collections (batch operation)
+        app.MapDelete("/api/collections/batch", async (
+            [FromBody] DeleteCollectionsBatchRequest request,
+            ICollectionService collectionService,
+            IUserContextService userContext) =>
+        {
+            var userId = userContext.GetCurrentUserId();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
+
+            if (request.CollectionIds == null || request.CollectionIds.Count == 0)
+            {
+                return Results.BadRequest(new { error = "CollectionIds array cannot be empty" });
+            }
+
+            var deletedCount = await collectionService.DeleteCollectionsBatchAsync(request.CollectionIds, userId.Value);
+            return Results.Ok(new { deletedCount });
+        })
+        .WithName("DeleteCollectionsBatch")
+        .WithOpenApi();
+
         return app;
     }
 }
