@@ -102,15 +102,15 @@ const AddToCollectionModal = ({ recipeId, isOpen, onClose }) => {
   const isSaving = addRecipeMutation.isPending || removeRecipeMutation.isPending;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[80vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-warmgray-900/50 flex items-center justify-center p-4 z-50">
+      <div className="bg-cream-50 rounded-xl max-w-md w-full p-6 max-h-[80vh] overflow-y-auto border border-wood-200 shadow-warm-lg">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-serif font-bold text-warmgray-900">
             Add to Collections
           </h2>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-warmgray-400 hover:text-warmgray-600 transition"
             aria-label="Close modal"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,26 +120,26 @@ const AddToCollectionModal = ({ recipeId, isOpen, onClose }) => {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="mb-4 p-3 bg-terracotta-50 border border-terracotta-200 rounded-xl">
+            <p className="text-sm text-terracotta-800">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-800">Collections updated successfully!</p>
+          <div className="mb-4 p-3 bg-sage-50 border border-sage-200 rounded-xl">
+            <p className="text-sm text-sage-800">Collections updated successfully!</p>
           </div>
         )}
 
         {isLoading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-600 mt-2">Loading collections...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-terracotta-600 mx-auto"></div>
+            <p className="text-warmgray-600 mt-2">Loading collections...</p>
           </div>
         ) : collections.length === 0 ? (
           <div className="text-center py-8">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400 mb-3"
+              className="mx-auto h-12 w-12 text-warmgray-400 mb-3"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -151,30 +151,30 @@ const AddToCollectionModal = ({ recipeId, isOpen, onClose }) => {
                 d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"
               />
             </svg>
-            <p className="text-gray-600 mb-2">No collections yet</p>
-            <p className="text-sm text-gray-500">Create a collection first to organize your recipes</p>
+            <p className="text-warmgray-600 mb-2">No collections yet</p>
+            <p className="text-sm text-warmgray-500">Create a collection first to organize your recipes</p>
           </div>
         ) : (
           <div className="space-y-2">
             {collections.map((collection) => (
               <label
                 key={collection.id}
-                className="flex items-start p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition"
+                className="flex items-start p-3 rounded-xl border border-wood-200 hover:bg-wood-50 cursor-pointer transition"
               >
                 <input
                   type="checkbox"
                   checked={selectedCollections.has(collection.id)}
                   onChange={() => handleToggleCollection(collection.id)}
-                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="mt-1 h-4 w-4 text-terracotta-600 focus:ring-terracotta-400 border-wood-300 rounded"
                 />
                 <div className="ml-3 flex-1">
-                  <p className="font-medium text-gray-900">{collection.name}</p>
+                  <p className="font-medium text-warmgray-900">{collection.name}</p>
                   {collection.description && (
-                    <p className="text-sm text-gray-600 mt-0.5">
+                    <p className="text-sm text-warmgray-600 mt-0.5">
                       {collection.description}
                     </p>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-warmgray-500 mt-1">
                     {collection.recipeCount} {collection.recipeCount === 1 ? 'recipe' : 'recipes'}
                   </p>
                 </div>
@@ -187,7 +187,7 @@ const AddToCollectionModal = ({ recipeId, isOpen, onClose }) => {
           <button
             type="button"
             onClick={handleClose}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+            className="px-4 py-2 text-warmgray-700 hover:bg-wood-100 rounded-lg transition"
             disabled={isSaving}
           >
             Cancel
@@ -196,7 +196,7 @@ const AddToCollectionModal = ({ recipeId, isOpen, onClose }) => {
             type="button"
             onClick={handleSave}
             disabled={!hasChanges || isSaving || collections.length === 0}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition shadow-warm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? "Saving..." : "Save"}
           </button>

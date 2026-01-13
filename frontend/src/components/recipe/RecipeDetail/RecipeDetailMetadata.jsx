@@ -70,25 +70,25 @@ export default function RecipeDetailMetadata({ recipe }) {
     <div>
       {/* Recipe Type, Site Name, and Dates */}
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <div className="flex items-center gap-2 text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+        <div className="flex items-center gap-2 text-warmgray-600 bg-wood-100 px-3 py-1 rounded-full">
           {getRecipeTypeIcon(recipe.type)}
           <span className="uppercase tracking-wide font-medium">
             {recipe.type}
           </span>
         </div>
         {recipe.siteName && (
-          <span className="text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
+          <span className="text-warmgray-500 bg-wood-50 px-3 py-1 rounded-full">
             {recipe.siteName}
           </span>
         )}
-        <span className="text-gray-400">•</span>
-        <span className="text-gray-600">
+        <span className="text-warmgray-400">•</span>
+        <span className="text-warmgray-600">
           Added {new Date(recipe.createdAt).toLocaleDateString()}
         </span>
         {recipe.updatedAt !== recipe.createdAt && (
           <>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-600">
+            <span className="text-warmgray-400">•</span>
+            <span className="text-warmgray-600">
               Updated {new Date(recipe.updatedAt).toLocaleDateString()}
             </span>
           </>
@@ -98,7 +98,7 @@ export default function RecipeDetailMetadata({ recipe }) {
       {/* Description */}
       {recipe.description && (
         <div className="mt-4">
-          <p className="text-gray-700 text-base leading-relaxed">
+          <p className="text-warmgray-700 text-base leading-relaxed">
             {recipe.description}
           </p>
         </div>
@@ -108,7 +108,7 @@ export default function RecipeDetailMetadata({ recipe }) {
       <div className="mt-4 space-y-3">
         {recipe.category && (
           <div>
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            <h3 className="text-xs font-semibold text-warmgray-500 uppercase tracking-wide mb-2">
               Category
             </h3>
             <CategoryBadge category={recipe.category} />
@@ -117,7 +117,7 @@ export default function RecipeDetailMetadata({ recipe }) {
 
         {recipe.tags && recipe.tags.length > 0 && (
           <div>
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            <h3 className="text-xs font-semibold text-warmgray-500 uppercase tracking-wide mb-2">
               Tags
             </h3>
             <div className="flex flex-wrap gap-2">
