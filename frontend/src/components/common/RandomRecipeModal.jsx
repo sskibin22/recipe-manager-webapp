@@ -61,19 +61,19 @@ const RandomRecipeModal = ({ isOpen, onClose, collectionId = null }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-warmgray-900/50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-cream-50 rounded-xl shadow-warm-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-wood-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Random Recipe</h2>
+        <div className="flex justify-between items-center p-6 border-b border-wood-200">
+          <h2 className="text-2xl font-serif font-bold text-warmgray-900">Random Recipe</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-warmgray-400 hover:text-warmgray-600 transition"
             aria-label="Close modal"
           >
             <svg
@@ -96,24 +96,24 @@ const RandomRecipeModal = ({ isOpen, onClose, collectionId = null }) => {
         <div className="p-6">
           {isLoading && (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terracotta-500"></div>
             </div>
           )}
 
           {error && (
             <div className="text-center py-12">
-              <p className="text-gray-600 mb-4">{error}</p>
+              <p className="text-warmgray-600 mb-4">{error}</p>
               {error === "No recipes available" ? (
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                  className="px-4 py-2 bg-wood-200 text-warmgray-700 rounded-lg hover:bg-wood-300 transition"
                 >
                   Close
                 </button>
               ) : (
                 <button
                   onClick={fetchRandomRecipe}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                  className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition shadow-warm"
                 >
                   Try Again
                 </button>
@@ -133,7 +133,7 @@ const RandomRecipeModal = ({ isOpen, onClose, collectionId = null }) => {
                 <button
                   onClick={fetchRandomRecipe}
                   disabled={isLoading}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-6 py-3 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition shadow-warm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg
                     className="w-5 h-5"

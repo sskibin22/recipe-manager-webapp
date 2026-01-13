@@ -45,13 +45,13 @@ const CollapsibleSection = ({
       {/* Section Header */}
       <button
         onClick={handleToggle}
-        className="w-full flex items-center gap-3 mb-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border border-gray-200 text-left group"
+        className="w-full flex items-center gap-3 mb-4 p-4 bg-cream-100 rounded-xl shadow-sm hover:shadow-warm transition-shadow border border-wood-200 text-left group"
         aria-expanded={isExpanded}
         aria-label={`${isExpanded ? "Collapse" : "Expand"} ${title} section`}
       >
         {/* Dropdown Arrow */}
         <svg
-          className={`w-5 h-5 text-gray-600 transition-transform duration-200 flex-shrink-0 ${
+          className={`w-5 h-5 text-warmgray-600 transition-transform duration-200 flex-shrink-0 ${
             isExpanded ? "rotate-90" : ""
           }`}
           fill="none"
@@ -68,10 +68,10 @@ const CollapsibleSection = ({
 
         {/* Title and Count */}
         <div className="flex items-center gap-2 flex-1">
-          <h2 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+          <h2 className="text-xl font-serif font-semibold text-warmgray-900 group-hover:text-terracotta-700 transition-colors">
             {title}
           </h2>
-          <span className="inline-flex items-center justify-center px-2.5 py-0.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-full">
+          <span className="inline-flex items-center justify-center px-2.5 py-0.5 text-sm font-medium text-warmgray-700 bg-wood-100 rounded-full">
             {count}
           </span>
         </div>

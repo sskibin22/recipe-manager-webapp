@@ -54,7 +54,7 @@ export default function RecipeDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-terracotta-600"></div>
       </div>
     );
   }
@@ -63,10 +63,10 @@ export default function RecipeDetail() {
   if (error || !recipe) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold text-red-600 mb-4">
+        <h2 className="text-2xl font-serif font-bold text-terracotta-600 mb-4">
           Recipe not found
         </h2>
-        <Link to="/" className="text-blue-600 hover:underline">
+        <Link to="/" className="text-terracotta-600 hover:underline">
           Return to home
         </Link>
       </div>
@@ -74,14 +74,14 @@ export default function RecipeDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream-50">
       <RecipeDetailHeader onBack={() => navigate(backPath)} />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Update Error Message */}
         {editState.updateError && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800">
+          <div className="mb-4 p-4 bg-terracotta-50 border border-terracotta-200 rounded-xl">
+            <p className="text-terracotta-800">
               Failed to update recipe: {getErrorMessage(editState.updateError)}
             </p>
           </div>
@@ -89,19 +89,19 @@ export default function RecipeDetail() {
 
         {/* Update Success Message */}
         {editState.updateSuccess && !editState.isEditMode && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800">Recipe updated successfully!</p>
+          <div className="mb-4 p-4 bg-sage-50 border border-sage-200 rounded-xl">
+            <p className="text-sage-800">Recipe updated successfully!</p>
           </div>
         )}
 
         {/* Upload Error Message */}
         {editState.validationErrors.upload && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800">Upload error: {editState.validationErrors.upload}</p>
+          <div className="mb-4 p-4 bg-terracotta-50 border border-terracotta-200 rounded-xl">
+            <p className="text-terracotta-800">Upload error: {editState.validationErrors.upload}</p>
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-lg overflow-visible">
+        <div className="bg-cream-100 rounded-xl shadow-warm border border-wood-200 overflow-visible">
           {/* Recipe Image */}
           <RecipeDetailImage
             recipe={recipe}
@@ -132,7 +132,7 @@ export default function RecipeDetail() {
           )}
 
           {/* Action Buttons */}
-          <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+          <div className="p-6 border-t border-wood-200 bg-wood-50 flex justify-end gap-3 rounded-b-xl">
             <RecipeDetailActions
               isEditMode={editState.isEditMode}
               onEdit={editState.enterEditMode}

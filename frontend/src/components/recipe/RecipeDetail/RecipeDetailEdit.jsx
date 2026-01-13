@@ -16,11 +16,11 @@ export default function RecipeDetailEdit({ recipe, editState }) {
   return (
     <>
       {/* Title and Metadata Section */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-wood-200">
         <div className="mb-4">
           <label
             htmlFor="title"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-warmgray-700 mb-2"
           >
             Recipe Title
           </label>
@@ -29,15 +29,15 @@ export default function RecipeDetailEdit({ recipe, editState }) {
             type="text"
             value={editState.editedTitle}
             onChange={(e) => editState.setEditedTitle(e.target.value)}
-            className={`w-full px-4 py-2 text-2xl font-bold border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-2 text-2xl font-serif font-bold border rounded-lg bg-cream-50 focus:ring-2 focus:ring-terracotta-400 focus:border-transparent ${
               editState.validationErrors.title
-                ? "border-red-500"
-                : "border-gray-300"
+                ? "border-terracotta-500"
+                : "border-wood-300"
             }`}
             placeholder="Enter recipe title"
           />
           {editState.validationErrors.title && (
-            <p className="mt-1 text-sm text-red-600">
+            <p className="mt-1 text-sm text-terracotta-600">
               {editState.validationErrors.title}
             </p>
           )}

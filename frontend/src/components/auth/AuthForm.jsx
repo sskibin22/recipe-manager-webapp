@@ -95,7 +95,7 @@ const AuthForm = () => {
             <div>
               <label
                 htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-warmgray-700 mb-1"
               >
                 First Name
               </label>
@@ -105,7 +105,7 @@ const AuthForm = () => {
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                 placeholder="John"
               />
             </div>
@@ -113,7 +113,7 @@ const AuthForm = () => {
             <div>
               <label
                 htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-warmgray-700 mb-1"
               >
                 Last Name
               </label>
@@ -123,7 +123,7 @@ const AuthForm = () => {
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                 placeholder="Doe"
               />
             </div>
@@ -133,7 +133,7 @@ const AuthForm = () => {
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-warmgray-700 mb-1"
           >
             Email
           </label>
@@ -143,7 +143,7 @@ const AuthForm = () => {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
             placeholder="you@example.com"
           />
         </div>
@@ -151,7 +151,7 @@ const AuthForm = () => {
         <div>
           <label
             htmlFor="password"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-warmgray-700 mb-1"
           >
             Password
           </label>
@@ -161,7 +161,7 @@ const AuthForm = () => {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
             placeholder="••••••••"
             minLength={6}
           />
@@ -171,7 +171,7 @@ const AuthForm = () => {
           <div>
             <label
               htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-warmgray-700 mb-1"
             >
               Confirm Password
             </label>
@@ -181,7 +181,7 @@ const AuthForm = () => {
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
               placeholder="••••••••"
               minLength={6}
             />
@@ -189,15 +189,15 @@ const AuthForm = () => {
         )}
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="p-3 bg-terracotta-50 border border-terracotta-200 rounded-lg">
+            <p className="text-sm text-terracotta-700">{error}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+          className="w-full px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition-colors disabled:bg-wood-400 disabled:cursor-not-allowed font-medium shadow-warm"
         >
           {loading ? "Please wait..." : isSignUp ? "Create Account" : "Sign In"}
         </button>
@@ -215,7 +215,7 @@ const AuthForm = () => {
             setPassword("");
             setConfirmPassword("");
           }}
-          className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+          className="text-sm text-terracotta-600 hover:text-terracotta-700 hover:underline"
         >
           {isSignUp
             ? "Already have an account? Sign in"
@@ -226,10 +226,10 @@ const AuthForm = () => {
       {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300"></div>
+          <div className="w-full border-t border-wood-300"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">Or continue with</span>
+          <span className="px-2 bg-cream-100 text-warmgray-500">Or continue with</span>
         </div>
       </div>
 
@@ -238,7 +238,7 @@ const AuthForm = () => {
         type="button"
         onClick={handleGoogleSignIn}
         disabled={loading}
-        className="w-full px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
+        className="w-full px-4 py-2 bg-cream-50 border border-wood-300 text-warmgray-700 rounded-lg hover:bg-wood-50 transition-colors disabled:bg-wood-100 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

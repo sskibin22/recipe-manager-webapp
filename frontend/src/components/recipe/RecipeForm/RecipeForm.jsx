@@ -221,15 +221,15 @@ const RecipeForm = ({ onClose, onSuccess }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-warmgray-900/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-cream-50 rounded-xl shadow-warm-lg border border-wood-200 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          <h2 className="text-2xl font-bold mb-4">Add New Recipe</h2>
+          <h2 className="text-2xl font-serif font-bold text-warmgray-900 mb-4">Add New Recipe</h2>
 
           <form onSubmit={handleSubmit}>
             {/* Title */}
             <div className="mb-4">
-              <label htmlFor="title" className="block text-sm font-medium mb-1">
+              <label htmlFor="title" className="block text-sm font-medium text-warmgray-700 mb-1">
                 Recipe Title *
               </label>
               <input
@@ -237,7 +237,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                 placeholder="My Favorite Recipe"
               />
             </div>
@@ -300,7 +300,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
 
             {/* Error Message */}
             {error && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              <div className="mb-4 p-3 bg-terracotta-50 border border-terracotta-300 text-terracotta-700 rounded-lg">
                 {error}
               </div>
             )}
@@ -313,14 +313,14 @@ const RecipeForm = ({ onClose, onSuccess }) => {
                   resetForm();
                   onClose();
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 border border-wood-300 text-warmgray-700 rounded-lg hover:bg-wood-50 transition"
                 disabled={uploading || createRecipeMutation.isPending}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 disabled:opacity-50 shadow-warm transition"
                 disabled={uploading || createRecipeMutation.isPending}
               >
                 {uploading

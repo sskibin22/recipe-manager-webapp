@@ -140,7 +140,7 @@ const AccountSettings = () => {
       <div className="mb-4">
         <button
           onClick={() => navigate("/")}
-          className="flex items-center text-gray-600 hover:text-gray-900 transition"
+          className="flex items-center text-warmgray-600 hover:text-warmgray-900 transition"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -160,17 +160,17 @@ const AccountSettings = () => {
         </button>
       </div>
 
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
+      <div className="bg-cream-100 shadow-warm rounded-xl p-6 border border-wood-200">
+        <h1 className="text-3xl font-serif font-bold text-warmgray-900 mb-6">
           Account Settings
         </h1>
 
         {message.text && (
           <div
-            className={`mb-6 p-4 rounded-md ${
+            className={`mb-6 p-4 rounded-xl ${
               message.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
-                : "bg-red-50 text-red-800 border border-red-200"
+                ? "bg-sage-50 text-sage-800 border border-sage-200"
+                : "bg-terracotta-50 text-terracotta-800 border border-terracotta-200"
             }`}
           >
             {message.text}
@@ -179,14 +179,14 @@ const AccountSettings = () => {
 
         {/* Profile Settings */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <h2 className="text-xl font-serif font-semibold text-warmgray-800 mb-4">
             Profile Information
           </h2>
           <form onSubmit={handleProfileUpdate} className="space-y-4">
             <div>
               <label
                 htmlFor="displayName"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-warmgray-700 mb-1"
               >
                 Display Name
               </label>
@@ -196,7 +196,7 @@ const AccountSettings = () => {
                 name="displayName"
                 value={formData.displayName}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                 placeholder="Your display name"
               />
             </div>
@@ -204,7 +204,7 @@ const AccountSettings = () => {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-warmgray-700 mb-1"
               >
                 Email Address
               </label>
@@ -214,7 +214,7 @@ const AccountSettings = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                 placeholder="your.email@example.com"
               />
             </div>
@@ -222,25 +222,25 @@ const AccountSettings = () => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 disabled:bg-wood-400 disabled:cursor-not-allowed transition-colors shadow-warm"
             >
               {loading ? "Updating..." : "Update Profile"}
             </button>
           </form>
         </section>
 
-        <hr className="my-8 border-gray-200" />
+        <hr className="my-8 border-wood-200" />
 
         {/* Password Settings */}
         <section>
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <h2 className="text-xl font-serif font-semibold text-warmgray-800 mb-4">
             Change Password
           </h2>
           <form onSubmit={handlePasswordUpdate} className="space-y-4">
             <div>
               <label
                 htmlFor="newPassword"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-warmgray-700 mb-1"
               >
                 New Password
               </label>
@@ -250,7 +250,7 @@ const AccountSettings = () => {
                 name="newPassword"
                 value={formData.newPassword}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                 placeholder="Enter new password"
                 minLength="6"
               />
@@ -259,7 +259,7 @@ const AccountSettings = () => {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-warmgray-700 mb-1"
               >
                 Confirm New Password
               </label>
@@ -269,7 +269,7 @@ const AccountSettings = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:outline-none focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                 placeholder="Confirm new password"
                 minLength="6"
               />
@@ -278,7 +278,7 @@ const AccountSettings = () => {
             <button
               type="submit"
               disabled={loading || !formData.newPassword}
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 disabled:bg-wood-400 disabled:cursor-not-allowed transition-colors shadow-warm"
             >
               {loading ? "Updating..." : "Change Password"}
             </button>

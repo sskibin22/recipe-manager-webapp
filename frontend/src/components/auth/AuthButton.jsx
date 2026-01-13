@@ -11,7 +11,7 @@ const AuthButton = () => {
     return (
       <button
         disabled
-        className="px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed"
+        className="px-4 py-2 bg-wood-200 text-warmgray-500 rounded-lg cursor-not-allowed"
       >
         Loading...
       </button>
@@ -21,12 +21,12 @@ const AuthButton = () => {
   if (user) {
     return (
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-700 hidden sm:inline">
+        <span className="text-sm text-warmgray-700 hidden sm:inline">
           {user.displayName || user.email}
         </span>
         <button
           onClick={signOut}
-          className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          className="px-3 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition"
         >
           Sign Out
         </button>
@@ -37,7 +37,7 @@ const AuthButton = () => {
   return (
     <button
       onClick={signInWithGoogle}
-      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+      className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition-colors shadow-warm flex items-center gap-2"
     >
       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

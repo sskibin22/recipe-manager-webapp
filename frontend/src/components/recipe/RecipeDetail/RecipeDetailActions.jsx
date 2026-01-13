@@ -18,14 +18,14 @@ export default function RecipeDetailActions({
       <>
         <button
           onClick={onCancel}
-          className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors"
+          className="px-4 py-2 bg-wood-200 text-warmgray-700 rounded-lg hover:bg-wood-300 transition-colors"
           disabled={isSaving || uploading}
         >
           Cancel
         </button>
         <button
           onClick={onSave}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+          className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition-colors disabled:opacity-50 shadow-warm flex items-center gap-2"
           disabled={isSaving || uploading}
         >
           {uploading ? (
@@ -50,7 +50,7 @@ export default function RecipeDetailActions({
     <>
       <button
         onClick={onAddToCollection}
-        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+        className="px-4 py-2 bg-sage-600 text-white rounded-lg hover:bg-sage-700 transition-colors flex items-center gap-2"
       >
         <svg
           className="w-5 h-5"
@@ -69,13 +69,13 @@ export default function RecipeDetailActions({
       </button>
       <button
         onClick={onEdit}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition-colors shadow-warm"
       >
         Edit Recipe
       </button>
       <button
         onClick={onDelete}
-        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+        className="px-4 py-2 bg-wood-600 text-white rounded-lg hover:bg-wood-700 transition-colors disabled:opacity-50"
         disabled={isDeleting}
       >
         {isDeleting ? "Deleting..." : "Delete Recipe"}

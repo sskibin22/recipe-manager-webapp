@@ -37,13 +37,13 @@ const FilterChips = ({ filters, onRemoveCategory, onRemoveType, onClearAll }) =>
 
   return (
     <div className="flex flex-wrap items-center gap-2 py-2">
-      <span className="text-sm font-medium text-gray-700">Active filters:</span>
+      <span className="text-sm font-medium text-warmgray-700">Active filters:</span>
 
       {/* Category chips */}
       {selectedCategories.map((category) => (
         <div
           key={category.id}
-          className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+          className="inline-flex items-center gap-1 px-3 py-1 bg-terracotta-100 text-terracotta-800 text-sm rounded-full"
         >
           <span
             className="w-2 h-2 rounded-full"
@@ -52,7 +52,7 @@ const FilterChips = ({ filters, onRemoveCategory, onRemoveType, onClearAll }) =>
           <span>{category.name}</span>
           <button
             onClick={() => onRemoveCategory(category.id)}
-            className="ml-1 hover:text-blue-900 transition"
+            className="ml-1 hover:text-terracotta-900 transition"
             aria-label={`Remove ${category.name} filter`}
           >
             <svg
@@ -76,12 +76,12 @@ const FilterChips = ({ filters, onRemoveCategory, onRemoveType, onClearAll }) =>
       {selectedTypes.map((type) => (
         <div
           key={type}
-          className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full"
+          className="inline-flex items-center gap-1 px-3 py-1 bg-sage-100 text-sage-800 text-sm rounded-full"
         >
           <span>{type}</span>
           <button
             onClick={() => onRemoveType(type)}
-            className="ml-1 hover:text-green-900 transition"
+            className="ml-1 hover:text-sage-900 transition"
             aria-label={`Remove ${type} filter`}
           >
             <svg
@@ -104,7 +104,7 @@ const FilterChips = ({ filters, onRemoveCategory, onRemoveType, onClearAll }) =>
       {/* Clear all button */}
       <button
         onClick={onClearAll}
-        className="text-sm text-gray-600 hover:text-gray-900 underline transition"
+        className="text-sm text-warmgray-600 hover:text-warmgray-900 underline transition"
       >
         Clear all
       </button>
