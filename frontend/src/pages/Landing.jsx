@@ -184,10 +184,10 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Recipe Manager</h1>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsRandomModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 title="Random Recipe"
               >
                 <svg
@@ -208,7 +208,7 @@ export default function Landing() {
               </button>
               <button
                 onClick={() => navigate("/collections")}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 title="My Collections"
               >
                 <svg
@@ -229,7 +229,7 @@ export default function Landing() {
               </button>
               <button
                 onClick={() => navigate("/settings")}
-                className="text-gray-700 hover:text-gray-900 transition"
+                className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 title="Account Settings"
               >
                 <svg

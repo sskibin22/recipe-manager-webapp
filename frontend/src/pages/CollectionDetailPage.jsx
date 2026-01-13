@@ -117,7 +117,7 @@ export default function CollectionDetailPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate("/collections")}
-                className="text-gray-700 hover:text-gray-900 transition"
+                className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 title="Back to Collections"
               >
                 <svg
@@ -145,10 +145,10 @@ export default function CollectionDetailPage() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsRandomModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 title="Random Recipe from Collection"
               >
                 <svg
@@ -169,7 +169,7 @@ export default function CollectionDetailPage() {
               </button>
               <button
                 onClick={() => navigate("/")}
-                className="text-gray-700 hover:text-gray-900 transition"
+                className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 title="Back to Recipes"
               >
                 <svg

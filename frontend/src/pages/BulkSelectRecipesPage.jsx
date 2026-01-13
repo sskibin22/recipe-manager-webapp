@@ -132,7 +132,7 @@ export default function BulkSelectRecipesPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate("/collections")}
-                className="text-gray-700 hover:text-gray-900 transition"
+                className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
                 title="Back to Collections"
               >
                 <svg
