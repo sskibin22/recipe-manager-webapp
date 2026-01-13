@@ -106,6 +106,17 @@ const fetchMetadata = async (url) => {
   return response.data;
 };
 
+/**
+ * Get a random recipe from user's collection
+ * @param {string|null} [collectionId=null] - Optional collection ID to filter by
+ * @returns {Promise<Recipe>} Random recipe object
+ */
+const getRandom = async (collectionId = null) => {
+  const params = collectionId ? { collectionId } : {};
+  const response = await apiClient.get("/api/recipes/random", { params });
+  return response.data;
+};
+
 export const recipeService = {
   getAll,
   getById,
@@ -116,6 +127,7 @@ export const recipeService = {
   addFavorite,
   removeFavorite,
   fetchMetadata,
+  getRandom,
 };
 
 // Legacy export for backward compatibility

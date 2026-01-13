@@ -113,6 +113,25 @@ public static class RecipeEndpoints
         .WithName("BulkDeleteRecipes")
         .WithOpenApi();
 
+        app.MapGet("/api/recipes/random", async (
+            [FromQuery] Guid? collectionId,
+            IRecipeService recipeService,
+            IUserContextService userContext) =>
+        {
+            var userId = userContext.GetCurrentUserId();
+            if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
+
+            var recipe = await recipeService.GetRandomRecipeAsync(userId.Value, collectionId);
+            if (recipe == null)
+            {
+                return Results.NotFound(new { error = "No recipes available" });
+            }
+
+            return Results.Ok(recipe);
+        })
+        .WithName("GetRandomRecipe")
+        .WithOpenApi();
+
         return app;
     }
 }

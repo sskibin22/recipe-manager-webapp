@@ -296,4 +296,49 @@ public class RecipeService : IRecipeService
 
         return recipesToDelete.Count;
     }
+
+    /// <inheritdoc />
+    public async Task<RecipeResponse?> GetRandomRecipeAsync(Guid userId, Guid? collectionId)
+    {
+        var query = _db.Recipes
+            .Include(r => r.Favorites)
+            .Include(r => r.Category)
+            .Include(r => r.RecipeTags)
+                .ThenInclude(rt => rt.Tag)
+            .Where(r => r.UserId == userId);
+
+        // Filter by collection if specified
+        if (collectionId.HasValue)
+        {
+            var recipesInCollection = _db.CollectionRecipes
+                .Where(cr => cr.CollectionId == collectionId.Value)
+                .Select(cr => cr.RecipeId);
+            
+            query = query.Where(r => recipesInCollection.Contains(r.Id));
+        }
+
+        // Get count first to check if there are any recipes
+        var totalCount = await query.CountAsync();
+        if (totalCount == 0)
+        {
+            return null;
+        }
+
+        // Use random skip to select a random recipe
+        // Generate a random index
+        var random = new Random();
+        var skipCount = random.Next(0, totalCount);
+
+        var recipe = await query
+            .OrderBy(r => r.Id) // Order by ID for consistent ordering
+            .Skip(skipCount)
+            .FirstOrDefaultAsync();
+
+        if (recipe == null)
+        {
+            return null;
+        }
+
+        return await _mapper.MapToRecipeResponseAsync(recipe, userId);
+    }
 }
