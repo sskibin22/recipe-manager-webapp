@@ -277,13 +277,13 @@ export default function CollectionsPage() {
 
   return (
     <div className="min-h-screen">
-      <header className="bg-white shadow-sm">
+      <header className="header-warm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate("/")}
-                className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="p-2 text-warmgray-700 hover:bg-wood-100 rounded-lg transition"
                 title="Back to Recipes"
               >
                 <svg
@@ -301,12 +301,12 @@ export default function CollectionsPage() {
                   />
                 </svg>
               </button>
-              <h1 className="text-2xl font-bold text-gray-900">My Collections</h1>
+              <h1 className="text-2xl font-serif font-bold text-warmgray-900">My Collections</h1>
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate("/settings")}
-                className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="p-2 text-warmgray-700 hover:bg-wood-100 rounded-lg transition"
                 title="Account Settings"
               >
                 <svg
@@ -341,7 +341,7 @@ export default function CollectionsPage() {
           <div className="flex gap-3">
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="px-6 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition shadow-warm"
             >
               Create Collection
             </button>
@@ -351,8 +351,8 @@ export default function CollectionsPage() {
                 onClick={handleToggleSelectionMode}
                 className={`px-6 py-2 rounded-lg transition ${
                   isSelectionMode
-                    ? "bg-gray-600 text-white hover:bg-gray-700"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    ? "bg-warmgray-600 text-white hover:bg-warmgray-700"
+                    : "bg-wood-200 text-warmgray-700 hover:bg-wood-300"
                 }`}
               >
                 {isSelectionMode ? "Cancel" : "Select"}
@@ -363,7 +363,7 @@ export default function CollectionsPage() {
               <>
                 <button
                   onClick={handleSelectAll}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                  className="px-4 py-2 border border-wood-300 text-warmgray-700 rounded-lg hover:bg-wood-50 transition"
                 >
                   {selectedCollections.size === displayedCollections.length
                     ? "Deselect All"
@@ -373,7 +373,7 @@ export default function CollectionsPage() {
                 {selectedCollections.size > 0 && (
                   <button
                     onClick={handleBulkDelete}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
+                    className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition flex items-center gap-2"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -406,10 +406,10 @@ export default function CollectionsPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search collections..."
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-10 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                 />
                 <svg
-                  className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 pointer-events-none"
+                  className="absolute left-3 top-2.5 h-5 w-5 text-warmgray-400 pointer-events-none"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -424,7 +424,7 @@ export default function CollectionsPage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-2.5 text-warmgray-400 hover:text-warmgray-600"
                     title="Clear search"
                   >
                     <svg
@@ -449,7 +449,7 @@ export default function CollectionsPage() {
                 <select
                   value={sortOption}
                   onChange={(e) => setSortOption(e.target.value)}
-                  className="appearance-none pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white cursor-pointer"
+                  className="appearance-none pl-4 pr-10 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:ring-2 focus:ring-terracotta-400 focus:border-transparent cursor-pointer"
                 >
                   {SORT_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -458,7 +458,7 @@ export default function CollectionsPage() {
                   ))}
                 </select>
                 <svg
-                  className="absolute right-3 top-3 h-5 w-5 text-gray-400 pointer-events-none"
+                  className="absolute right-3 top-3 h-5 w-5 text-warmgray-400 pointer-events-none"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -477,13 +477,13 @@ export default function CollectionsPage() {
 
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="text-lg text-gray-600">Loading collections...</div>
+            <div className="text-lg text-warmgray-600">Loading collections...</div>
           </div>
         ) : collections.length === 0 ? (
           <div className="text-center py-12 px-4">
             <div className="max-w-md mx-auto">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                className="mx-auto h-12 w-12 text-warmgray-400 mb-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -495,15 +495,15 @@ export default function CollectionsPage() {
                   d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"
                 />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-serif font-medium text-warmgray-900 mb-2">
                 No collections yet
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-warmgray-600 mb-4">
                 Create collections to organize your recipes by theme, occasion, or any category you like.
               </p>
               <button
                 onClick={() => setIsCreateModalOpen(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition shadow-warm"
               >
                 Create Your First Collection
               </button>
@@ -513,7 +513,7 @@ export default function CollectionsPage() {
           <div className="text-center py-12 px-4">
             <div className="max-w-md mx-auto">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                className="mx-auto h-12 w-12 text-warmgray-400 mb-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -525,15 +525,15 @@ export default function CollectionsPage() {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-serif font-medium text-warmgray-900 mb-2">
                 No collections found
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-warmgray-600 mb-4">
                 No collections match your search &quot;{searchQuery}&quot;. Try a different search term.
               </p>
               <button
                 onClick={() => setSearchQuery("")}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition shadow-warm"
               >
                 Clear Search
               </button>
@@ -544,7 +544,7 @@ export default function CollectionsPage() {
             {displayedCollections.map((collection) => (
               <div
                 key={collection.id}
-                className={`bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden relative group ${
+                className={`bg-cream-100 rounded-xl shadow-recipe-card hover:shadow-recipe-card-hover hover:-translate-y-1 transition-all duration-300 overflow-hidden relative group border border-wood-200 ${
                   isSelectionMode ? "" : "cursor-pointer"
                 }`}
                 onClick={() => {
@@ -563,7 +563,7 @@ export default function CollectionsPage() {
                         e.stopPropagation();
                         handleToggleSelection(collection.id);
                       }}
-                      className="w-6 h-6 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      className="w-6 h-6 rounded border-wood-300 text-terracotta-600 focus:ring-terracotta-400 cursor-pointer"
                     />
                   </div>
                 )}
@@ -578,15 +578,15 @@ export default function CollectionsPage() {
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      <h3 className="text-lg font-serif font-semibold text-warmgray-900 mb-2">
                         {collection.name}
                       </h3>
                       {collection.description && (
-                        <p className="text-sm text-gray-600 mb-2">
+                        <p className="text-sm text-warmgray-600 mb-2">
                           {collection.description}
                         </p>
                       )}
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-warmgray-500">
                         {collection.recipeCount} {collection.recipeCount === 1 ? "recipe" : "recipes"}
                       </p>
                     </div>
@@ -596,7 +596,7 @@ export default function CollectionsPage() {
                           e.stopPropagation();
                           handleDeleteCollection(collection.id);
                         }}
-                        className="text-gray-400 hover:text-red-600 transition"
+                        className="text-warmgray-400 hover:text-terracotta-600 transition"
                         title="Delete collection"
                       >
                         <svg
@@ -624,17 +624,17 @@ export default function CollectionsPage() {
 
         {/* Bulk Delete Confirmation Modal */}
         {isDeleteConfirmOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-md w-full p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <div className="fixed inset-0 bg-warmgray-900/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-cream-50 rounded-xl max-w-md w-full p-6 border border-wood-200 shadow-warm-lg">
+              <h2 className="text-xl font-serif font-bold text-warmgray-900 mb-4">
                 Delete {selectedCollections.size} Collection{selectedCollections.size !== 1 ? "s" : ""}?
               </h2>
               <div className="mb-6">
-                <p className="text-gray-700 mb-3">
+                <p className="text-warmgray-700 mb-3">
                   Are you sure you want to delete the selected collection{selectedCollections.size !== 1 ? "s" : ""}?
                 </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-sm text-blue-800 flex items-start gap-2">
+                <div className="bg-sage-50 border border-sage-200 rounded-xl p-3">
+                  <p className="text-sm text-sage-800 flex items-start gap-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -659,14 +659,14 @@ export default function CollectionsPage() {
                 <button
                   type="button"
                   onClick={() => setIsDeleteConfirmOpen(false)}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                  className="px-4 py-2 text-warmgray-700 hover:bg-wood-100 rounded-lg transition"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmBulkDelete}
                   disabled={deleteBatchMutation.isPending}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+                  className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition disabled:opacity-50"
                 >
                   {deleteBatchMutation.isPending ? "Deleting..." : "Delete Collections"}
                 </button>
@@ -677,17 +677,17 @@ export default function CollectionsPage() {
 
         {/* Single Delete Confirmation Modal */}
         {isSingleDeleteConfirmOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-md w-full p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <div className="fixed inset-0 bg-warmgray-900/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-cream-50 rounded-xl max-w-md w-full p-6 border border-wood-200 shadow-warm-lg">
+              <h2 className="text-xl font-serif font-bold text-warmgray-900 mb-4">
                 Delete Collection?
               </h2>
               <div className="mb-6">
-                <p className="text-gray-700 mb-3">
+                <p className="text-warmgray-700 mb-3">
                   Are you sure you want to delete this collection?
                 </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-sm text-blue-800 flex items-start gap-2">
+                <div className="bg-sage-50 border border-sage-200 rounded-xl p-3">
+                  <p className="text-sm text-sage-800 flex items-start gap-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -715,14 +715,14 @@ export default function CollectionsPage() {
                     setIsSingleDeleteConfirmOpen(false);
                     setDeletingCollectionId(null);
                   }}
-                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                  className="px-4 py-2 text-warmgray-700 hover:bg-wood-100 rounded-lg transition"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmSingleDelete}
                   disabled={deleteMutation.isPending}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+                  className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition disabled:opacity-50"
                 >
                   {deleteMutation.isPending ? "Deleting..." : "Delete Collection"}
                 </button>
@@ -733,14 +733,14 @@ export default function CollectionsPage() {
 
         {/* Create Collection Modal */}
         {isCreateModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-md w-full p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <div className="fixed inset-0 bg-warmgray-900/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-cream-50 rounded-xl max-w-md w-full p-6 border border-wood-200 shadow-warm-lg">
+              <h2 className="text-xl font-serif font-bold text-warmgray-900 mb-4">
                 Create New Collection
               </h2>
               <form onSubmit={handleCreateCollection} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-warmgray-700 mb-1">
                     Collection Name *
                   </label>
                   <input
@@ -748,13 +748,13 @@ export default function CollectionsPage() {
                     value={newCollectionName}
                     onChange={(e) => setNewCollectionName(e.target.value)}
                     placeholder="e.g., Meal Prep Monday, Quick Dinners"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                     required
                     maxLength={100}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-warmgray-700 mb-1">
                     Description (optional)
                   </label>
                   <textarea
@@ -762,15 +762,15 @@ export default function CollectionsPage() {
                     onChange={(e) => setNewCollectionDescription(e.target.value)}
                     placeholder="What's this collection about?"
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-wood-300 rounded-lg bg-cream-50 focus:ring-2 focus:ring-terracotta-400 focus:border-transparent"
                     maxLength={500}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-warmgray-700 mb-1">
                     Collection Image (optional)
                   </label>
-                  <p className="text-xs text-gray-500 mb-2">
+                  <p className="text-xs text-warmgray-500 mb-2">
                     JPEG, PNG, GIF, or WebP. Max 5MB.
                   </p>
                   
@@ -779,12 +779,12 @@ export default function CollectionsPage() {
                       <img
                         src={imagePreview}
                         alt="Preview"
-                        className="w-full h-48 object-cover rounded-lg"
+                        className="w-full h-48 object-cover rounded-xl"
                       />
                       <button
                         type="button"
                         onClick={handleRemoveImage}
-                        className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition"
+                        className="absolute top-2 right-2 bg-terracotta-600 text-white p-2 rounded-full hover:bg-terracotta-700 transition"
                         title="Remove image"
                       >
                         <svg
@@ -804,7 +804,7 @@ export default function CollectionsPage() {
                       </button>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition">
+                    <div className="border-2 border-dashed border-wood-300 rounded-xl p-6 text-center hover:border-wood-400 transition bg-wood-50/50">
                       <input
                         type="file"
                         id="collection-image"
@@ -817,7 +817,7 @@ export default function CollectionsPage() {
                         className="cursor-pointer"
                       >
                         <svg
-                          className="mx-auto h-12 w-12 text-gray-400 mb-2"
+                          className="mx-auto h-12 w-12 text-warmgray-400 mb-2"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -829,7 +829,7 @@ export default function CollectionsPage() {
                             d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
                           />
                         </svg>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-warmgray-600">
                           Click to upload an image
                         </p>
                       </label>
@@ -837,7 +837,7 @@ export default function CollectionsPage() {
                   )}
                   
                   {imageError && (
-                    <p className="mt-2 text-sm text-red-600">{imageError}</p>
+                    <p className="mt-2 text-sm text-terracotta-600">{imageError}</p>
                   )}
                 </div>
                 <div className="flex gap-3 justify-end">
@@ -851,14 +851,14 @@ export default function CollectionsPage() {
                       setImagePreview(null);
                       setImageError("");
                     }}
-                    className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                    className="px-4 py-2 text-warmgray-700 hover:bg-wood-100 rounded-lg transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={createMutation.isPending || isUploading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                    className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition shadow-warm disabled:opacity-50"
                   >
                     {getSubmitButtonText()}
                   </button>

@@ -153,24 +153,24 @@ export default function Landing() {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-gray-600">Loading...</div>
+        <div className="text-lg text-warmgray-600">Loading...</div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-gray-50">
+      <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-cream-50">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-4xl font-serif font-bold text-warmgray-900 mb-2">
               Recipe Manager
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-warmgray-600 font-sans">
               Save and organize your favorite recipes
             </p>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-8">
+          <div className="bg-cream-100 rounded-xl shadow-warm border border-wood-200 p-8">
             <AuthForm />
           </div>
         </div>
@@ -180,14 +180,14 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen">
-      <header className="bg-white shadow-sm">
+      <header className="header-warm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">Recipe Manager</h1>
+            <h1 className="text-2xl font-serif font-bold text-warmgray-900">Recipe Manager</h1>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsRandomModalOpen(true)}
-                className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="flex items-center gap-2 px-3 py-2 text-warmgray-700 hover:bg-wood-100 rounded-lg transition"
                 title="Random Recipe"
               >
                 <svg
@@ -208,7 +208,7 @@ export default function Landing() {
               </button>
               <button
                 onClick={() => navigate("/collections")}
-                className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="flex items-center gap-2 px-3 py-2 text-warmgray-700 hover:bg-wood-100 rounded-lg transition"
                 title="My Collections"
               >
                 <svg
@@ -229,7 +229,7 @@ export default function Landing() {
               </button>
               <button
                 onClick={() => navigate("/settings")}
-                className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="p-2 text-warmgray-700 hover:bg-wood-100 rounded-lg transition"
                 title="Account Settings"
               >
                 <svg
@@ -262,20 +262,20 @@ export default function Landing() {
         <div className="mb-8 space-y-4">
           {/* Selection mode banner */}
           {isSelectionMode && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+            <div className="bg-sage-50 border border-sage-300 rounded-xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className="text-blue-900 font-medium">
+                <span className="text-sage-900 font-medium">
                   {selectedCount} recipe{selectedCount !== 1 ? "s" : ""} selected
                 </span>
                 <button
                   onClick={handleSelectAll}
-                  className="text-blue-700 hover:text-blue-900 font-medium text-sm"
+                  className="text-sage-700 hover:text-sage-900 font-medium text-sm"
                 >
                   Select All ({recipes.length})
                 </button>
                 <button
                   onClick={clearSelection}
-                  className="text-blue-700 hover:text-blue-900 font-medium text-sm"
+                  className="text-sage-700 hover:text-sage-900 font-medium text-sm"
                 >
                   Clear Selection
                 </button>
@@ -285,7 +285,7 @@ export default function Landing() {
                   <button
                     onClick={handleBulkDelete}
                     disabled={bulkDeleteMutation.isPending}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     <svg
                       className="w-5 h-5"
@@ -305,7 +305,7 @@ export default function Landing() {
                 )}
                 <button
                   onClick={exitSelectionMode}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                  className="px-4 py-2 bg-wood-200 text-warmgray-700 rounded-lg hover:bg-wood-300 transition"
                 >
                   Cancel
                 </button>
@@ -323,10 +323,10 @@ export default function Landing() {
                   <div className="relative flex-1 sm:flex-initial">
                     <button
                       onClick={() => setIsFilterOpen(!isFilterOpen)}
-                      className={`w-full sm:w-auto px-4 py-2 text-gray-700 hover:text-gray-900 transition whitespace-nowrap flex items-center justify-center gap-2 border-b-2 ${
+                      className={`w-full sm:w-auto px-4 py-2 text-warmgray-700 hover:text-warmgray-900 transition whitespace-nowrap flex items-center justify-center gap-2 border-b-2 ${
                         activeFilterCount > 0 || isFilterOpen
-                          ? "border-blue-600"
-                          : "border-transparent hover:border-gray-300"
+                          ? "border-terracotta-600"
+                          : "border-transparent hover:border-wood-400"
                       }`}
                     >
                       <svg
@@ -344,7 +344,7 @@ export default function Landing() {
                       </svg>
                       <span className="text-sm">Filter</span>
                       {activeFilterCount > 0 && (
-                        <span className="inline-flex items-center justify-center w-4 h-4 text-xs font-medium text-white bg-blue-600 rounded-full">
+                        <span className="inline-flex items-center justify-center w-4 h-4 text-xs font-medium text-white bg-terracotta-600 rounded-full">
                           {activeFilterCount}
                         </span>
                       )}
@@ -372,7 +372,7 @@ export default function Landing() {
                   </div>
                   <button
                     onClick={() => setIsFormOpen(true)}
-                    className="flex-1 sm:flex-initial px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
+                    className="flex-1 sm:flex-initial px-6 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition shadow-warm whitespace-nowrap"
                   >
                     Add Recipe
                   </button>
@@ -381,7 +381,7 @@ export default function Landing() {
               {!isSelectionMode && recipes.length > 0 && (
                 <button
                   onClick={toggleSelectionMode}
-                  className="flex-1 sm:flex-initial px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition whitespace-nowrap"
+                  className="flex-1 sm:flex-initial px-6 py-2 bg-wood-200 text-warmgray-700 rounded-lg hover:bg-wood-300 transition whitespace-nowrap"
                 >
                   Select
                 </button>
@@ -400,15 +400,15 @@ export default function Landing() {
 
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="text-lg text-gray-600">Loading recipes...</div>
+            <div className="text-lg text-warmgray-600">Loading recipes...</div>
           </div>
         ) : recipes.length === 0 ? (
           <div className="text-center py-12 px-4">
             <div className="max-w-md mx-auto">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-serif font-medium text-warmgray-900 mb-2">
                 No recipes found
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-warmgray-600 mb-4">
                 {searchQuery || activeFilterCount > 0
                   ? "Try adjusting your search or filters"
                   : "Get started by adding your first recipe"}
@@ -416,7 +416,7 @@ export default function Landing() {
               {!searchQuery && activeFilterCount === 0 && (
                 <button
                   onClick={() => setIsFormOpen(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition shadow-warm"
                 >
                   Add Recipe
                 </button>
@@ -453,10 +453,10 @@ export default function Landing() {
               {otherRecipes.length === 0 ? (
                 <div className="text-center py-12 px-4">
                   <div className="max-w-md mx-auto">
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    <h3 className="text-lg font-serif font-medium text-warmgray-900 mb-2">
                       No other recipes
                     </h3>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-warmgray-600 mb-4">
                       {searchQuery || activeFilterCount > 0
                         ? "All matching recipes are in your favorites"
                         : "All your recipes are favorited"}
@@ -478,12 +478,12 @@ export default function Landing() {
 
         {/* Delete Confirmation Dialog */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="fixed inset-0 bg-warmgray-900/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-cream-50 rounded-xl max-w-md w-full p-6 border border-wood-200 shadow-warm-lg">
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <div className="flex-shrink-0 w-12 h-12 bg-terracotta-100 rounded-full flex items-center justify-center">
                   <svg
-                    className="w-6 h-6 text-red-600"
+                    className="w-6 h-6 text-terracotta-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -497,12 +497,12 @@ export default function Landing() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-serif font-semibold text-warmgray-900">
                     Delete {selectedCount} Recipe{selectedCount !== 1 ? "s" : ""}?
                   </h3>
                 </div>
               </div>
-              <p className="text-gray-600 mb-6">
+              <p className="text-warmgray-600 mb-6">
                 This action cannot be undone. The selected recipe{selectedCount !== 1 ? "s" : ""} will be
                 permanently deleted from your collection.
               </p>
@@ -510,14 +510,14 @@ export default function Landing() {
                 <button
                   onClick={cancelBulkDelete}
                   disabled={bulkDeleteMutation.isPending}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition disabled:opacity-50"
+                  className="px-4 py-2 bg-wood-200 text-warmgray-700 rounded-lg hover:bg-wood-300 transition disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmBulkDelete}
                   disabled={bulkDeleteMutation.isPending}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-terracotta-600 text-white rounded-lg hover:bg-terracotta-700 transition disabled:opacity-50 flex items-center gap-2"
                 >
                   {bulkDeleteMutation.isPending ? (
                     <>

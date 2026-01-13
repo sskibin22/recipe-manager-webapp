@@ -153,29 +153,29 @@ const RecipeCard = ({ recipe, isSelectionMode = false, isSelected = false, onTog
   const wrapperProps = isSelectionMode
     ? {
         onClick: handleCheckboxClick,
-        className: `block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border-2 overflow-hidden cursor-pointer ${
-          isSelected ? "border-blue-600 ring-2 ring-blue-600" : "border-gray-200"
+        className: `block bg-cream-50 rounded-recipe shadow-recipe-card transition-all duration-300 border-2 overflow-hidden cursor-pointer ${
+          isSelected ? "border-terracotta-500 ring-2 ring-terracotta-400" : "border-wood-200"
         }`,
       }
     : {
         to: `/recipe/${recipe.id}`,
         state: { from: location.pathname },
-        className: "block bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200 overflow-hidden",
+        className: "block bg-cream-50 rounded-recipe shadow-recipe-card hover:shadow-recipe-card-hover hover:-translate-y-1 transition-all duration-300 border border-wood-200 overflow-hidden",
       };
 
   return (
     <>
       <CardWrapper {...wrapperProps}>
         {/* Preview Image - Always shown for consistent layout */}
-        <div className="w-full h-48 bg-gray-200 overflow-hidden relative">
+        <div className="w-full h-48 bg-wood-100 overflow-hidden relative">
           {/* Checkbox overlay in selection mode */}
           {isSelectionMode && (
             <div className="absolute top-2 left-2 z-10">
               <div
                 className={`w-8 h-8 rounded-md border-2 flex items-center justify-center transition-all ${
                   isSelected
-                    ? "bg-blue-600 border-blue-600"
-                    : "bg-white bg-opacity-90 border-gray-400"
+                    ? "bg-terracotta-600 border-terracotta-600"
+                    : "bg-cream-50 bg-opacity-90 border-wood-400"
                 }`}
               >
                 {isSelected && (
@@ -212,15 +212,15 @@ const RecipeCard = ({ recipe, isSelectionMode = false, isSelected = false, onTog
         <div className="p-4">
           {/* Header with Type Icon, Category, and Favorite Button */}
           <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-2 text-gray-600 flex-wrap">
+            <div className="flex items-center gap-2 text-warmgray-600 flex-wrap">
               {getRecipeTypeIcon()}
-              <span className="text-xs uppercase tracking-wide">
+              <span className="text-xs uppercase tracking-wide font-medium">
                 {recipe.type}
               </span>
               {recipe.siteName && (
                 <>
-                  <span className="text-xs text-gray-400">•</span>
-                  <span className="text-xs text-gray-500 truncate max-w-[150px]">
+                  <span className="text-xs text-warmgray-400">•</span>
+                  <span className="text-xs text-warmgray-500 truncate max-w-[150px]">
                     {recipe.siteName}
                   </span>
                 </>
@@ -236,7 +236,7 @@ const RecipeCard = ({ recipe, isSelectionMode = false, isSelected = false, onTog
                     e.preventDefault();
                     setIsCollectionModalOpen(true);
                   }}
-                  className="text-gray-400 hover:text-blue-600 transition"
+                  className="text-warmgray-400 hover:text-sage-600 transition"
                   aria-label="Add to collection"
                   title="Add to collection"
                 >
@@ -259,8 +259,8 @@ const RecipeCard = ({ recipe, isSelectionMode = false, isSelected = false, onTog
               disabled={toggleFavoriteMutation.isPending}
               className={`transition-colors ${
                 recipe.isFavorite
-                  ? "text-yellow-500"
-                  : "text-gray-300 hover:text-yellow-500"
+                  ? "text-terracotta-500"
+                  : "text-warmgray-300 hover:text-terracotta-400"
               } ${toggleFavoriteMutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
               aria-label={
                 recipe.isFavorite ? "Remove from favorites" : "Add to favorites"
@@ -291,13 +291,13 @@ const RecipeCard = ({ recipe, isSelectionMode = false, isSelected = false, onTog
           </div>
 
           {/* Title */}
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+          <h3 className="text-lg font-serif font-semibold text-warmgray-900 mb-2 line-clamp-2">
             {recipe.title}
           </h3>
 
         {/* Description (if available) */}
         {recipe.description && (
-          <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+          <p className="text-sm text-warmgray-600 line-clamp-2 mb-2">
             {recipe.description}
           </p>
         )}
@@ -306,14 +306,14 @@ const RecipeCard = ({ recipe, isSelectionMode = false, isSelected = false, onTog
         {recipe.type.toLowerCase() === "link" &&
           recipe.url &&
           !recipe.description && (
-            <p className="text-sm text-gray-500 truncate">{recipe.url}</p>
+            <p className="text-sm text-warmgray-500 truncate">{recipe.url}</p>
           )}
 
         {/* Content Preview (for manual type without description) */}
         {recipe.type.toLowerCase() === "manual" &&
           recipe.content &&
           !recipe.description && (
-            <p className="text-sm text-gray-600 line-clamp-3">
+            <p className="text-sm text-warmgray-600 line-clamp-3">
               {getManualRecipePreview(recipe.content)}
             </p>
           )}
@@ -328,7 +328,7 @@ const RecipeCard = ({ recipe, isSelectionMode = false, isSelected = false, onTog
         )}
 
         {/* Date */}
-        <p className="text-xs text-gray-400 mt-3">
+        <p className="text-xs text-warmgray-400 mt-3">
           Added {new Date(recipe.createdAt).toLocaleDateString()}
         </p>
       </div>
