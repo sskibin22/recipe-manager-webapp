@@ -6,7 +6,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchCategories } from "../../../services/api";
+import { categoryService } from "../../../services/api";
 
 /**
  * Filter chips component - displays active filters as removable chips
@@ -20,7 +20,7 @@ import { fetchCategories } from "../../../services/api";
 const FilterChips = ({ filters, onRemoveCategory, onRemoveType, onClearAll }) => {
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
-    queryFn: fetchCategories,
+    queryFn: categoryService.getAll,
   });
 
   const selectedCategories = categories.filter((cat) =>

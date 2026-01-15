@@ -8,7 +8,7 @@ import RecipeForm from "../components/recipe/RecipeForm/RecipeForm";
 import { SearchBar, FilterPanel, FilterChips } from "../components/recipe/RecipeFilters";
 import CollapsibleSection from "../components/common/CollapsibleSection";
 import RandomRecipeModal from "../components/common/RandomRecipeModal";
-import { recipesApi } from "../services/api";
+import { recipeService } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
@@ -92,7 +92,7 @@ export default function Landing() {
   // Bulk delete mutation
   const bulkDeleteMutation = useMutation({
     mutationFn: async (recipeIds) => {
-      return await recipesApi.bulkDelete(recipeIds);
+      return await recipeService.bulkDelete(recipeIds);
     },
     onSuccess: (data) => {
       // Invalidate recipes query to refresh the list

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { getUserProfile, updateUserProfile, getErrorMessage } from "../services/api";
+import { userService, getErrorMessage } from "../services/api";
 import { updateEmail, updatePassword, updateProfile } from "firebase/auth";
 import { getAuth } from "firebase/auth";
 
@@ -25,7 +25,7 @@ const AccountSettings = () => {
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
-        const profile = await getUserProfile();
+        const profile = await userService.getProfile();
         setFormData((prev) => ({
           ...prev,
           displayName: profile.displayName || "",
@@ -69,7 +69,7 @@ const AccountSettings = () => {
       }
 
       // Update profile in backend
-      await updateUserProfile({
+      await userService.updateProfile({
         displayName: formData.displayName,
         email: formData.email,
       });

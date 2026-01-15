@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useUpdateRecipeMutation } from "./useRecipeMutations";
-import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
+import { recipeService, uploadService, getErrorMessage } from "../services/api";
 import { parseRecipeContent, serializeRecipeContent } from "../utils/recipeContent";
 import { validateRecipeDocument, validateImage } from "../utils/fileValidation";
 
@@ -74,7 +74,7 @@ export const useRecipeEdit = (recipe, recipeId) => {
         }
 
         setFetchingMetadata(true);
-        const fetchedMetadata = await recipesApi.fetchMetadata(editedUrl.trim());
+        const fetchedMetadata = await recipeService.fetchMetadata(editedUrl.trim());
 
         if (fetchedMetadata) {
           setMetadata(fetchedMetadata);
@@ -255,11 +255,11 @@ export const useRecipeEdit = (recipe, recipeId) => {
   };
 
   const uploadDisplayImage = async (imageFile) => {
-    const imagePresignData = await uploadsApi.getPresignedUploadUrl(
+    const imagePresignData = await uploadService.getPresignedUploadUrl(
       generateImageFilename(imageFile),
       imageFile.type,
     );
-    await uploadsApi.uploadToPresignedUrl(
+    await uploadService.uploadToPresignedUrl(
       imagePresignData.uploadUrl,
       imageFile,
     );
@@ -296,11 +296,11 @@ export const useRecipeEdit = (recipe, recipeId) => {
 
       // Handle document upload
       if (recipe.type.toLowerCase() === "document" && file) {
-        const presignData = await uploadsApi.getPresignedUploadUrl(
+        const presignData = await uploadService.getPresignedUploadUrl(
           file.name,
           file.type,
         );
-        await uploadsApi.uploadToPresignedUrl(presignData.uploadUrl, file);
+        await uploadService.uploadToPresignedUrl(presignData.uploadUrl, file);
         updateData.storageKey = presignData.key;
       }
 
