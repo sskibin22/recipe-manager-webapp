@@ -422,7 +422,7 @@ public class CollectionService : ICollectionService
         // Store image keys for potential cleanup
         var imageKeys = collectionsToDelete
             .Where(c => !string.IsNullOrEmpty(c.ImageStorageKey))
-            .Select(c => c.ImageStorageKey)
+            .Select(c => c.ImageStorageKey!)  // Null-forgiving operator here is correct since Where filters out nulls
             .ToList();
 
         // Delete all collections (cascade delete will handle CollectionRecipes)
@@ -434,7 +434,7 @@ public class CollectionService : ICollectionService
         {
             foreach (var key in imageKeys)
             {
-                var deleted = await _storageService.DeleteFileAsync(key!);
+                var deleted = await _storageService.DeleteFileAsync(key);  // key is guaranteed non-null here
                 if (!deleted)
                 {
                     _logger.LogWarning("Failed to delete collection image from storage: {Key}", key);
