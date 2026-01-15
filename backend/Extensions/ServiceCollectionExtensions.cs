@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
+using RecipeManager.Api.Configuration;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.Mapping;
 using RecipeManager.Api.Services;
@@ -48,6 +50,16 @@ public static class ServiceCollectionExtensions
                 client.Timeout = TimeSpan.FromSeconds(10);
                 client.DefaultRequestHeaders.Add("Accept", "text/html");
             });
+
+        // Configure FileCache options
+        services.Configure<FileCacheOptions>(configuration.GetSection("FileCache"));
+
+        // Add MemoryCache with size limits
+        var fileCacheOptions = configuration.GetSection("FileCache").Get<FileCacheOptions>() ?? new FileCacheOptions();
+        services.AddMemoryCache(options =>
+        {
+            options.SizeLimit = fileCacheOptions.MaxCacheSizeBytes;
+        });
 
         services.AddSingleton<IFileCacheService, FileCacheService>();
 
