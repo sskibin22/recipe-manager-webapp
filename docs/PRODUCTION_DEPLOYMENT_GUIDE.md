@@ -413,11 +413,16 @@ fly secrets set R2__BucketName="recipemanager-uploads"
 # CORS - Add your frontend URL
 fly secrets set Cors__AllowedOrigins__0="https://recipemanager.netlify.app"
 
+# Security: Restrict allowed host headers (replace with your actual domain)
+fly secrets set ALLOWED_HOSTS="recipemanager-api.fly.dev"
+
 # Set environment to Production
 fly secrets set ASPNETCORE_ENVIRONMENT="Production"
 ```
 
 **Note**: Replace the example values with your actual credentials from previous steps.
+
+**Security Note**: The `ALLOWED_HOSTS` setting restricts which host headers your API will accept, preventing host header injection attacks. Set it to your Fly.io app domain (e.g., `recipemanager-api.fly.dev`). If you have a custom domain, use semicolons to separate multiple domains: `recipemanager-api.fly.dev;api.yourdomain.com`
 
 **Important**: Use double underscores (`__`) to represent nested JSON configuration (`:` doesn't work in environment variables).
 

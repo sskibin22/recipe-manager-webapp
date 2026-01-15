@@ -61,6 +61,7 @@ fly secrets set R2__SecretAccessKey="your-secret-key"
 fly secrets set R2__BucketName="your-bucket-name"
 fly secrets set Cors__AllowedOrigins__0="https://recipemanager.netlify.app"
 fly secrets set ASPNETCORE_ENVIRONMENT="Production"
+fly secrets set ALLOWED_HOSTS="your-app.fly.dev"  # Security: Restrict allowed host headers
 
 # Deploy
 fly deploy

@@ -26,5 +26,9 @@ ENV ASPNETCORE_URLS=http://+:8080
 # Set production environment
 ENV ASPNETCORE_ENVIRONMENT=Production
 
+# Security: Configure AllowedHosts for production
+# Override with: fly secrets set ALLOWED_HOSTS="your-app.fly.dev;custom-domain.com"
+# Default "*" will be used if not set (not recommended for production)
+
 # Run the application
 ENTRYPOINT ["dotnet", "RecipeManager.Api.dll"]
