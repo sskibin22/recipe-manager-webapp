@@ -51,6 +51,7 @@ public static class UploadEndpoints
 
             return Results.Ok(new { uploadUrl = presignedUrl, key = storageKey });
         })
+        .RequireRateLimiting("presign")
         .WithName("PresignUpload")
         .WithOpenApi();
 
@@ -93,6 +94,7 @@ public static class UploadEndpoints
 
             return Results.Ok(new { uploadUrl = presignedUrl, key = storageKey });
         })
+        .RequireRateLimiting("presign")
         .WithName("PresignCollectionImageUpload")
         .WithOpenApi();
 
@@ -111,6 +113,7 @@ public static class UploadEndpoints
 
             return Results.Ok(new { presignedUrl });
         })
+        .RequireRateLimiting("presign")
         .WithName("PresignDownload")
         .WithOpenApi();
 
@@ -129,6 +132,7 @@ public static class UploadEndpoints
 
             return Results.Ok(new { presignedUrl });
         })
+        .RequireRateLimiting("presign")
         .WithName("PresignCollectionImageDownload")
         .WithOpenApi();
 

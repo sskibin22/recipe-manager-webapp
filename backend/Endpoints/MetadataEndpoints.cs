@@ -43,6 +43,7 @@ public static class MetadataEndpoints
                 siteName = metadata.SiteName
             });
         })
+        .RequireRateLimiting("metadata")
         .WithName("FetchMetadata")
         .WithOpenApi();
 

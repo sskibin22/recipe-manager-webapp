@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddCorsServices(builder.Configuration);
 builder.Services.AddAuthenticationServices(builder.Configuration);
+builder.Services.AddRateLimitingServices(builder.Configuration);
 
 var app = builder.Build();
 
