@@ -54,7 +54,7 @@ public class RecipeServiceTests
 
         // Create mapper and service
         _mapper = new RecipeMapper(_storageMock.Object, _mapperLoggerMock.Object};
-        _service = new RecipeService(_db, _fileCacheMock.Object, _mapper, _serviceLoggerMock.Object};
+        _service = new RecipeService(_db, _fileCacheMock.Object, _mapper, _storageMock.Object, _serviceLoggerMock.Object};
     }
 
     [TearDown]

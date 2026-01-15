@@ -12,31 +12,31 @@ public class RecipeQueryParameters
     /// </summary>
     [FromQuery(Name = "q")]
     public string? SearchTerm { get; set; }
-    
+
     /// <summary>
     /// Filter by category ID
     /// </summary>
     [FromQuery(Name = "category")]
     public int? CategoryId { get; set; }
-    
+
     /// <summary>
     /// Comma-separated tag IDs for filtering (recipes must have ALL specified tags)
     /// </summary>
     [FromQuery(Name = "tags")]
     public string? Tags { get; set; }
-    
+
     /// <summary>
     /// Filter to show only favorited recipes
     /// </summary>
     [FromQuery(Name = "favoritesOnly")]
     public bool FavoritesOnly { get; set; } = false;
-    
+
     /// <summary>
     /// Exclude recipes that are in the specified collection (by collection ID)
     /// </summary>
     [FromQuery(Name = "excludeCollectionId")]
     public Guid? ExcludeCollectionId { get; set; }
-    
+
     /// <summary>
     /// Parse comma-separated tag IDs into integer list
     /// </summary>
@@ -45,7 +45,7 @@ public class RecipeQueryParameters
     {
         if (string.IsNullOrWhiteSpace(Tags))
             return new List<int>();
-            
+
         return Tags
             .Split(',')
             .Select(t => int.TryParse(t.Trim(), out var id) ? id : 0)

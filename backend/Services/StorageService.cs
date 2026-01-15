@@ -117,4 +117,45 @@ public class StorageService : IStorageService
         // External URL or null - return as-is
         return previewImageUrl;
     }
+
+    /// <summary>
+    /// Deletes a file from storage by its key.
+    /// Note: S3/R2 DeleteObject operations are idempotent - they succeed even if the object doesn't exist.
+    /// This method returns true for successful deletion, non-existent objects, null/empty keys, and unconfigured storage.
+    /// It only returns false when an actual error occurs during deletion.
+    /// </summary>
+    /// <param name="key">The storage key of the file to delete.</param>
+    /// <returns>True if the file was deleted successfully, didn't exist, or no deletion was needed; false if deletion failed.</returns>
+    public async Task<bool> DeleteFileAsync(string key)
+    {
+        if (string.IsNullOrEmpty(key))
+        {
+            _logger.LogDebug("Skipping delete for null or empty key");
+            return true; // No deletion needed
+        }
+
+        if (_s3Client == null)
+        {
+            _logger.LogDebug("Storage not configured, skipping delete for: {Key}", key);
+            return true; // No storage configured, nothing to delete
+        }
+
+        try
+        {
+            // S3 DeleteObject is idempotent - it succeeds even if the object doesn't exist
+            var request = new DeleteObjectRequest
+            {
+                BucketName = _bucketName,
+                Key = key
+            };
+            await _s3Client.DeleteObjectAsync(request);
+            _logger.LogInformation("Deleted file from storage: {Key}", key);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete file: {Key}", key);
+            return false;
+        }
+    }
 }
