@@ -127,14 +127,14 @@ public class StorageService : IStorageService
     {
         if (string.IsNullOrEmpty(key))
         {
-            _logger.LogDebug("Attempted to delete file with null or empty key");
-            return true;
+            _logger.LogDebug("Skipping delete for null or empty key");
+            return true; // No deletion needed
         }
 
         if (_s3Client == null)
         {
             _logger.LogDebug("Storage not configured, skipping delete for: {Key}", key);
-            return true;
+            return true; // No storage configured, nothing to delete
         }
 
         try

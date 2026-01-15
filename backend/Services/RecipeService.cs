@@ -255,6 +255,22 @@ public class RecipeService : IRecipeService
         return await _mapper.MapToRecipeResponseListAsync(recipes, userId);
     }
 
+    /// <summary>
+    /// Determines if a URL is a storage key (not an external HTTP/HTTPS URL).
+    /// </summary>
+    /// <param name="url">The URL to check.</param>
+    /// <returns>True if the URL is a storage key; false if it's an external URL or null/empty.</returns>
+    private static bool IsStorageKey(string? url)
+    {
+        if (string.IsNullOrEmpty(url))
+        {
+            return false;
+        }
+
+        return !url.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            && !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+    }
+
     /// <inheritdoc />
     public async Task<bool> DeleteRecipeAsync(Guid id, Guid userId)
     {
@@ -283,11 +299,9 @@ public class RecipeService : IRecipeService
         }
 
         // Clean up preview image if it's a storage key (not an external URL)
-        if (!string.IsNullOrEmpty(previewImageUrl)
-            && !previewImageUrl.StartsWith("http://")
-            && !previewImageUrl.StartsWith("https://"))
+        if (IsStorageKey(previewImageUrl))
         {
-            var deleted = await _storageService.DeleteFileAsync(previewImageUrl);
+            var deleted = await _storageService.DeleteFileAsync(previewImageUrl!);
             if (!deleted)
             {
                 _logger.LogWarning("Failed to delete recipe preview image from storage: {Key}", previewImageUrl);
@@ -322,9 +336,7 @@ public class RecipeService : IRecipeService
             .ToList();
 
         var previewImageKeys = recipesToDelete
-            .Where(r => !string.IsNullOrEmpty(r.PreviewImageUrl)
-                && !r.PreviewImageUrl!.StartsWith("http://")
-                && !r.PreviewImageUrl!.StartsWith("https://"))
+            .Where(r => IsStorageKey(r.PreviewImageUrl))
             .Select(r => r.PreviewImageUrl!)
             .ToList();
 
