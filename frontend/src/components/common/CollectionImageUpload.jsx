@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { validateCollectionImage } from "../../utils/fileValidation";
+import { validateImage } from "../../utils/fileValidation";
 import { uploadService } from "../../services/api/uploadService";
 
 /**
@@ -30,7 +30,7 @@ export default function CollectionImageUpload({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const error = validateCollectionImage(file);
+    const error = validateImage(file);
     if (error) {
       setImageError(error);
       setSelectedImage(null);
