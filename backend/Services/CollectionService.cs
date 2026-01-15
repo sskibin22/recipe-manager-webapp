@@ -154,16 +154,14 @@ public class CollectionService : ICollectionService
         // Clean up old image if it was replaced (not null and different from new key)
         if (!string.IsNullOrEmpty(oldImageKey) && oldImageKey != request.ImageStorageKey)
         {
-            try
+            var deleted = await _storageService.DeleteFileAsync(oldImageKey);
+            if (deleted)
             {
-                // Note: R2/S3 doesn't have a delete API in the current implementation
-                // The old image will remain in storage but won't be referenced
-                // In a production system, implement cleanup via StorageService
-                _logger.LogInformation("Collection image replaced. Old key: {OldKey}", oldImageKey);
+                _logger.LogInformation("Collection image replaced and old image deleted. Old key: {OldKey}", oldImageKey);
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogWarning(ex, "Failed to cleanup old collection image: {Key}", oldImageKey);
+                _logger.LogWarning("Failed to delete old collection image from storage: {Key}", oldImageKey);
             }
         }
 
@@ -190,19 +188,17 @@ public class CollectionService : ICollectionService
         _db.Collections.Remove(collection);
         await _db.SaveChangesAsync();
 
-        // Clean up collection image
+        // Clean up collection image from storage
         if (!string.IsNullOrEmpty(imageKey))
         {
-            try
+            var deleted = await _storageService.DeleteFileAsync(imageKey);
+            if (deleted)
             {
-                // Note: R2/S3 doesn't have a delete API in the current implementation
-                // The image will remain in storage but won't be referenced
-                // In a production system, implement cleanup via StorageService
-                _logger.LogInformation("Collection deleted. Image key: {Key}", imageKey);
+                _logger.LogInformation("Collection deleted and image removed from storage. Image key: {Key}", imageKey);
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogWarning(ex, "Failed to cleanup collection image: {Key}", imageKey);
+                _logger.LogWarning("Failed to delete collection image from storage: {Key}", imageKey);
             }
         }
 
@@ -433,10 +429,18 @@ public class CollectionService : ICollectionService
         _db.Collections.RemoveRange(collectionsToDelete);
         await _db.SaveChangesAsync();
 
-        // Log cleanup info for images
+        // Clean up images from storage
         if (imageKeys.Count > 0)
         {
-            _logger.LogInformation("Deleted {Count} collections with images. Image keys: {Keys}", 
+            foreach (var key in imageKeys)
+            {
+                var deleted = await _storageService.DeleteFileAsync(key!);
+                if (!deleted)
+                {
+                    _logger.LogWarning("Failed to delete collection image from storage: {Key}", key);
+                }
+            }
+            _logger.LogInformation("Deleted {Count} collections with images. Image keys: {Keys}",
                 collectionsToDelete.Count, string.Join(", ", imageKeys));
         }
         else

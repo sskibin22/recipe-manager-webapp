@@ -126,4 +126,51 @@ public class StorageServiceTests
         // data URLs are already inline and don't need presigning.
         result.Should().NotBeNull();
     }
+
+    [Test]
+    public async Task DeleteFileAsync_WithValidKey_ReturnsTrue()
+    {
+        // Arrange
+        var storageKey = "users/123/recipe-doc.pdf";
+
+        // Act
+        var result = await _service.DeleteFileAsync(storageKey);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task DeleteFileAsync_WithNullKey_ReturnsTrue()
+    {
+        // Arrange & Act
+        var result = await _service.DeleteFileAsync(null!);
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task DeleteFileAsync_WithEmptyKey_ReturnsTrue()
+    {
+        // Arrange & Act
+        var result = await _service.DeleteFileAsync("");
+
+        // Assert
+        result.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task DeleteFileAsync_WithoutR2Configuration_ReturnsTrue()
+    {
+        // Arrange
+        var storageKey = "users/123/image.jpg";
+
+        // Act
+        var result = await _service.DeleteFileAsync(storageKey);
+
+        // Assert
+        result.Should().BeTrue();
+        // Should log that storage is not configured
+    }
 }

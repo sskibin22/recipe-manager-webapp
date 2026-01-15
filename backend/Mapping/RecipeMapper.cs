@@ -47,7 +47,7 @@ public class RecipeMapper
             FileContent: fileContentBase64,
             FileContentType: recipe.FileContentType,
             IsFavorite: recipe.Favorites?.Any(f => f.UserId == currentUserId) ?? false,
-            Category: recipe.Category != null 
+            Category: recipe.Category != null
                 ? new CategoryResponse(recipe.Category.Id, recipe.Category.Name, recipe.Category.Color)
                 : null,
             Tags: recipe.RecipeTags?
@@ -92,7 +92,7 @@ public class RecipeMapper
             UpdatedAt: recipe.UpdatedAt,
             FileContentType: recipe.FileContentType,
             IsFavorite: recipe.Favorites?.Any(f => f.UserId == currentUserId) ?? false,
-            Category: recipe.Category != null 
+            Category: recipe.Category != null
                 ? new CategoryResponse(recipe.Category.Id, recipe.Category.Name, recipe.Category.Color)
                 : null,
             Tags: recipe.RecipeTags?
@@ -118,8 +118,8 @@ public class RecipeMapper
         }
 
         // If storage key, generate presigned URL
-        if (!string.IsNullOrEmpty(recipe.PreviewImageUrl) 
-            && !recipe.PreviewImageUrl.StartsWith("http://") 
+        if (!string.IsNullOrEmpty(recipe.PreviewImageUrl)
+            && !recipe.PreviewImageUrl.StartsWith("http://")
             && !recipe.PreviewImageUrl.StartsWith("https://"))
         {
             try
@@ -128,7 +128,7 @@ public class RecipeMapper
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to generate presigned URL for preview image: {StorageKey}", 
+                _logger.LogWarning(ex, "Failed to generate presigned URL for preview image: {StorageKey}",
                     recipe.PreviewImageUrl);
                 return null;
             }

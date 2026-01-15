@@ -19,7 +19,7 @@ public static class DevelopmentEndpoints
     public static IEndpointRouteBuilder MapDevelopmentEndpoints(this IEndpointRouteBuilder app)
     {
         var environment = app.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
-        
+
         if (!environment.IsDevelopment())
         {
             return app;

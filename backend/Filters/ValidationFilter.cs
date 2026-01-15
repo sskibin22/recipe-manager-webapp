@@ -13,7 +13,7 @@ public class ValidationFilter<T> : IEndpointFilter where T : class
     {
         // Find the request parameter of type T
         var requestObject = context.Arguments.OfType<T>().FirstOrDefault();
-        
+
         if (requestObject == null)
         {
             return await next(context);
@@ -22,7 +22,7 @@ public class ValidationFilter<T> : IEndpointFilter where T : class
         // Validate the request object
         var validationContext = new ValidationContext(requestObject);
         var validationResults = new List<ValidationResult>();
-        
+
         if (!Validator.TryValidateObject(requestObject, validationContext, validationResults, validateAllProperties: true))
         {
             // Build error response

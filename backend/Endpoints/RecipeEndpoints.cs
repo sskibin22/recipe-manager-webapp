@@ -110,7 +110,7 @@ public static class RecipeEndpoints
             }
 
             var deletedCount = await recipeService.DeleteRecipesAsync(recipeIds, userId.Value);
-            
+
             return Results.Ok(new { deletedCount });
         })
         .RequireRateLimiting("bulk")

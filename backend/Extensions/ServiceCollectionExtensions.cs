@@ -157,7 +157,7 @@ public static class ServiceCollectionExtensions
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
             {
                 var userPartitionKey = context.User.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
-                
+
                 return RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: userPartitionKey,
                     factory: _ => new FixedWindowRateLimiterOptions
@@ -209,11 +209,11 @@ public static class ServiceCollectionExtensions
             options.OnRejected = async (context, token) =>
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                
+
                 if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
                 {
                     context.HttpContext.Response.Headers.RetryAfter = retryAfter.TotalSeconds.ToString();
-                    
+
                     await context.HttpContext.Response.WriteAsJsonAsync(new
                     {
                         error = "Too Many Requests",

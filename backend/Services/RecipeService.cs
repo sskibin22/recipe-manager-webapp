@@ -16,17 +16,20 @@ public class RecipeService : IRecipeService
     private readonly ApplicationDbContext _db;
     private readonly IFileCacheService _fileCache;
     private readonly RecipeMapper _mapper;
+    private readonly IStorageService _storageService;
     private readonly ILogger<RecipeService> _logger;
 
     public RecipeService(
         ApplicationDbContext db,
         IFileCacheService fileCache,
         RecipeMapper mapper,
+        IStorageService storageService,
         ILogger<RecipeService> logger)
     {
         _db = db;
         _fileCache = fileCache;
         _mapper = mapper;
+        _storageService = storageService;
         _logger = logger;
     }
 
@@ -241,7 +244,7 @@ public class RecipeService : IRecipeService
             var recipesInCollection = _db.CollectionRecipes
                 .Where(cr => cr.CollectionId == queryParams.ExcludeCollectionId.Value)
                 .Select(cr => cr.RecipeId);
-            
+
             query = query.Where(r => !recipesInCollection.Contains(r.Id));
         }
 
@@ -256,14 +259,40 @@ public class RecipeService : IRecipeService
     public async Task<bool> DeleteRecipeAsync(Guid id, Guid userId)
     {
         var recipe = await _db.Recipes.FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
-        
+
         if (recipe == null)
         {
             return false;
         }
 
+        // Store storage keys for cleanup
+        var storageKey = recipe.StorageKey;
+        var previewImageUrl = recipe.PreviewImageUrl;
+
         _db.Recipes.Remove(recipe);
         await _db.SaveChangesAsync();
+
+        // Clean up storage files after successful deletion
+        if (!string.IsNullOrEmpty(storageKey))
+        {
+            var deleted = await _storageService.DeleteFileAsync(storageKey);
+            if (!deleted)
+            {
+                _logger.LogWarning("Failed to delete recipe file from storage: {Key}", storageKey);
+            }
+        }
+
+        // Clean up preview image if it's a storage key (not an external URL)
+        if (!string.IsNullOrEmpty(previewImageUrl)
+            && !previewImageUrl.StartsWith("http://")
+            && !previewImageUrl.StartsWith("https://"))
+        {
+            var deleted = await _storageService.DeleteFileAsync(previewImageUrl);
+            if (!deleted)
+            {
+                _logger.LogWarning("Failed to delete recipe preview image from storage: {Key}", previewImageUrl);
+            }
+        }
 
         return true;
     }
@@ -286,8 +315,40 @@ public class RecipeService : IRecipeService
             return 0;
         }
 
+        // Collect storage keys for cleanup
+        var storageKeys = recipesToDelete
+            .Where(r => !string.IsNullOrEmpty(r.StorageKey))
+            .Select(r => r.StorageKey!)
+            .ToList();
+
+        var previewImageKeys = recipesToDelete
+            .Where(r => !string.IsNullOrEmpty(r.PreviewImageUrl)
+                && !r.PreviewImageUrl!.StartsWith("http://")
+                && !r.PreviewImageUrl!.StartsWith("https://"))
+            .Select(r => r.PreviewImageUrl!)
+            .ToList();
+
         _db.Recipes.RemoveRange(recipesToDelete);
         await _db.SaveChangesAsync();
+
+        // Clean up storage files after successful deletion
+        foreach (var key in storageKeys)
+        {
+            var deleted = await _storageService.DeleteFileAsync(key);
+            if (!deleted)
+            {
+                _logger.LogWarning("Failed to delete recipe file from storage: {Key}", key);
+            }
+        }
+
+        foreach (var key in previewImageKeys)
+        {
+            var deleted = await _storageService.DeleteFileAsync(key);
+            if (!deleted)
+            {
+                _logger.LogWarning("Failed to delete recipe preview image from storage: {Key}", key);
+            }
+        }
 
         _logger.LogInformation(
             "User {UserId} deleted {Count} recipes",
@@ -313,7 +374,7 @@ public class RecipeService : IRecipeService
             var recipesInCollection = _db.CollectionRecipes
                 .Where(cr => cr.CollectionId == collectionId.Value)
                 .Select(cr => cr.RecipeId);
-            
+
             query = query.Where(r => recipesInCollection.Contains(r.Id));
         }
 

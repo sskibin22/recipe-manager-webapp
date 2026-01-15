@@ -117,4 +117,41 @@ public class StorageService : IStorageService
         // External URL or null - return as-is
         return previewImageUrl;
     }
+
+    /// <summary>
+    /// Deletes a file from storage by its key.
+    /// </summary>
+    /// <param name="key">The storage key of the file to delete.</param>
+    /// <returns>True if the file was deleted successfully or didn't exist; false if deletion failed.</returns>
+    public async Task<bool> DeleteFileAsync(string key)
+    {
+        if (string.IsNullOrEmpty(key))
+        {
+            _logger.LogDebug("Attempted to delete file with null or empty key");
+            return true;
+        }
+
+        if (_s3Client == null)
+        {
+            _logger.LogDebug("Storage not configured, skipping delete for: {Key}", key);
+            return true;
+        }
+
+        try
+        {
+            var request = new DeleteObjectRequest
+            {
+                BucketName = _bucketName,
+                Key = key
+            };
+            await _s3Client.DeleteObjectAsync(request);
+            _logger.LogInformation("Deleted file from storage: {Key}", key);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete file: {Key}", key);
+            return false;
+        }
+    }
 }
