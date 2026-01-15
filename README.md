@@ -369,6 +369,25 @@ In production, use environment variables or secure secret management services.
 - **Use `.example` Files**: Always provide `.example` files with placeholder values for team members
 - **Monitor CI/CD**: Pay attention to security check warnings in pull requests
 
+#### Host Header Security
+
+The application includes protection against host header injection attacks through the `AllowedHosts` configuration:
+
+- **Development**: Defaults to `"*"` (any host) for flexibility
+- **Production**: Should be set to specific domains via `ALLOWED_HOSTS` environment variable
+
+For detailed information about configuring AllowedHosts for production deployments, see:
+- **[AllowedHosts Security Guide](./docs/ALLOWED_HOSTS_SECURITY.md)** - Comprehensive security documentation
+
+**Quick setup for production:**
+```bash
+# Fly.io deployment
+fly secrets set ALLOWED_HOSTS="your-app.fly.dev"
+
+# Multiple domains (semicolon-separated)
+fly secrets set ALLOWED_HOSTS="your-app.fly.dev;api.yourdomain.com"
+```
+
 ## Production Deployment
 
 Ready to deploy your Recipe Manager to production? Follow our comprehensive deployment guides:
