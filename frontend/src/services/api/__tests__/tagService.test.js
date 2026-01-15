@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { tagService, tagsApi } from "../tagService";
+import { tagService } from "../tagService";
 import { apiClient } from "../apiClient";
 
 // Mock apiClient
@@ -35,13 +35,6 @@ describe("tagService", () => {
       const result = await tagService.getAll();
 
       expect(result).toEqual([]);
-    });
-  });
-
-  describe("backward compatibility - tagsApi", () => {
-    it("should export tagsApi with same methods", () => {
-      expect(tagsApi).toBeDefined();
-      expect(tagsApi.getAll).toBe(tagService.getAll);
     });
   });
 });

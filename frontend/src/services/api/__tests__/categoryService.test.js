@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { categoryService, categoriesApi } from "../categoryService";
+import { categoryService } from "../categoryService";
 import { apiClient } from "../apiClient";
 
 // Mock apiClient
@@ -34,13 +34,6 @@ describe("categoryService", () => {
       const result = await categoryService.getAll();
 
       expect(result).toEqual([]);
-    });
-  });
-
-  describe("backward compatibility - categoriesApi", () => {
-    it("should export categoriesApi with same methods", () => {
-      expect(categoriesApi).toBeDefined();
-      expect(categoriesApi.getAll).toBe(categoryService.getAll);
     });
   });
 });
