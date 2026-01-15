@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.Extensions;
 using RecipeManager.Api.Filters;
