@@ -157,9 +157,68 @@ Your domain isn't authorized:
 - ✅ Set up environment variables in your hosting platform
 - ✅ Enable email verification (optional)
 - ✅ Set up password reset flows
-- ✅ Configure Firebase security rules
+- ✅ Configure Firebase security rules (see below)
+- ✅ Enable Firebase App Check to prevent abuse
+- ✅ Set domain restrictions on API keys
 - ✅ Enable reCAPTCHA for abuse prevention
 - ✅ Monitor authentication logs in Firebase Console
+
+### Firebase Security Rules
+Configure security rules to protect your data:
+
+**Firestore Example:**
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Only authenticated users can access their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /recipes/{recipeId} {
+      allow read, write: if request.auth != null && 
+                           request.auth.uid == resource.data.userId;
+    }
+  }
+}
+```
+
+**Storage Example:**
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /recipes/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+### Firebase App Check
+Enable App Check to protect against abuse:
+1. Go to Firebase Console > App Check
+2. Register your app with reCAPTCHA v3
+3. Add the App Check SDK to your frontend:
+```javascript
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+
+const appCheck = initializeAppCheck(app, {
+  provider: new ReCaptchaV3Provider('your-recaptcha-site-key'),
+  isTokenAutoRefreshEnabled: true
+});
+```
+4. Enforce App Check in Firebase Console for each service
+
+### Domain Restrictions
+Limit API key usage to authorized domains:
+1. Firebase Console > Project Settings > API Keys
+2. Click on your browser key
+3. Under "Application restrictions", select "HTTP referrers"
+4. Add your production domain (e.g., `https://yourapp.com/*`)
+5. Keep `http://localhost:*` for development
+
+For more security details, see [SECURITY_ENV_FILES.md](./SECURITY_ENV_FILES.md).
 
 ## Optional Enhancements
 

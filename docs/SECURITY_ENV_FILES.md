@@ -151,6 +151,56 @@ git push
 
 ## Security Best Practices
 
+### Firebase API Key Security
+
+While Firebase API keys are designed to be public (they identify the project, not provide access), additional security measures should be implemented:
+
+#### 1. Firebase Security Rules
+Configure database security rules in Firebase Console to restrict access:
+- **Firestore Rules**: Limit read/write access to authenticated users only
+- **Storage Rules**: Restrict file uploads/downloads to authorized users
+- **Realtime Database Rules**: Apply user-based permissions
+
+Example Firestore rules:
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /recipes/{recipeId} {
+      // Users can only read/write their own recipes
+      allow read, write: if request.auth != null && 
+                           request.auth.uid == resource.data.userId;
+    }
+  }
+}
+```
+
+#### 2. Firebase App Check (Recommended)
+Enable App Check in Firebase Console to protect against abuse:
+- Verifies requests come from your legitimate app
+- Prevents API quota theft and abuse
+- Works with reCAPTCHA on web and DeviceCheck/Play Integrity on mobile
+
+**Setup:**
+1. Go to Firebase Console > App Check
+2. Register your web app with reCAPTCHA
+3. Add App Check SDK to your frontend
+4. Enforce App Check on backend services
+
+#### 3. Domain Restrictions
+In Firebase Console > Project Settings > API Keys:
+- Limit API key usage to authorized domains only
+- Add your production domain (e.g., `yourapp.com`)
+- Keep `localhost` for development
+- Remove any unnecessary domains
+
+#### 4. Monitor Usage
+Regularly check Firebase Console > Usage and billing:
+- Monitor authentication requests
+- Watch for unusual spikes
+- Set up budget alerts
+- Review quota usage
+
 ### ✅ Do
 
 - Always use `./setup-hooks.sh` after cloning
@@ -159,6 +209,10 @@ git push
 - Use placeholder values in `.env.local.example`
 - Review PR checks before merging
 - Rotate secrets if they are exposed
+- Configure Firebase security rules for all services
+- Enable Firebase App Check for production
+- Set domain restrictions on API keys
+- Monitor Firebase usage regularly
 
 ### ❌ Don't
 
