@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useCollectionsQuery, useCollectionMutations } from "../../hooks";
 import { collectionService } from "../../services/api";
+import { logger } from "../../utils/logger";
 
 /**
  * Modal for adding/removing a recipe to/from collections
@@ -31,7 +32,7 @@ const AddToCollectionModal = ({ recipeId, isOpen, onClose }) => {
         setInitialCollections(collectionsWithRecipe);
         setSelectedCollections(new Set(collectionsWithRecipe));
       } catch (err) {
-        console.error(`Failed to fetch collections for recipe ${recipeId}:`, err);
+        logger.error(`Failed to fetch collections for recipe ${recipeId}:`, err);
         setError("Failed to load collection membership");
       }
     };

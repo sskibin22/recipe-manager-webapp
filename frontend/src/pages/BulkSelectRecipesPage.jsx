@@ -4,6 +4,7 @@ import { useRecipesQuery, useCollectionQuery, useCollectionMutations } from "../
 import { useAuth } from "../contexts/AuthContext";
 import { AuthButton } from "../components/auth";
 import { CategoryBadge, TagBadge } from "../components/common/Badge";
+import { logger } from "../utils/logger";
 
 /**
  * Bulk recipe selection page for adding multiple recipes to a collection
@@ -90,7 +91,7 @@ export default function BulkSelectRecipesPage() {
         state: { message: `Successfully added ${selectedRecipeIds.size} recipe${selectedRecipeIds.size === 1 ? '' : 's'}` }
       });
     } catch (err) {
-      console.error("Failed to add recipes:", err);
+      logger.error("Failed to add recipes:", err);
       setError(err.message || "Failed to add recipes. Please try again.");
       setIsSubmitting(false);
     }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { logger } from "../../utils/logger";
 
 /**
  * Authentication form component - handles sign in and sign up
@@ -44,7 +45,7 @@ const AuthForm = () => {
         await signInWithEmail(email, password);
       }
     } catch (err) {
-      console.error("Authentication error:", err);
+      logger.error("Authentication error:", err);
 
       // User-friendly error messages
       if (err.code === "auth/email-already-in-use") {
@@ -79,7 +80,7 @@ const AuthForm = () => {
     try {
       await signInWithGoogle();
     } catch (err) {
-      console.error("Google sign-in error:", err);
+      logger.error("Google sign-in error:", err);
       setError("Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
