@@ -301,6 +301,7 @@ public class RecipeService : IRecipeService
         // Clean up preview image if it's a storage key (not an external URL)
         if (IsStorageKey(previewImageUrl))
         {
+            // IsStorageKey guarantees previewImageUrl is not null, so null-forgiving operator is safe
             var deleted = await _storageService.DeleteFileAsync(previewImageUrl!);
             if (!deleted)
             {

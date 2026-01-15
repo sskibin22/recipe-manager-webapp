@@ -120,9 +120,12 @@ public class StorageService : IStorageService
 
     /// <summary>
     /// Deletes a file from storage by its key.
+    /// Note: S3/R2 DeleteObject operations are idempotent - they succeed even if the object doesn't exist.
+    /// This method returns true for successful deletion, non-existent objects, null/empty keys, and unconfigured storage.
+    /// It only returns false when an actual error occurs during deletion.
     /// </summary>
     /// <param name="key">The storage key of the file to delete.</param>
-    /// <returns>True if the file was deleted successfully or didn't exist; false if deletion failed.</returns>
+    /// <returns>True if the file was deleted successfully, didn't exist, or no deletion was needed; false if deletion failed.</returns>
     public async Task<bool> DeleteFileAsync(string key)
     {
         if (string.IsNullOrEmpty(key))
@@ -139,6 +142,7 @@ public class StorageService : IStorageService
 
         try
         {
+            // S3 DeleteObject is idempotent - it succeeds even if the object doesn't exist
             var request = new DeleteObjectRequest
             {
                 BucketName = _bucketName,
