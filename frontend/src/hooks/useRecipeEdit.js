@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { useUpdateRecipeMutation } from "./useRecipeMutations";
 import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
 import { parseRecipeContent, serializeRecipeContent } from "../utils/recipeContent";
-import { validateRecipeDocument, validateRecipeImage } from "../utils/fileValidation";
+import { validateRecipeDocument, validateImage } from "../utils/fileValidation";
 
 /**
  * Hook for managing recipe edit state and operations
@@ -192,7 +192,7 @@ export const useRecipeEdit = (recipe, recipeId) => {
       return;
     }
 
-    const validationError = validateRecipeImage(selectedFile);
+    const validationError = validateImage(selectedFile);
     if (validationError) {
       setValidationErrors({ ...validationErrors, displayImage: validationError });
       setDisplayImageFile(null);

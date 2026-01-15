@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { uploadsApi } from "../services/api";
-import { validateRecipeDocument, validateRecipeImage } from "../utils/fileValidation";
+import { validateRecipeDocument, validateImage } from "../utils/fileValidation";
 
 /**
  * Custom hook for file upload management
@@ -89,7 +89,7 @@ export const useFileUpload = () => {
       return null;
     }
 
-    const validationError = validateRecipeImage(selectedFile);
+    const validationError = validateImage(selectedFile);
     if (validationError) {
       setDisplayImageFile(null);
       e.target.value = "";

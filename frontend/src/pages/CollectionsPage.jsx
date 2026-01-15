@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCollectionsQuery, useCollectionMutations } from "../hooks";
 import { useAuth } from "../contexts/AuthContext";
 import { AuthButton } from "../components/auth";
-import { validateCollectionImage } from "../utils/fileValidation";
+import { validateImage } from "../utils/fileValidation";
 import { uploadService } from "../services/api/uploadService";
 import CollectionImageUpload from "../components/common/CollectionImageUpload";
 import CollectionThumbnail from "../components/common/CollectionThumbnail";
@@ -63,7 +63,7 @@ export default function CollectionsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const error = validateCollectionImage(file);
+    const error = validateImage(file);
     if (error) {
       setImageError(error);
       setSelectedImage(null);

@@ -87,26 +87,6 @@ export const validateImage = (file) => {
 };
 
 /**
- * Validate recipe image files (JPG, PNG, GIF, WEBP)
- * @param {File} file - The file to validate
- * @returns {string|null} Error message if invalid, null if valid
- * @deprecated Use validateImage instead
- */
-export const validateRecipeImage = (file) => {
-  return validateImage(file);
-};
-
-/**
- * Validate collection image files (JPG, PNG, GIF, WEBP)
- * @param {File} file - The file to validate
- * @returns {string|null} Error message if invalid, null if valid
- * @deprecated Use validateImage instead
- */
-export const validateCollectionImage = (file) => {
-  return validateImage(file);
-};
-
-/**
  * Format file size for display
  * @param {number} bytes - File size in bytes
  * @returns {string} Formatted size (e.g., "2.5MB")

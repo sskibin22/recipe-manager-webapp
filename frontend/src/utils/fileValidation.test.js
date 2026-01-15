@@ -6,7 +6,7 @@ import {
   ALLOWED_IMAGE_TYPES,
   validateFileGeneric,
   validateRecipeDocument,
-  validateRecipeImage,
+  validateImage,
   formatFileSize,
 } from "./fileValidation";
 
@@ -199,12 +199,12 @@ describe("fileValidation", () => {
     });
   });
 
-  describe("validateRecipeImage", () => {
+  describe("validateImage", () => {
     it("should validate JPG image", () => {
       const file = new File(["content"], "image.jpg", {
         type: "image/jpeg",
       });
-      const result = validateRecipeImage(file);
+      const result = validateImage(file);
       expect(result).toBeNull();
     });
 
@@ -212,7 +212,7 @@ describe("fileValidation", () => {
       const file = new File(["content"], "image.jpeg", {
         type: "image/jpeg",
       });
-      const result = validateRecipeImage(file);
+      const result = validateImage(file);
       expect(result).toBeNull();
     });
 
@@ -220,7 +220,7 @@ describe("fileValidation", () => {
       const file = new File(["content"], "image.png", {
         type: "image/png",
       });
-      const result = validateRecipeImage(file);
+      const result = validateImage(file);
       expect(result).toBeNull();
     });
 
@@ -228,7 +228,7 @@ describe("fileValidation", () => {
       const file = new File(["content"], "image.gif", {
         type: "image/gif",
       });
-      const result = validateRecipeImage(file);
+      const result = validateImage(file);
       expect(result).toBeNull();
     });
 
@@ -236,7 +236,7 @@ describe("fileValidation", () => {
       const file = new File(["content"], "image.webp", {
         type: "image/webp",
       });
-      const result = validateRecipeImage(file);
+      const result = validateImage(file);
       expect(result).toBeNull();
     });
 
@@ -246,7 +246,7 @@ describe("fileValidation", () => {
       const file = new File([largeContent], "large.jpg", {
         type: "image/jpeg",
       });
-      const result = validateRecipeImage(file);
+      const result = validateImage(file);
       expect(result).toContain("File size must be less than 5MB");
     });
 
@@ -254,12 +254,12 @@ describe("fileValidation", () => {
       const file = new File(["content"], "document.pdf", {
         type: "application/pdf",
       });
-      const result = validateRecipeImage(file);
+      const result = validateImage(file);
       expect(result).toBe("Invalid file type. Allowed types: JPG, PNG, GIF, WEBP");
     });
 
     it("should return error for no file", () => {
-      const result = validateRecipeImage(null);
+      const result = validateImage(null);
       expect(result).toBe("No file selected");
     });
 
@@ -267,7 +267,7 @@ describe("fileValidation", () => {
       const file = new File(["content"], "image.png", {
         type: "",
       });
-      const result = validateRecipeImage(file);
+      const result = validateImage(file);
       expect(result).toBeNull();
     });
   });
