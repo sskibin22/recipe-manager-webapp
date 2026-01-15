@@ -2,6 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { authService } from "./firebaseAuth";
 import * as firebaseAuth from "firebase/auth";
 
+// Mock the logger module
+vi.mock("../../utils/logger", () => ({
+  logger: {
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
+
 // Mock the firebase/auth module
 vi.mock("firebase/auth", () => ({
   signInWithPopup: vi.fn(),
@@ -25,7 +35,9 @@ vi.mock("./firebaseConfig", () => ({
 }));
 
 describe("authService", () => {
-  beforeEach(() => {
+  let loggerMock;
+
+  beforeEach(async () => {
     vi.clearAllMocks();
     // Mock localStorage
     globalThis.localStorage = {
@@ -33,8 +45,9 @@ describe("authService", () => {
       setItem: vi.fn(),
       removeItem: vi.fn(),
     };
-    // Mock console methods
-    globalThis.console.error = vi.fn();
+    // Get the mocked logger
+    const { logger } = await import("../../utils/logger");
+    loggerMock = logger;
   });
 
   afterEach(() => {
@@ -65,7 +78,7 @@ describe("authService", () => {
       await expect(authService.signInWithGoogle()).rejects.toThrow(
         "Google sign-in failed",
       );
-      expect(console.error).toHaveBeenCalledWith(
+      expect(loggerMock.error).toHaveBeenCalledWith(
         "Google sign-in error:",
         error,
       );
@@ -96,7 +109,7 @@ describe("authService", () => {
       await expect(authService.signInWithGithub()).rejects.toThrow(
         "GitHub sign-in failed",
       );
-      expect(console.error).toHaveBeenCalledWith(
+      expect(loggerMock.error).toHaveBeenCalledWith(
         "GitHub sign-in error:",
         error,
       );
@@ -128,7 +141,7 @@ describe("authService", () => {
       await expect(
         authService.signInWithEmail("user@example.com", "wrongpassword"),
       ).rejects.toThrow("Invalid credentials");
-      expect(console.error).toHaveBeenCalledWith("Email sign-in error:", error);
+      expect(loggerMock.error).toHaveBeenCalledWith("Email sign-in error:", error);
     });
   });
 
@@ -184,7 +197,7 @@ describe("authService", () => {
       await expect(
         authService.signUpWithEmail("existing@example.com", "password123"),
       ).rejects.toThrow("Email already exists");
-      expect(console.error).toHaveBeenCalledWith("Email sign-up error:", error);
+      expect(loggerMock.error).toHaveBeenCalledWith("Email sign-up error:", error);
     });
   });
 
@@ -218,7 +231,7 @@ describe("authService", () => {
       await expect(
         authService.sendSignInLink("user@example.com", "https://example.com"),
       ).rejects.toThrow("Failed to send link");
-      expect(console.error).toHaveBeenCalledWith(
+      expect(loggerMock.error).toHaveBeenCalledWith(
         "Send sign-in link error:",
         error,
       );
@@ -264,7 +277,7 @@ describe("authService", () => {
       await expect(
         authService.completeSignInWithEmailLink("https://example.com"),
       ).rejects.toThrow("Invalid link");
-      expect(console.error).toHaveBeenCalledWith(
+      expect(loggerMock.error).toHaveBeenCalledWith(
         "Complete sign-in with email link error:",
         error,
       );
@@ -285,7 +298,7 @@ describe("authService", () => {
       firebaseAuth.signOut.mockRejectedValue(error);
 
       await expect(authService.signOut()).rejects.toThrow("Sign-out failed");
-      expect(console.error).toHaveBeenCalledWith("Sign-out error:", error);
+      expect(loggerMock.error).toHaveBeenCalledWith("Sign-out error:", error);
     });
   });
 
@@ -331,7 +344,7 @@ describe("authService", () => {
       const token = await authService.getIdToken(mockUser);
 
       expect(token).toBeNull();
-      expect(console.error).toHaveBeenCalledWith(
+      expect(loggerMock.error).toHaveBeenCalledWith(
         "Get ID token error:",
         expect.any(Error),
       );

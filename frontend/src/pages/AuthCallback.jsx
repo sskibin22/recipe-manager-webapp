@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { logger } from "../utils/logger";
 
 /**
  * Auth callback page component - handles OAuth callback
@@ -16,7 +17,7 @@ export default function AuthCallback() {
         await completeEmailSignIn();
         navigate("/");
       } catch (error) {
-        console.error("Auth callback error:", error);
+        logger.error("Auth callback error:", error);
         navigate("/");
       }
     };

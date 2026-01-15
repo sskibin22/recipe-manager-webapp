@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { userService, getErrorMessage } from "../services/api";
 import { updateEmail, updatePassword, updateProfile } from "firebase/auth";
 import { getAuth } from "firebase/auth";
+import { logger } from "../utils/logger";
 
 /**
  * Account settings page component - user profile and password management
@@ -32,7 +33,7 @@ const AccountSettings = () => {
           email: profile.email || "",
         }));
       } catch (error) {
-        console.error("Error loading profile:", error);
+        logger.error("Error loading profile:", error);
       }
     };
 
@@ -76,7 +77,7 @@ const AccountSettings = () => {
 
       setMessage({ type: "success", text: "Profile updated successfully!" });
     } catch (error) {
-      console.error("Error updating profile:", error);
+      logger.error("Error updating profile:", error);
       setMessage({
         type: "error",
         text: getErrorMessage(error),
@@ -121,7 +122,7 @@ const AccountSettings = () => {
         confirmPassword: "",
       }));
     } catch (error) {
-      console.error("Error updating password:", error);
+      logger.error("Error updating password:", error);
       let errorMessage = "Failed to update password. Please try again.";
 
       if (error.code === "auth/requires-recent-login") {

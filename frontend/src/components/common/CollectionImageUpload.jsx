@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { validateImage } from "../../utils/fileValidation";
 import { uploadService } from "../../services/api/uploadService";
+import { logger } from "../../utils/logger";
 
 /**
  * Reusable modal component for uploading/editing collection thumbnail images
@@ -89,7 +90,7 @@ export default function CollectionImageUpload({
         
         if (isPlaceholder) {
           // Local development: send image as base64 data URI
-          console.log('Local development mode: sending image as base64 data');
+          logger.info('Local development mode: sending image as base64 data');
           previewImageData = imagePreview; // imagePreview is already a data URI from FileReader
         } else {
           // Production: upload to R2
@@ -97,7 +98,7 @@ export default function CollectionImageUpload({
           imageStorageKey = key;
         }
       } catch (error) {
-        console.error("Failed to upload collection image:", error);
+        logger.error("Failed to upload collection image:", error);
         
         // Provide specific error messages based on error type
         let errorMessage = "Failed to upload image. Please try again.";
@@ -122,7 +123,7 @@ export default function CollectionImageUpload({
       // Success - close modal and reset state
       handleClose();
     } catch (error) {
-      console.error("Failed to update collection image:", error);
+      logger.error("Failed to update collection image:", error);
       setImageError("Failed to update image. Please try again.");
       setIsUploading(false);
     }
