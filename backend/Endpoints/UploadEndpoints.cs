@@ -4,6 +4,7 @@ using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.Extensions;
 using RecipeManager.Api.Filters;
 using RecipeManager.Api.Services;
+using RecipeManager.Api.Utilities;
 
 namespace RecipeManager.Api.Endpoints;
 
@@ -16,35 +17,13 @@ public static class UploadEndpoints
             var userId = userContext.GetCurrentUserId();
             if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
-            // Validate file type by content type and extension
-            var allowedContentTypes = new HashSet<string>
+            // Validate file type using centralized validation
+            if (!FileValidation.ValidateDocumentFile(request.ContentType, request.FileName))
             {
-                "application/pdf",
-                "application/msword",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "text/plain",
-                "image/jpeg",
-                "image/png"
-            };
-
-            var allowedExtensions = new HashSet<string>
-            {
-                ".pdf", ".doc", ".docx", ".txt", ".jpg", ".jpeg", ".png"
-            };
-
-            // Validate content type
-            var contentTypeLower = request.ContentType?.ToLowerInvariant() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(contentTypeLower) || !allowedContentTypes.Contains(contentTypeLower))
-            {
-                // If content type is invalid, check file extension as fallback
-                var fileExtension = Path.GetExtension(request.FileName).ToLowerInvariant();
-                if (string.IsNullOrWhiteSpace(fileExtension) || !allowedExtensions.Contains(fileExtension))
-                {
-                    return ProblemDetailsExtensions.BadRequestProblem(
-                        title: "Invalid File Type",
-                        detail: "Invalid file type. Allowed types: PDF, DOC, DOCX, TXT, JPG, PNG"
-                    );
-                }
+                return ProblemDetailsExtensions.BadRequestProblem(
+                    title: "Invalid File Type",
+                    detail: $"Invalid file type. Allowed types: {FileValidation.AllowedDocumentTypesDescription}"
+                );
             }
 
             var storageKey = $"users/{userId}/{Guid.NewGuid()}/{request.FileName}";
@@ -62,33 +41,13 @@ public static class UploadEndpoints
             var userId = userContext.GetCurrentUserId();
             if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
 
-            // Validate file type - only images for collection thumbnails
-            var allowedContentTypes = new HashSet<string>
+            // Validate file type using centralized validation - only images for collection thumbnails
+            if (!FileValidation.ValidateImageFile(request.ContentType, request.FileName))
             {
-                "image/jpeg",
-                "image/png",
-                "image/gif",
-                "image/webp"
-            };
-
-            var allowedExtensions = new HashSet<string>
-            {
-                ".jpg", ".jpeg", ".png", ".gif", ".webp"
-            };
-
-            // Validate content type
-            var contentTypeLower = request.ContentType?.ToLowerInvariant() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(contentTypeLower) || !allowedContentTypes.Contains(contentTypeLower))
-            {
-                // If content type is invalid, check file extension as fallback
-                var fileExtension = Path.GetExtension(request.FileName).ToLowerInvariant();
-                if (string.IsNullOrWhiteSpace(fileExtension) || !allowedExtensions.Contains(fileExtension))
-                {
-                    return ProblemDetailsExtensions.BadRequestProblem(
-                        title: "Invalid File Type",
-                        detail: "Invalid file type. Allowed types: JPEG, PNG, GIF, WEBP"
-                    );
-                }
+                return ProblemDetailsExtensions.BadRequestProblem(
+                    title: "Invalid File Type",
+                    detail: $"Invalid file type. Allowed types: {FileValidation.AllowedImageTypesDescription}"
+                );
             }
 
             var storageKey = $"users/{userId}/collections/{Guid.NewGuid()}/{request.FileName}";
