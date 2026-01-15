@@ -393,12 +393,12 @@ public class FileCacheServiceTests
         {
             MaxCacheSizeBytes = 100 * 1024 * 1024,
             MaxFileSizeBytes = 10 * 1024 * 1024,
-            DefaultExpirationMinutes = 1 // Use 1 minute as minimum
+            DefaultExpirationMinutes = 1
         };
         var shortExpirationCache = new MemoryCache(new MemoryCacheOptions
         {
             SizeLimit = shortExpirationOptions.MaxCacheSizeBytes,
-            ExpirationScanFrequency = TimeSpan.FromMilliseconds(100) // Scan frequently
+            ExpirationScanFrequency = TimeSpan.FromMilliseconds(100) // Scan frequently for testing
         });
         var shortExpirationService = new FileCacheService(
             shortExpirationCache,
@@ -409,10 +409,12 @@ public class FileCacheServiceTests
         var content = new byte[] { 1, 2, 3 };
         var contentType = "application/pdf";
 
-        // Act - Use manual expiration override for testing
+        // Act - Directly set cache entry with very short expiration for testing purposes
+        // We bypass AddToCache here because the minimum DefaultExpirationMinutes is 1 minute,
+        // which would make this test take too long
         var cacheOptions = new MemoryCacheEntryOptions()
             .SetSize(content.Length)
-            .SetAbsoluteExpiration(TimeSpan.FromMilliseconds(50)); // Very short expiration
+            .SetAbsoluteExpiration(TimeSpan.FromMilliseconds(50));
         shortExpirationCache.Set(key, (content, contentType), cacheOptions);
         
         // Wait for expiration

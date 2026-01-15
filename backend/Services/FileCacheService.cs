@@ -117,8 +117,8 @@ public class FileCacheService : IFileCacheService
 
     public void Clear()
     {
-        // IMemoryCache doesn't have a Clear method, but since it's a singleton,
-        // we can't easily clear all entries. Log a warning instead.
+        // IMemoryCache doesn't provide a Clear() method in its API
+        // Entries will expire automatically based on TTL
         _logger.LogWarning("Clear() called on FileCacheService. IMemoryCache does not support clearing all entries. Entries will expire automatically based on TTL.");
     }
 }
