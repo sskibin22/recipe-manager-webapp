@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useManualRecipeFields } from "./useManualRecipeFields";
 
 /**
  * Custom hook for managing recipe form state
@@ -20,11 +21,19 @@ export const useRecipeForm = () => {
   // Document recipe specific state
   const [documentDescription, setDocumentDescription] = useState("");
 
-  // Manual recipe specific state
-  const [manualDescription, setManualDescription] = useState("");
-  const [manualIngredients, setManualIngredients] = useState("");
-  const [manualInstructions, setManualInstructions] = useState("");
-  const [manualNotes, setManualNotes] = useState("");
+  // Manual recipe specific state (shared hook with edit flow)
+  const {
+    description: manualDescription,
+    setDescription: setManualDescription,
+    ingredients: manualIngredients,
+    setIngredients: setManualIngredients,
+    instructions: manualInstructions,
+    setInstructions: setManualInstructions,
+    notes: manualNotes,
+    setNotes: setManualNotes,
+    resetManualFields,
+    validateManualFields,
+  } = useManualRecipeFields();
 
   const resetForm = () => {
     setTitle("");
@@ -37,10 +46,7 @@ export const useRecipeForm = () => {
     setDescription("");
     setSiteName("");
     setDocumentDescription("");
-    setManualDescription("");
-    setManualIngredients("");
-    setManualInstructions("");
-    setManualNotes("");
+    resetManualFields();
   };
 
   return {
@@ -79,6 +85,7 @@ export const useRecipeForm = () => {
     setManualInstructions,
     manualNotes,
     setManualNotes,
+    validateManualFields,
 
     // Actions
     resetForm,
