@@ -678,20 +678,20 @@ public class RecipeServiceTests
     public async Task DeleteRecipeAsync_WithNonExistentRecipe_ReturnsFalse()
     {
         // Arrange
-        var nonExistentId = Guid.NewGuid(};
+        var nonExistentId = Guid.NewGuid();
 
         // Act
-        var result = await _service.DeleteRecipeAsync(nonExistentId, _testUserId};
+        var result = await _service.DeleteRecipeAsync(nonExistentId, _testUserId);
 
         // Assert
-        result.Should().BeFalse(};
+        result.Should().BeFalse();
     }
 
     [Test]
     public async Task DeleteRecipeAsync_WithWrongUser_ReturnsFalse()
     {
         // Arrange
-        var otherUserId = Guid.NewGuid(};
+        var otherUserId = Guid.NewGuid();
         var recipe = new Recipe
         {
             Id = Guid.NewGuid(),
@@ -701,17 +701,17 @@ public class RecipeServiceTests
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
-        _db.Recipes.Add(recipe};
-        _db.SaveChanges(};
+        _db.Recipes.Add(recipe);
+        _db.SaveChanges();
 
         // Act
-        var result = await _service.DeleteRecipeAsync(recipe.Id, _testUserId};
+        var result = await _service.DeleteRecipeAsync(recipe.Id, _testUserId);
 
         // Assert
-        result.Should().BeFalse(};
+        result.Should().BeFalse();
 
         // Recipe should still exist
-        var dbRecipe = await _db.Recipes.FirstOrDefaultAsync(r => r.Id == recipe.Id};
-        dbRecipe.Should().NotBeNull(};
+        var dbRecipe = await _db.Recipes.FirstOrDefaultAsync(r => r.Id == recipe.Id);
+        dbRecipe.Should().NotBeNull();
     }
 }

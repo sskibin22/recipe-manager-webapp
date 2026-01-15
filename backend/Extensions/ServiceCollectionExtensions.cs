@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using RecipeManager.Api.Configuration;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.Mapping;
 using RecipeManager.Api.Services;
+using RecipeManager.Api.Services.HealthChecks;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -67,6 +69,29 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddSingleton<IFileCacheService, FileCacheService>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddHealthCheckServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var healthChecksBuilder = services.AddHealthChecks();
+
+        // Add database health check
+        healthChecksBuilder
+            .AddDbContextCheck<ApplicationDbContext>(
+                name: "database",
+                failureStatus: HealthStatus.Unhealthy,
+                tags: new[] { "ready", "db" });
+
+        // Add storage health check (optional - will report Degraded if not configured)
+        healthChecksBuilder
+            .AddCheck<StorageHealthCheck>(
+                name: "storage",
+                failureStatus: null, // Allow Degraded status
+                tags: new[] { "ready", "storage" });
 
         return services;
     }
