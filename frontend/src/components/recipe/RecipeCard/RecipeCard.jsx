@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { recipesApi } from "../../../services/api";
+import { recipeService } from "../../../services/api";
 import { parseRecipeContent } from "../../../utils/recipeContent";
 import { CategoryBadge, TagBadge } from "../../common/Badge";
 import AddToCollectionModal from "../../common/AddToCollectionModal";
@@ -41,9 +41,9 @@ const RecipeCard = ({ recipe, isSelectionMode = false, isSelected = false, onTog
   const toggleFavoriteMutation = useMutation({
     mutationFn: async () => {
       if (recipe.isFavorite) {
-        await recipesApi.removeFavorite(recipe.id);
+        await recipeService.removeFavorite(recipe.id);
       } else {
-        await recipesApi.addFavorite(recipe.id);
+        await recipeService.addFavorite(recipe.id);
       }
     },
     onMutate: async () => {

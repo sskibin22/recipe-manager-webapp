@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { uploadService, uploadsApi } from "../uploadService";
+import { uploadService } from "../uploadService";
 import { apiClient } from "../apiClient";
 import axios from "axios";
 
@@ -95,21 +95,6 @@ describe("uploadService", () => {
           "Content-Type": "image/jpeg",
         },
       });
-    });
-  });
-
-  describe("backward compatibility - uploadsApi", () => {
-    it("should export uploadsApi with same methods", () => {
-      expect(uploadsApi).toBeDefined();
-      expect(uploadsApi.getPresignedUploadUrl).toBe(
-        uploadService.getPresignedUploadUrl
-      );
-      expect(uploadsApi.getPresignedDownloadUrl).toBe(
-        uploadService.getPresignedDownloadUrl
-      );
-      expect(uploadsApi.uploadToPresignedUrl).toBe(
-        uploadService.uploadToPresignedUrl
-      );
     });
   });
 });

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { recipeService } from "../services/api";
 import { recipesApi } from "../services/api";
 import { logger } from "../utils/logger";
 
@@ -47,7 +48,7 @@ export const useMetadataFetch = (url, recipeType, options = {}) => {
         }
 
         setFetching(true);
-        const fetchedMetadata = await recipesApi.fetchMetadata(url.trim());
+        const fetchedMetadata = await recipeService.fetchMetadata(url.trim());
 
         if (fetchedMetadata) {
           setMetadata(fetchedMetadata);

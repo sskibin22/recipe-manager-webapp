@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { uploadsApi } from "../services/api";
+import { uploadService } from "../services/api";
 import { validateRecipeDocument, validateImage } from "../utils/fileValidation";
 
 /**
@@ -21,8 +21,8 @@ export const useFileUpload = () => {
   const uploadFile = async (file, fileName, contentType) => {
     setUploading(true);
     try {
-      const presignData = await uploadsApi.getPresignedUploadUrl(fileName, contentType);
-      await uploadsApi.uploadToPresignedUrl(presignData.uploadUrl, file);
+      const presignData = await uploadService.getPresignedUploadUrl(fileName, contentType);
+      await uploadService.uploadToPresignedUrl(presignData.uploadUrl, file);
       return presignData.key;
     } finally {
       setUploading(false);
@@ -44,11 +44,11 @@ export const useFileUpload = () => {
    * @returns {Promise<string>} Storage key
    */
   const uploadDisplayImage = async (imageFile) => {
-    const imagePresignData = await uploadsApi.getPresignedUploadUrl(
+    const imagePresignData = await uploadService.getPresignedUploadUrl(
       generateImageFilename(imageFile),
       imageFile.type,
     );
-    await uploadsApi.uploadToPresignedUrl(imagePresignData.uploadUrl, imageFile);
+    await uploadService.uploadToPresignedUrl(imagePresignData.uploadUrl, imageFile);
     return imagePresignData.key;
   };
 

@@ -16,6 +16,3 @@ const getAll = async () => {
 export const categoryService = {
   getAll,
 };
-
-// Legacy export for backward compatibility
-export const categoriesApi = categoryService;

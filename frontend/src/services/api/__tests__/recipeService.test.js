@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { recipeService, recipesApi } from "../recipeService";
+import { recipeService } from "../recipeService";
 import { apiClient } from "../apiClient";
 
 // Mock apiClient
@@ -178,20 +178,6 @@ describe("recipeService", () => {
         { url: "https://example.com/recipe" }
       );
       expect(result).toEqual(mockMetadata);
-    });
-  });
-
-  describe("backward compatibility - recipesApi", () => {
-    it("should export recipesApi with same methods", () => {
-      expect(recipesApi).toBeDefined();
-      expect(recipesApi.getAll).toBe(recipeService.getAll);
-      expect(recipesApi.getById).toBe(recipeService.getById);
-      expect(recipesApi.create).toBe(recipeService.create);
-      expect(recipesApi.update).toBe(recipeService.update);
-      expect(recipesApi.delete).toBe(recipeService.delete);
-      expect(recipesApi.addFavorite).toBe(recipeService.addFavorite);
-      expect(recipesApi.removeFavorite).toBe(recipeService.removeFavorite);
-      expect(recipesApi.fetchMetadata).toBe(recipeService.fetchMetadata);
     });
   });
 });
