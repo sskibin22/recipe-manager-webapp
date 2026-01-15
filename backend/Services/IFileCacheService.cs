@@ -26,7 +26,9 @@ public interface IFileCacheService
     bool ContainsKey(string key);
 
     /// <summary>
-    /// Clear all cached files (useful for cleanup)
+    /// Clear all cached files. Note: When using IMemoryCache implementation, this method
+    /// does not immediately clear entries but logs a warning. Entries will expire automatically
+    /// based on their configured TTL.
     /// </summary>
     void Clear();
 }

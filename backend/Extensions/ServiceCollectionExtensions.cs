@@ -54,11 +54,14 @@ public static class ServiceCollectionExtensions
         // Configure FileCache options
         services.Configure<FileCacheOptions>(configuration.GetSection("FileCache"));
 
-        // Add MemoryCache with size limits
-        var fileCacheOptions = configuration.GetSection("FileCache").Get<FileCacheOptions>() ?? new FileCacheOptions();
+        // Add MemoryCache with size limits configured from FileCacheOptions
         services.AddMemoryCache(options =>
         {
-            options.SizeLimit = fileCacheOptions.MaxCacheSizeBytes;
+            // Default size limit will be overridden by FileCacheOptions when service starts
+            // But we need to set it here for MemoryCache initialization
+            var fileCacheConfig = configuration.GetSection("FileCache");
+            var maxCacheSize = fileCacheConfig.GetValue("MaxCacheSizeBytes", 100L * 1024 * 1024);
+            options.SizeLimit = maxCacheSize;
         });
 
         services.AddSingleton<IFileCacheService, FileCacheService>();
