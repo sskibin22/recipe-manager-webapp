@@ -25,7 +25,11 @@ public static class ServiceCollectionExtensions
 
         // Add OpenAPI/Swagger
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            // Enable Data Annotations in Swagger
+            options.UseInlineDefinitionsForEnums();
+        });
 
         // Add DbContext
         services.AddDbContext<ApplicationDbContext>(options =>

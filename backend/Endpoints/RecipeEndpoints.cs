@@ -6,6 +6,7 @@ using RecipeManager.Api.DTOs.Queries;
 using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.DTOs.Responses;
 using RecipeManager.Api.Extensions;
+using RecipeManager.Api.Filters;
 using RecipeManager.Api.Mapping;
 using RecipeManager.Api.Models;
 using RecipeManager.Api.Services;
@@ -27,6 +28,7 @@ public static class RecipeEndpoints
             var recipe = await recipeService.CreateRecipeAsync(request, userId.Value);
             return Results.Created($"/api/recipes/{recipe.Id}", recipe);
         })
+        .AddEndpointFilter<ValidationFilter<CreateRecipeRequest>>()
         .WithName("CreateRecipe")
         .WithOpenApi();
 
@@ -74,6 +76,7 @@ public static class RecipeEndpoints
 
             return Results.Ok(recipe);
         })
+        .AddEndpointFilter<ValidationFilter<UpdateRecipeRequest>>()
         .WithName("UpdateRecipe")
         .WithOpenApi();
 
