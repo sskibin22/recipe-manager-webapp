@@ -19,6 +19,9 @@ public static class WebApplicationExtensions
         app.UseHttpsRedirection();
         app.UseCors();
 
+        // Add rate limiting middleware
+        app.UseRateLimiter();
+
         // Development authentication bypass
         if (app.Environment.IsDevelopment())
         {

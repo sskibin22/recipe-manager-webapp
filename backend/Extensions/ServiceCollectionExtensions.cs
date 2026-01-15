@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.Mapping;
 using RecipeManager.Api.Services;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 namespace RecipeManager.Api.Extensions;
 
@@ -99,6 +101,94 @@ public static class ServiceCollectionExtensions
                 });
             services.AddAuthorization();
         }
+
+        return services;
+    }
+
+    public static IServiceCollection AddRateLimitingServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddRateLimiter(options =>
+        {
+            // Global rate limit per IP address (100 requests per minute)
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+            {
+                var userPartitionKey = context.User.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+                
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: userPartitionKey,
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 0
+                    });
+            });
+
+            // Metadata fetch endpoint: 10 requests per minute per user
+            options.AddFixedWindowLimiter("metadata", opt =>
+            {
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.PermitLimit = 10;
+                opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                opt.QueueLimit = 0;
+            });
+
+            // Presigned URL endpoints: 50 requests per minute per user
+            options.AddFixedWindowLimiter("presign", opt =>
+            {
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.PermitLimit = 50;
+                opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                opt.QueueLimit = 0;
+            });
+
+            // User profile updates: 20 requests per minute per user
+            options.AddFixedWindowLimiter("profile", opt =>
+            {
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.PermitLimit = 20;
+                opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                opt.QueueLimit = 0;
+            });
+
+            // Bulk operations: 10 requests per minute per user
+            options.AddFixedWindowLimiter("bulk", opt =>
+            {
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.PermitLimit = 10;
+                opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                opt.QueueLimit = 0;
+            });
+
+            // Configure rejection response
+            options.OnRejected = async (context, token) =>
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                {
+                    context.HttpContext.Response.Headers.RetryAfter = retryAfter.TotalSeconds.ToString();
+                    
+                    await context.HttpContext.Response.WriteAsJsonAsync(new
+                    {
+                        error = "Too Many Requests",
+                        detail = "Rate limit exceeded. Please try again later.",
+                        retryAfterSeconds = (int)retryAfter.TotalSeconds
+                    }, cancellationToken: token);
+                }
+                else
+                {
+                    await context.HttpContext.Response.WriteAsJsonAsync(new
+                    {
+                        error = "Too Many Requests",
+                        detail = "Rate limit exceeded. Please try again later."
+                    }, cancellationToken: token);
+                }
+            };
+        });
 
         return services;
     }

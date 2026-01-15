@@ -55,6 +55,7 @@ public static class UserEndpoints
                 userProfile.DisplayName
             });
         })
+        .RequireRateLimiting("profile")
         .WithName("UpdateUserProfile")
         .WithOpenApi();
 

@@ -110,6 +110,7 @@ public static class RecipeEndpoints
             
             return Results.Ok(new { deletedCount });
         })
+        .RequireRateLimiting("bulk")
         .WithName("BulkDeleteRecipes")
         .WithOpenApi();
 
