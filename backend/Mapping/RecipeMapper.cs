@@ -4,6 +4,22 @@ using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Mapping;
 
+/// <summary>
+/// Maps Recipe entities to RecipeResponse DTOs.
+/// This service is registered as Scoped to match the lifetime of its dependencies.
+/// </summary>
+/// <remarks>
+/// Service Lifetime Decision: SCOPED
+/// - Depends on IStorageService (Scoped) for generating presigned URLs
+/// - Depends on ILogger which can be injected at any lifetime
+/// - No per-request state accumulation (effectively stateless within request scope)
+/// - Used by Scoped services (RecipeService, CollectionService)
+/// 
+/// Alternative Considered: Static extension methods with dependencies as parameters
+/// - Rejected: Would increase complexity by requiring dependencies to be passed through call chains
+/// - Current approach maintains clean separation of concerns and standard DI patterns
+/// - Performance difference between Scoped and Singleton is negligible for these operations
+/// </remarks>
 public class RecipeMapper
 {
     private readonly IStorageService _storageService;

@@ -46,6 +46,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMetadataService, MetadataService>();
         services.AddScoped<IRecipeService, RecipeService>();
         services.AddScoped<ICollectionService, CollectionService>();
+        
+        // Mappers are registered as Scoped to match their dependencies' lifetimes
+        // (IStorageService and ApplicationDbContext are both Scoped)
         services.AddScoped<RecipeMapper>();
         services.AddScoped<CollectionMapper>();
 
