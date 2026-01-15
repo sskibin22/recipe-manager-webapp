@@ -10,7 +10,6 @@ import CollapsibleSection from "../components/common/CollapsibleSection";
 import RandomRecipeModal from "../components/common/RandomRecipeModal";
 import { recipeService } from "../services/api";
 import { logger } from "../utils/logger";
-import { recipesApi } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
@@ -26,10 +25,10 @@ export default function Landing() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isRandomModalOpen, setIsRandomModalOpen] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState(/** @type {{categories: number[], types: ('Link'|'Document'|'Manual')[]}} */ ({
     categories: [],
     types: [],
-  });
+  }));
 
   // Bulk selection state
   const {
@@ -41,7 +40,7 @@ export default function Landing() {
     selectAll,
     clearSelection,
     exitSelectionMode,
-  } = useBulkSelect();
+  } = /** @type {any} */ (useBulkSelect());
 
   // Calculate active filter count
   const activeFilterCount = (filters.categories?.length || 0) + (filters.types?.length || 0);
@@ -77,8 +76,8 @@ export default function Landing() {
 
   // Separate recipes into favorites and non-favorites
   const { favoriteRecipes, otherRecipes } = useMemo(() => {
-    const favorites = [];
-    const others = [];
+    const favorites = /** @type {any[]} */ ([]);
+    const others = /** @type {any[]} */ ([]);
     
     recipes.forEach((recipe) => {
       if (recipe.isFavorite) {
@@ -93,7 +92,7 @@ export default function Landing() {
 
   // Bulk delete mutation
   const bulkDeleteMutation = useMutation({
-    mutationFn: async (recipeIds) => {
+    mutationFn: async (/** @type {string[]} */ recipeIds) => {
       return await recipeService.bulkDelete(recipeIds);
     },
     onSuccess: (data) => {
@@ -127,10 +126,16 @@ export default function Landing() {
     selectAll(recipes);
   };
 
+  /**
+   * @param {{categories: number[], types: ('Link'|'Document'|'Manual')[]}} newFilters
+   */
   const handleFiltersChange = (newFilters) => {
     setFilters(newFilters);
   };
 
+  /**
+   * @param {number} categoryId
+   */
   const handleRemoveCategory = (categoryId) => {
     setFilters({
       ...filters,
@@ -138,6 +143,9 @@ export default function Landing() {
     });
   };
 
+  /**
+   * @param {'Link'|'Document'|'Manual'} type
+   */
   const handleRemoveType = (type) => {
     setFilters({
       ...filters,
@@ -436,8 +444,9 @@ export default function Landing() {
                 storageKey="recipes-favorites-expanded"
               >
                 <RecipeList 
-                  recipes={favoriteRecipes} 
-                  onUpdate={refetch}
+                  recipes={favoriteRecipes}
+                  isLoading={false}
+                  error={null}
                   isSelectionMode={isSelectionMode}
                   selectedIds={selectedIds}
                   onToggleSelect={toggleSelect}
@@ -467,8 +476,9 @@ export default function Landing() {
                 </div>
               ) : (
                 <RecipeList 
-                  recipes={otherRecipes} 
-                  onUpdate={refetch}
+                  recipes={otherRecipes}
+                  isLoading={false}
+                  error={null}
                   isSelectionMode={isSelectionMode}
                   selectedIds={selectedIds}
                   onToggleSelect={toggleSelect}

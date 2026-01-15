@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { recipeService } from "../services/api";
-import { recipesApi } from "../services/api";
 import { logger } from "../utils/logger";
 
 /**
@@ -24,9 +23,9 @@ export const useMetadataFetch = (url, recipeType, options = {}) => {
     autoFillSiteName = true,
   } = options;
 
-  const [metadata, setMetadata] = useState(null);
+  const [metadata, setMetadata] = useState(/** @type {any} */ (null));
   const [fetching, setFetching] = useState(false);
-  const urlDebounceRef = useRef(null);
+  const urlDebounceRef = useRef(/** @type {ReturnType<typeof setTimeout> | null} */ (null));
 
   useEffect(() => {
     if (recipeType !== "link" || !url.trim()) {
@@ -71,13 +70,13 @@ export const useMetadataFetch = (url, recipeType, options = {}) => {
 
   /**
    * Auto-fill form fields from metadata
-   * @param {Object} currentValues - Current form values to check before auto-filling
-   * @returns {Object} Values to auto-fill
+   * @param {Record<string, any>} currentValues - Current form values to check before auto-filling
+   * @returns {Record<string, any>} Values to auto-fill
    */
-  const getAutoFillValues = (currentValues = {}) => {
+  const getAutoFillValues = (currentValues = /** @type {Record<string, any>} */ ({})) => {
     if (!metadata) return {};
 
-    const autoFill = {};
+    const autoFill = /** @type {Record<string, any>} */ ({});
 
     if (autoFillTitle && !currentValues.title && metadata.title) {
       autoFill.title = metadata.title;

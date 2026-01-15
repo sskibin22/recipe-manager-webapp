@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { logger } from "../../utils/logger";
+import { logger } from "../../../utils/logger";
 
 /**
  * Document preview component - displays document content with preview and download
@@ -11,8 +11,8 @@ import { logger } from "../../utils/logger";
  */
 const DocumentPreview = ({ fileContent, fileContentType, title }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [dataUrl, setDataUrl] = useState(null);
+  const [error, setError] = useState(/** @type {string | null} */ (null));
+  const [dataUrl, setDataUrl] = useState(/** @type {string | null} */ (null));
   const [textContent, setTextContent] = useState("");
 
   useEffect(() => {
@@ -64,8 +64,12 @@ const DocumentPreview = ({ fileContent, fileContentType, title }) => {
     }
   };
 
+  /**
+   * @param {string} contentType
+   * @returns {string}
+   */
   const getFileExtension = (contentType) => {
-    const extensionMap = {
+    const extensionMap = /** @type {Record<string, string>} */ ({
       "application/pdf": ".pdf",
       "application/msword": ".doc",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
@@ -74,7 +78,7 @@ const DocumentPreview = ({ fileContent, fileContentType, title }) => {
       "image/jpeg": ".jpg",
       "image/png": ".png",
       "image/gif": ".gif",
-    };
+    });
     return extensionMap[contentType] || "";
   };
 
@@ -116,7 +120,7 @@ const DocumentPreview = ({ fileContent, fileContentType, title }) => {
       return (
         <div className="border border-gray-300 rounded-lg overflow-hidden">
           <iframe
-            src={dataUrl}
+            src={dataUrl || undefined}
             className="w-full h-[600px]"
             title="PDF Preview"
             onError={() => setError("Failed to load PDF preview")}
@@ -130,7 +134,7 @@ const DocumentPreview = ({ fileContent, fileContentType, title }) => {
       return (
         <div className="border border-gray-300 rounded-lg overflow-hidden bg-gray-50 p-4">
           <img
-            src={dataUrl}
+            src={dataUrl || undefined}
             alt={title || "Recipe document"}
             className="max-w-full h-auto mx-auto rounded shadow-lg"
             onError={() => setError("Failed to load image")}
