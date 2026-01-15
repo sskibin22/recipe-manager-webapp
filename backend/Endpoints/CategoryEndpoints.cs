@@ -20,6 +20,7 @@ public static class CategoryEndpoints
                 c.Color
             }));
         })
+        .RequireAuthorization()
         .WithName("GetCategories")
         .WithOpenApi();
 

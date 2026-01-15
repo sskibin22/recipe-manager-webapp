@@ -22,6 +22,7 @@ public static class TagEndpoints
                 t.Type
             }));
         })
+        .RequireAuthorization()
         .WithName("GetTags")
         .WithOpenApi();
 
