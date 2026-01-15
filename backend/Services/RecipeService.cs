@@ -214,7 +214,7 @@ public class RecipeService : IRecipeService
         // Apply search filter (case-insensitive)
         if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
         {
-            var searchTerm = queryParams.SearchTerm.ToLower();
+            var searchTerm = EscapeLikePattern(queryParams.SearchTerm.ToLower());
             query = query.Where(r => EF.Functions.Like(r.Title.ToLower(), $"%{searchTerm}%"));
         }
 
@@ -340,5 +340,23 @@ public class RecipeService : IRecipeService
         }
 
         return await _mapper.MapToRecipeResponseAsync(recipe, userId);
+    }
+
+    /// <summary>
+    /// Escapes special characters in LIKE pattern to prevent unintended wildcard matching
+    /// </summary>
+    /// <param name="input">The input string to escape</param>
+    /// <returns>Escaped string safe for use in LIKE patterns</returns>
+    private static string EscapeLikePattern(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return input;
+        }
+
+        return input
+            .Replace("[", "[[]")  // Escape [ first to avoid double-escaping
+            .Replace("%", "[%]")   // Escape % wildcard
+            .Replace("_", "[_]");  // Escape _ wildcard
     }
 }
