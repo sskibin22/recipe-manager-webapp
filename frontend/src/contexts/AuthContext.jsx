@@ -5,6 +5,7 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { authService } from "../services/firebase/firebaseAuth";
 import { auth } from "../services/firebase/firebaseConfig";
+import { logger } from "../utils/logger";
 
 const AuthContext = createContext(null);
 
@@ -94,7 +95,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.signInWithGoogle();
     } catch (error) {
-      console.error("Google sign-in error:", error);
+      logger.error("Google sign-in error:", error);
       throw error;
     }
   };
@@ -103,7 +104,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.signInWithGithub();
     } catch (error) {
-      console.error("GitHub sign-in error:", error);
+      logger.error("GitHub sign-in error:", error);
       throw error;
     }
   };
@@ -112,7 +113,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.signInWithEmail(email, password);
     } catch (error) {
-      console.error("Email sign-in error:", error);
+      logger.error("Email sign-in error:", error);
       throw error;
     }
   };
@@ -121,7 +122,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.signUpWithEmail(email, password, displayName);
     } catch (error) {
-      console.error("Email sign-up error:", error);
+      logger.error("Email sign-up error:", error);
       throw error;
     }
   };
@@ -131,7 +132,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.sendSignInLink(email, redirectUrl);
     } catch (error) {
-      console.error("Email link error:", error);
+      logger.error("Email link error:", error);
       throw error;
     }
   };
@@ -140,7 +141,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.completeSignInWithEmailLink(window.location.href);
     } catch (error) {
-      console.error("Complete email sign-in error:", error);
+      logger.error("Complete email sign-in error:", error);
       throw error;
     }
   };
@@ -153,7 +154,7 @@ export const AuthProvider = ({ children }) => {
       // Always try to sign out of Firebase (in case user is logged in with real account)
       await authService.signOut();
     } catch (error) {
-      console.error("Sign-out error:", error);
+      logger.error("Sign-out error:", error);
       // Even if Firebase sign-out fails, still clear the user state
     }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { recipesApi } from "../services/api";
+import { logger } from "../utils/logger";
 
 /**
  * Custom hook for fetching metadata from URL with debouncing
@@ -52,7 +53,7 @@ export const useMetadataFetch = (url, recipeType, options = {}) => {
           setMetadata(fetchedMetadata);
         }
       } catch (err) {
-        console.error("Error fetching metadata:", err);
+        logger.error("Error fetching metadata:", err);
         // Don't show error to user, just log it
       } finally {
         setFetching(false);
