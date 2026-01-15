@@ -6,14 +6,13 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RecipeManager.Api.Services;
+using RecipeManager.Api.Utilities;
 
 namespace RecipeManager.Api.Tests.Services;
 
 [TestFixture]
 public class MetadataServiceTests
 {
-    private const int MaxContentLengthBytes = 5 * 1024 * 1024;
-
     private Mock<IHttpClientFactory> _httpClientFactory = null!;
     private Mock<ILogger<MetadataService>> _logger = null!;
     private MetadataService _service = null!;
@@ -104,7 +103,7 @@ public class MetadataServiceTests
     [Test]
     public async Task FetchMetadataAsync_ReturnsNull_WhenContentExceedsLimitWithoutHeader()
     {
-        var oversizedText = new string('a', MaxContentLengthBytes + 10);
+        var oversizedText = new string('a', MetadataConstants.MaxContentLength + 10);
         var html = $"<html><body>{oversizedText}</body></html>";
 
         SetupClient(_ => CreateResponse(html, setContentLength: false));
@@ -122,18 +121,25 @@ public class MetadataServiceTests
         _service = new MetadataService(_httpClientFactory.Object, _logger.Object);
     }
 
-    private static HttpResponseMessage CreateResponse(string html, bool setContentLength = true)
+    private static HttpResponseMessage CreateResponse(string html, bool setContentLength = true, long? contentLengthOverride = null)
     {
         HttpContent content;
         if (setContentLength)
         {
             content = new StringContent(html, Encoding.UTF8, "text/html");
+            if (contentLengthOverride.HasValue)
+            {
+                content.Headers.ContentLength = contentLengthOverride;
+            }
         }
         else
         {
             content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(html)));
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/html");
-            content.Headers.ContentLength = null;
+            if (contentLengthOverride.HasValue)
+            {
+                content.Headers.ContentLength = contentLengthOverride;
+            }
         }
 
         return new HttpResponseMessage(HttpStatusCode.OK)

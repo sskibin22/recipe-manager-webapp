@@ -1,7 +1,8 @@
-using AngleSharp.Dom;
-using AngleSharp.Html.Parser;
 using System.Net;
 using System.Text;
+using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
+using RecipeManager.Api.Utilities;
 
 namespace RecipeManager.Api.Services;
 
@@ -12,7 +13,6 @@ public class MetadataService : IMetadataService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<MetadataService> _logger;
-    private const int MaxContentLength = 5 * 1024 * 1024; // 5MB max
 
     public MetadataService(IHttpClientFactory httpClientFactory, ILogger<MetadataService> logger)
     {
@@ -51,7 +51,7 @@ public class MetadataService : IMetadataService
 
             // Check content length
             var contentLength = response.Content.Headers.ContentLength;
-            if (contentLength.HasValue && contentLength.Value > MaxContentLength)
+            if (contentLength.HasValue && contentLength.Value > MetadataConstants.MaxContentLength)
             {
                 _logger.LogWarning("Content too large: {ContentLength} bytes", contentLength.Value);
                 return null;
@@ -61,11 +61,14 @@ public class MetadataService : IMetadataService
 
             var html = await response.Content.ReadAsStringAsync();
 
-            var contentBytes = Encoding.UTF8.GetByteCount(html);
-            if (contentBytes > MaxContentLength)
+            if (!contentLength.HasValue)
             {
-                _logger.LogWarning("Content too large after download: {ContentLength} bytes", contentBytes);
-                return null;
+                var contentBytes = Encoding.UTF8.GetByteCount(html);
+                if (contentBytes > MetadataConstants.MaxContentLength)
+                {
+                    _logger.LogWarning("Content too large after download: {ContentLength} bytes", contentBytes);
+                    return null;
+                }
             }
 
             // Parse metadata
@@ -93,7 +96,9 @@ public class MetadataService : IMetadataService
     {
         var parser = new HtmlParser();
         var document = parser.ParseDocument(html);
-        var metaTags = document.Head?.QuerySelectorAll("meta") ?? document.QuerySelectorAll("meta");
+        var metaTags = document.Head != null
+            ? document.Head.QuerySelectorAll("meta")
+            : document.QuerySelectorAll("meta");
 
         // Extract Open Graph tags first (preferred)
         var ogTitle = ExtractMetaContent(metaTags, "og:title");
@@ -149,21 +154,18 @@ public class MetadataService : IMetadataService
 
     private string? ExtractTitle(IHtmlDocument document)
     {
-        if (!string.IsNullOrWhiteSpace(document.Title))
-        {
-            return DecodeHtml(document.Title);
-        }
-
-        var titleElement = document.QuerySelector("title");
-        var content = titleElement?.TextContent;
-        return string.IsNullOrWhiteSpace(content) ? null : DecodeHtml(content);
+        return string.IsNullOrWhiteSpace(document.Title) ? null : DecodeHtml(document.Title);
     }
 
-    private string? DecodeHtml(string? text)
+    /// <summary>
+    /// Decodes HTML entities and trims whitespace for optional metadata values.
+    /// Returns the input unchanged when it is empty.
+    /// </summary>
+    private string? DecodeHtml(string text)
     {
-        if (string.IsNullOrWhiteSpace(text)) return null;
+        if (string.IsNullOrEmpty(text)) return text;
 
-        return WebUtility.HtmlDecode(text)?.Trim();
+        return WebUtility.HtmlDecode(text).Trim();
     }
 
     private string? TruncateString(string? value, int maxLength)
