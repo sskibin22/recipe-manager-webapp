@@ -59,6 +59,7 @@ const RecipeForm = ({ onClose, onSuccess }) => {
     setManualInstructions,
     manualNotes,
     setManualNotes,
+    validateManualFields,
     resetForm,
   } = formState;
 
@@ -186,13 +187,14 @@ const RecipeForm = ({ onClose, onSuccess }) => {
         if (displayImageFile) {
           recipeData.previewImageUrl = await uploadDisplayImage(displayImageFile);
         }
-      } else if (recipeType === "manual") {
-        if (!manualIngredients.trim() && !manualInstructions.trim()) {
-          setError(
-            "Either Ingredients or Instructions must be provided for manual recipes",
-          );
-          return;
-        }
+    } else if (recipeType === "manual") {
+      const manualError = validateManualFields(
+        "Either Ingredients or Instructions must be provided for manual recipes",
+      );
+      if (manualError) {
+        setError(manualError);
+        return;
+      }
 
         recipeData.content = serializeRecipeContent({
           description: manualDescription,

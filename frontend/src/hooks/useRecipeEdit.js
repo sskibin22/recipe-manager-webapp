@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useUpdateRecipeMutation } from "./useRecipeMutations";
+import { useManualRecipeFields } from "./useManualRecipeFields";
 import { recipeService, uploadService, getErrorMessage } from "../services/api";
 import { parseRecipeContent, serializeRecipeContent } from "../utils/recipeContent";
 import { validateRecipeDocument, validateImage } from "../utils/fileValidation";
@@ -27,11 +28,19 @@ export const useRecipeEdit = (recipe, recipeId) => {
   const [displayImagePreview, setDisplayImagePreview] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  // Manual recipe structured fields
-  const [editedManualDescription, setEditedManualDescription] = useState("");
-  const [editedManualIngredients, setEditedManualIngredients] = useState("");
-  const [editedManualInstructions, setEditedManualInstructions] = useState("");
-  const [editedManualNotes, setEditedManualNotes] = useState("");
+  // Manual recipe structured fields (shared with create flow)
+  const {
+    description: editedManualDescription,
+    setDescription: setEditedManualDescription,
+    ingredients: editedManualIngredients,
+    setIngredients: setEditedManualIngredients,
+    instructions: editedManualInstructions,
+    setInstructions: setEditedManualInstructions,
+    notes: editedManualNotes,
+    setNotes: setEditedManualNotes,
+    resetManualFields,
+    validateManualFields,
+  } = useManualRecipeFields();
 
   // Link recipe metadata
   const [metadata, setMetadata] = useState(null);
@@ -131,10 +140,7 @@ export const useRecipeEdit = (recipe, recipeId) => {
     // Parse structured content for Manual recipes
     if (recipe.type.toLowerCase() === "manual") {
       const parsedContent = parseRecipeContent(recipe.content);
-      setEditedManualDescription(parsedContent.description);
-      setEditedManualIngredients(parsedContent.ingredients);
-      setEditedManualInstructions(parsedContent.instructions);
-      setEditedManualNotes(parsedContent.notes);
+      resetManualFields(parsedContent);
     }
   };
 
@@ -151,10 +157,7 @@ export const useRecipeEdit = (recipe, recipeId) => {
     setEditedDescription("");
     setEditedSiteName("");
     setEditedDocumentDescription("");
-    setEditedManualDescription("");
-    setEditedManualIngredients("");
-    setEditedManualInstructions("");
-    setEditedManualNotes("");
+    resetManualFields();
     setEditedCategoryId(null);
     setEditedTagIds([]);
   };
@@ -240,8 +243,11 @@ export const useRecipeEdit = (recipe, recipeId) => {
     }
 
     if (recipe.type.toLowerCase() === "manual") {
-      if (!editedManualIngredients.trim() && !editedManualInstructions.trim()) {
-        errors.content = "Either Ingredients or Instructions must be provided";
+      const manualError = validateManualFields(
+        "Either Ingredients or Instructions must be provided",
+      );
+      if (manualError) {
+        errors.content = manualError;
       }
     }
 

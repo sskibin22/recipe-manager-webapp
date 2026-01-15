@@ -35,6 +35,7 @@ export { useCollectionMutations } from "./useCollectionMutations";
 
 // Component-specific hooks
 export { useRecipeForm } from "./useRecipeForm";
+export { useManualRecipeFields } from "./useManualRecipeFields";
 export { useFileUpload } from "./useFileUpload";
 export { useMetadataFetch } from "./useMetadataFetch";
 export { useRecipeDetail } from "./useRecipeDetail";
