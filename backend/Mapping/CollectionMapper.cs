@@ -6,6 +6,22 @@ using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Mapping;
 
+/// <summary>
+/// Maps Collection entities to CollectionResponse DTOs.
+/// This service is registered as Scoped to match the lifetime of its dependencies.
+/// </summary>
+/// <remarks>
+/// Service Lifetime Decision: SCOPED
+/// - Depends on IStorageService (Scoped) for generating presigned URLs
+/// - Depends on ApplicationDbContext (Scoped) for database queries
+/// - No per-request state accumulation (effectively stateless within request scope)
+/// - Used by Scoped services (CollectionService)
+/// 
+/// Alternative Considered: Static extension methods with dependencies as parameters
+/// - Rejected: Would increase complexity significantly due to database context dependency
+/// - Current approach maintains clean separation of concerns and standard DI patterns
+/// - Performance difference between Scoped and Singleton is negligible for these operations
+/// </remarks>
 public class CollectionMapper
 {
     private readonly IStorageService _storageService;
