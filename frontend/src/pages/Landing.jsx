@@ -8,6 +8,7 @@ import RecipeForm from "../components/recipe/RecipeForm/RecipeForm";
 import { SearchBar, FilterPanel, FilterChips } from "../components/recipe/RecipeFilters";
 import CollapsibleSection from "../components/common/CollapsibleSection";
 import RandomRecipeModal from "../components/common/RandomRecipeModal";
+import { logger } from "../utils/logger";
 import { recipesApi } from "../services/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -99,10 +100,10 @@ export default function Landing() {
       queryClient.invalidateQueries({ queryKey: ["recipes"] });
       exitSelectionMode();
       // Show success message (you could add a toast notification here)
-      console.log(`Successfully deleted ${data.deletedCount} recipes`);
+      logger.info(`Successfully deleted ${data.deletedCount} recipes`);
     },
     onError: (error) => {
-      console.error("Failed to delete recipes:", error);
+      logger.error("Failed to delete recipes:", error);
       // Show error message (you could add a toast notification here)
     },
   });

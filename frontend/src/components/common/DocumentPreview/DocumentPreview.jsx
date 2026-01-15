@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { logger } from "../../utils/logger";
 
 /**
  * Document preview component - displays document content with preview and download
@@ -58,7 +59,7 @@ const DocumentPreview = ({ fileContent, fileContentType, title }) => {
       link.click();
       document.body.removeChild(link);
     } catch (err) {
-      console.error("Download failed:", err);
+      logger.error("Download failed:", err);
       alert("Failed to download document. Please try again.");
     }
   };

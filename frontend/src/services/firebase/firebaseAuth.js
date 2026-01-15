@@ -11,6 +11,7 @@ import {
   signOut as firebaseSignOut,
 } from "firebase/auth";
 import { auth } from "./firebaseConfig";
+import { logger } from "../../utils/logger";
 
 export const authService = {
   // Google Sign-In
@@ -20,7 +21,7 @@ export const authService = {
       const result = await signInWithPopup(auth, provider);
       return result.user;
     } catch (error) {
-      console.error("Google sign-in error:", error);
+      logger.error("Google sign-in error:", error);
       throw error;
     }
   },
@@ -32,7 +33,7 @@ export const authService = {
       const result = await signInWithPopup(auth, provider);
       return result.user;
     } catch (error) {
-      console.error("GitHub sign-in error:", error);
+      logger.error("GitHub sign-in error:", error);
       throw error;
     }
   },
@@ -43,7 +44,7 @@ export const authService = {
       const result = await signInWithEmailAndPassword(auth, email, password);
       return result.user;
     } catch (error) {
-      console.error("Email sign-in error:", error);
+      logger.error("Email sign-in error:", error);
       throw error;
     }
   },
@@ -64,7 +65,7 @@ export const authService = {
 
       return result.user;
     } catch (error) {
-      console.error("Email sign-up error:", error);
+      logger.error("Email sign-up error:", error);
       throw error;
     }
   },
@@ -80,7 +81,7 @@ export const authService = {
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
       window.localStorage.setItem("emailForSignIn", email);
     } catch (error) {
-      console.error("Send sign-in link error:", error);
+      logger.error("Send sign-in link error:", error);
       throw error;
     }
   },
@@ -97,7 +98,7 @@ export const authService = {
       window.localStorage.removeItem("emailForSignIn");
       return result.user;
     } catch (error) {
-      console.error("Complete sign-in with email link error:", error);
+      logger.error("Complete sign-in with email link error:", error);
       throw error;
     }
   },
@@ -107,7 +108,7 @@ export const authService = {
     try {
       await firebaseSignOut(auth);
     } catch (error) {
-      console.error("Sign-out error:", error);
+      logger.error("Sign-out error:", error);
       throw error;
     }
   },
@@ -123,7 +124,7 @@ export const authService = {
     try {
       return await user.getIdToken();
     } catch (error) {
-      console.error("Get ID token error:", error);
+      logger.error("Get ID token error:", error);
       return null;
     }
   },

@@ -7,6 +7,7 @@ import { validateImage } from "../utils/fileValidation";
 import { uploadService } from "../services/api/uploadService";
 import CollectionImageUpload from "../components/common/CollectionImageUpload";
 import CollectionThumbnail from "../components/common/CollectionThumbnail";
+import { logger } from "../utils/logger";
 import {
   sortCollections,
   filterCollectionsBySearch,
@@ -113,7 +114,7 @@ export default function CollectionsPage() {
           
           if (isPlaceholder) {
             // Local development: send image as base64 data URI
-            console.log('Local development mode: sending image as base64 data');
+            logger.info('Local development mode: sending image as base64 data');
             previewImageData = imagePreview; // imagePreview is already a data URI from FileReader
           } else {
             // Production: upload to R2
@@ -121,7 +122,7 @@ export default function CollectionsPage() {
             imageStorageKey = key;
           }
         } catch (error) {
-          console.error("Failed to upload collection image:", error);
+          logger.error("Failed to upload collection image:", error);
           
           // Provide specific error messages based on error type
           let errorMessage = "Failed to upload image. Please try again.";
@@ -159,7 +160,7 @@ export default function CollectionsPage() {
       // Redirect to bulk selection page
       navigate(`/collections/${newCollection.id}/add-recipes`);
     } catch (error) {
-      console.error("Failed to create collection:", error);
+      logger.error("Failed to create collection:", error);
       setIsUploading(false);
     }
   };
@@ -178,7 +179,7 @@ export default function CollectionsPage() {
       setIsSingleDeleteConfirmOpen(false);
       refetch();
     } catch (error) {
-      console.error("Failed to delete collection:", error);
+      logger.error("Failed to delete collection:", error);
       alert("Failed to delete collection. Please try again.");
     }
   };
@@ -224,7 +225,7 @@ export default function CollectionsPage() {
       setIsDeleteConfirmOpen(false);
       refetch();
     } catch (error) {
-      console.error("Failed to delete collections:", error);
+      logger.error("Failed to delete collections:", error);
       alert("Failed to delete collections. Please try again.");
     }
   };
@@ -258,7 +259,7 @@ export default function CollectionsPage() {
       });
       // React Query will automatically invalidate and refetch the collections query
     } catch (error) {
-      console.error("Failed to update collection image:", error);
+      logger.error("Failed to update collection image:", error);
       throw error; // Re-throw so modal can show error
     }
   };

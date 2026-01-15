@@ -8,6 +8,7 @@ import RemoveRecipesFromCollectionModal from "../components/common/RemoveRecipes
 import CollectionImageUpload from "../components/common/CollectionImageUpload";
 import RandomRecipeModal from "../components/common/RandomRecipeModal";
 import { useState, useEffect } from "react";
+import { logger } from "../utils/logger";
 
 /**
  * Collection detail page - view recipes in a collection
@@ -55,7 +56,7 @@ export default function CollectionDetailPage() {
       setSuccessMessage("Collection thumbnail updated successfully!");
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (error) {
-      console.error("Failed to update collection image:", error);
+      logger.error("Failed to update collection image:", error);
       throw error; // Re-throw so modal can show error
     }
   };
@@ -75,7 +76,7 @@ export default function CollectionDetailPage() {
         state: { message: `Collection "${collection.name}" deleted successfully` } 
       });
     } catch (error) {
-      console.error("Failed to delete collection:", error);
+      logger.error("Failed to delete collection:", error);
       alert("Failed to delete collection. Please try again.");
     }
   };

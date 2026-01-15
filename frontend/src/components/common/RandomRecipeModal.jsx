@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { recipeService } from "../../services/api";
 import RecipeCard from "../recipe/RecipeCard/RecipeCard";
+import { logger } from "../../utils/logger";
 
 /**
  * Modal that displays a random recipe with "randomize again" functionality
@@ -23,7 +24,7 @@ const RandomRecipeModal = ({ isOpen, onClose, collectionId = null }) => {
       const randomRecipe = await recipeService.getRandom(collectionId);
       setRecipe(randomRecipe);
     } catch (err) {
-      console.error("Error fetching random recipe:", err);
+      logger.error("Error fetching random recipe:", err);
       if (err.response?.status === 404) {
         setError("No recipes available");
       } else {

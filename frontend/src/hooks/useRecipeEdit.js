@@ -8,6 +8,7 @@ import { useUpdateRecipeMutation } from "./useRecipeMutations";
 import { recipesApi, uploadsApi, getErrorMessage } from "../services/api";
 import { parseRecipeContent, serializeRecipeContent } from "../utils/recipeContent";
 import { validateRecipeDocument, validateImage } from "../utils/fileValidation";
+import { logger } from "../utils/logger";
 
 /**
  * Hook for managing recipe edit state and operations
@@ -84,7 +85,7 @@ export const useRecipeEdit = (recipe, recipeId) => {
           if (fetchedMetadata.siteName) setEditedSiteName(fetchedMetadata.siteName);
         }
       } catch (err) {
-        console.error("Error fetching metadata:", err);
+        logger.error("Error fetching metadata:", err);
       } finally {
         setFetchingMetadata(false);
       }
