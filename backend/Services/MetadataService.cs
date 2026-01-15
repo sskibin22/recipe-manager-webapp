@@ -1,12 +1,18 @@
-using System.Text.RegularExpressions;
+using System.Net;
+using System.Text;
+using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
+using RecipeManager.Api.Utilities;
 
 namespace RecipeManager.Api.Services;
 
+/// <summary>
+/// Fetches and parses recipe metadata using an HTML parser (AngleSharp) to reliably handle varied markup.
+/// </summary>
 public class MetadataService : IMetadataService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<MetadataService> _logger;
-    private const int MaxContentLength = 5 * 1024 * 1024; // 5MB max
 
     public MetadataService(IHttpClientFactory httpClientFactory, ILogger<MetadataService> logger)
     {
@@ -45,7 +51,7 @@ public class MetadataService : IMetadataService
 
             // Check content length
             var contentLength = response.Content.Headers.ContentLength;
-            if (contentLength.HasValue && contentLength.Value > MaxContentLength)
+            if (contentLength.HasValue && contentLength.Value > MetadataConstants.MaxContentLength)
             {
                 _logger.LogWarning("Content too large: {ContentLength} bytes", contentLength.Value);
                 return null;
@@ -54,6 +60,16 @@ public class MetadataService : IMetadataService
             response.EnsureSuccessStatusCode();
 
             var html = await response.Content.ReadAsStringAsync();
+
+            if (!contentLength.HasValue)
+            {
+                var contentBytes = Encoding.UTF8.GetByteCount(html);
+                if (contentBytes > MetadataConstants.MaxContentLength)
+                {
+                    _logger.LogWarning("Content too large after download: {ContentLength} bytes", contentBytes);
+                    return null;
+                }
+            }
 
             // Parse metadata
             var metadata = ParseMetadata(html, uri);
@@ -78,15 +94,21 @@ public class MetadataService : IMetadataService
 
     private RecipeMetadata ParseMetadata(string html, Uri baseUri)
     {
+        var parser = new HtmlParser();
+        var document = parser.ParseDocument(html);
+        var metaTags = document.Head != null
+            ? document.Head.QuerySelectorAll("meta")
+            : document.QuerySelectorAll("meta");
+
         // Extract Open Graph tags first (preferred)
-        var ogTitle = ExtractMetaContent(html, "og:title");
-        var ogDescription = ExtractMetaContent(html, "og:description");
-        var ogImage = ExtractMetaContent(html, "og:image");
-        var ogSiteName = ExtractMetaContent(html, "og:site_name");
+        var ogTitle = ExtractMetaContent(metaTags, "og:title");
+        var ogDescription = ExtractMetaContent(metaTags, "og:description");
+        var ogImage = ExtractMetaContent(metaTags, "og:image");
+        var ogSiteName = ExtractMetaContent(metaTags, "og:site_name");
 
         // Fallback to standard HTML tags if OG tags not found
-        var title = ogTitle ?? ExtractTitle(html);
-        var description = ogDescription ?? ExtractMetaContent(html, "description");
+        var title = ogTitle ?? ExtractTitle(document);
+        var description = ogDescription ?? ExtractMetaContent(metaTags, "description");
         var image = ogImage;
 
         // Make image URL absolute if it's relative
@@ -109,54 +131,41 @@ public class MetadataService : IMetadataService
         );
     }
 
-    private string? ExtractMetaContent(string html, string property)
+    private string? ExtractMetaContent(IEnumerable<IElement> metaTags, string property)
     {
-        // Try Open Graph format: <meta property="og:title" content="...">
-        var ogPattern = $@"<meta\s+property\s*=\s*[""']{Regex.Escape(property)}[""']\s+content\s*=\s*[""']([^""']*)[""']";
-        var match = Regex.Match(html, ogPattern, RegexOptions.IgnoreCase);
-        if (match.Success)
+        foreach (var meta in metaTags)
         {
-            return DecodeHtml(match.Groups[1].Value);
-        }
+            var propertyValue = meta.GetAttribute("property");
+            var nameValue = meta.GetAttribute("name");
 
-        // Try standard format: <meta name="description" content="...">
-        var namePattern = $@"<meta\s+name\s*=\s*[""']{Regex.Escape(property)}[""']\s+content\s*=\s*[""']([^""']*)[""']";
-        match = Regex.Match(html, namePattern, RegexOptions.IgnoreCase);
-        if (match.Success)
-        {
-            return DecodeHtml(match.Groups[1].Value);
-        }
-
-        // Try reversed attribute order
-        var reversedPattern = $@"<meta\s+content\s*=\s*[""']([^""']*)[""']\s+(?:property|name)\s*=\s*[""']{Regex.Escape(property)}[""']";
-        match = Regex.Match(html, reversedPattern, RegexOptions.IgnoreCase);
-        if (match.Success)
-        {
-            return DecodeHtml(match.Groups[1].Value);
+            if (string.Equals(propertyValue, property, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(nameValue, property, StringComparison.OrdinalIgnoreCase))
+            {
+                var content = meta.GetAttribute("content");
+                if (!string.IsNullOrWhiteSpace(content))
+                {
+                    return DecodeHtml(content);
+                }
+            }
         }
 
         return null;
     }
 
-    private string? ExtractTitle(string html)
+    private string? ExtractTitle(IHtmlDocument document)
     {
-        var match = Regex.Match(html, @"<title[^>]*>([^<]+)</title>", RegexOptions.IgnoreCase);
-        return match.Success ? DecodeHtml(match.Groups[1].Value.Trim()) : null;
+        return string.IsNullOrWhiteSpace(document.Title) ? null : DecodeHtml(document.Title);
     }
 
+    /// <summary>
+    /// Decodes HTML entities and trims whitespace for optional metadata values.
+    /// Returns the input unchanged when it is empty.
+    /// </summary>
     private string? DecodeHtml(string text)
     {
         if (string.IsNullOrEmpty(text)) return text;
 
-        // Basic HTML entity decoding
-        return text
-            .Replace("&amp;", "&")
-            .Replace("&lt;", "<")
-            .Replace("&gt;", ">")
-            .Replace("&quot;", "\"")
-            .Replace("&#39;", "'")
-            .Replace("&apos;", "'")
-            .Trim();
+        return WebUtility.HtmlDecode(text).Trim();
     }
 
     private string? TruncateString(string? value, int maxLength)
