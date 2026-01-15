@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.Extensions;
+using RecipeManager.Api.Filters;
 using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
@@ -51,6 +52,7 @@ public static class UploadEndpoints
 
             return Results.Ok(new { uploadUrl = presignedUrl, key = storageKey });
         })
+        .AddEndpointFilter<ValidationFilter<PresignUploadRequest>>()
         .RequireRateLimiting("presign")
         .WithName("PresignUpload")
         .WithOpenApi();
@@ -94,6 +96,7 @@ public static class UploadEndpoints
 
             return Results.Ok(new { uploadUrl = presignedUrl, key = storageKey });
         })
+        .AddEndpointFilter<ValidationFilter<PresignUploadRequest>>()
         .RequireRateLimiting("presign")
         .WithName("PresignCollectionImageUpload")
         .WithOpenApi();
@@ -139,4 +142,3 @@ public static class UploadEndpoints
         return app;
     }
 }
-

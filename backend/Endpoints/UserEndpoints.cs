@@ -1,6 +1,7 @@
 using RecipeManager.Api.Data;
 using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.Extensions;
+using RecipeManager.Api.Filters;
 using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
@@ -55,6 +56,7 @@ public static class UserEndpoints
                 userProfile.DisplayName
             });
         })
+        .AddEndpointFilter<ValidationFilter<UpdateUserProfileRequest>>()
         .RequireRateLimiting("profile")
         .WithName("UpdateUserProfile")
         .WithOpenApi();

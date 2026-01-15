@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using RecipeManager.Api.DTOs.Requests;
 using RecipeManager.Api.Extensions;
+using RecipeManager.Api.Filters;
 using RecipeManager.Api.Services;
 
 namespace RecipeManager.Api.Endpoints;
@@ -13,14 +14,6 @@ public static class MetadataEndpoints
         {
             var userId = userContext.GetCurrentUserId();
             if (userId == null) return ProblemDetailsExtensions.UnauthorizedProblem();
-
-            if (string.IsNullOrWhiteSpace(request.Url))
-            {
-                return ProblemDetailsExtensions.BadRequestProblem(
-                    title: "Invalid Request",
-                    detail: "URL is required to fetch metadata."
-                );
-            }
 
             var metadata = await metadataService.FetchMetadataAsync(request.Url);
 
@@ -43,6 +36,7 @@ public static class MetadataEndpoints
                 siteName = metadata.SiteName
             });
         })
+        .AddEndpointFilter<ValidationFilter<FetchMetadataRequest>>()
         .RequireRateLimiting("metadata")
         .WithName("FetchMetadata")
         .WithOpenApi();
