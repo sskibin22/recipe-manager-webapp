@@ -79,6 +79,3 @@ export const uploadService = {
   getPresignedCollectionImageDownloadUrl,
   uploadToPresignedUrl,
 };
-
-// Legacy export for backward compatibility
-export const uploadsApi = uploadService;

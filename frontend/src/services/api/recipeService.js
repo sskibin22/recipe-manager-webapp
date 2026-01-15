@@ -129,6 +129,3 @@ export const recipeService = {
   fetchMetadata,
   getRandom,
 };
-
-// Legacy export for backward compatibility
-export const recipesApi = recipeService;

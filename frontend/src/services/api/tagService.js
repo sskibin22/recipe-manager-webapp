@@ -16,6 +16,3 @@ const getAll = async () => {
 export const tagService = {
   getAll,
 };
-
-// Legacy export for backward compatibility
-export const tagsApi = tagService;

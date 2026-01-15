@@ -42,60 +42,6 @@ describe("api/index - barrel exports", () => {
     });
   });
 
-  describe("legacy exports for backward compatibility", () => {
-    it("should export recipesApi", () => {
-      expect(apiModule.recipesApi).toBeDefined();
-      expect(apiModule.recipesApi).toBe(apiModule.recipeService);
-    });
-
-    it("should export categoriesApi", () => {
-      expect(apiModule.categoriesApi).toBeDefined();
-      expect(apiModule.categoriesApi).toBe(apiModule.categoryService);
-    });
-
-    it("should export tagsApi", () => {
-      expect(apiModule.tagsApi).toBeDefined();
-      expect(apiModule.tagsApi).toBe(apiModule.tagService);
-    });
-
-    it("should export uploadsApi", () => {
-      expect(apiModule.uploadsApi).toBeDefined();
-      expect(apiModule.uploadsApi).toBe(apiModule.uploadService);
-    });
-  });
-
-  describe("individual function exports for backward compatibility", () => {
-    it("should export recipe functions", () => {
-      expect(typeof apiModule.fetchRecipes).toBe("function");
-      expect(typeof apiModule.fetchRecipe).toBe("function");
-      expect(typeof apiModule.createRecipe).toBe("function");
-      expect(typeof apiModule.updateRecipe).toBe("function");
-      expect(typeof apiModule.deleteRecipe).toBe("function");
-      expect(typeof apiModule.addFavorite).toBe("function");
-      expect(typeof apiModule.removeFavorite).toBe("function");
-      expect(typeof apiModule.fetchMetadata).toBe("function");
-    });
-
-    it("should export category functions", () => {
-      expect(typeof apiModule.fetchCategories).toBe("function");
-    });
-
-    it("should export tag functions", () => {
-      expect(typeof apiModule.fetchTags).toBe("function");
-    });
-
-    it("should export upload functions", () => {
-      expect(typeof apiModule.getPresignedUploadUrl).toBe("function");
-      expect(typeof apiModule.getPresignedDownloadUrl).toBe("function");
-      expect(typeof apiModule.uploadToPresignedUrl).toBe("function");
-    });
-
-    it("should export user functions", () => {
-      expect(typeof apiModule.getUserProfile).toBe("function");
-      expect(typeof apiModule.updateUserProfile).toBe("function");
-    });
-  });
-
   describe("utility exports", () => {
     it("should export apiClient", () => {
       expect(apiModule.apiClient).toBeDefined();
@@ -125,42 +71,6 @@ describe("api/index - barrel exports", () => {
       expect(apiModule.api.favorites).toBe(apiModule.favoriteService);
       expect(apiModule.api.uploads).toBe(apiModule.uploadService);
       expect(apiModule.api.user).toBe(apiModule.userService);
-    });
-  });
-
-  describe("function references match service methods", () => {
-    it("should reference recipeService methods", () => {
-      expect(apiModule.fetchRecipes).toBe(apiModule.recipeService.getAll);
-      expect(apiModule.fetchRecipe).toBe(apiModule.recipeService.getById);
-      expect(apiModule.createRecipe).toBe(apiModule.recipeService.create);
-      expect(apiModule.updateRecipe).toBe(apiModule.recipeService.update);
-      expect(apiModule.deleteRecipe).toBe(apiModule.recipeService.delete);
-      expect(apiModule.fetchMetadata).toBe(apiModule.recipeService.fetchMetadata);
-    });
-
-    it("should reference categoryService methods", () => {
-      expect(apiModule.fetchCategories).toBe(apiModule.categoryService.getAll);
-    });
-
-    it("should reference tagService methods", () => {
-      expect(apiModule.fetchTags).toBe(apiModule.tagService.getAll);
-    });
-
-    it("should reference uploadService methods", () => {
-      expect(apiModule.getPresignedUploadUrl).toBe(
-        apiModule.uploadService.getPresignedUploadUrl
-      );
-      expect(apiModule.getPresignedDownloadUrl).toBe(
-        apiModule.uploadService.getPresignedDownloadUrl
-      );
-      expect(apiModule.uploadToPresignedUrl).toBe(
-        apiModule.uploadService.uploadToPresignedUrl
-      );
-    });
-
-    it("should reference userService methods", () => {
-      expect(apiModule.getUserProfile).toBe(apiModule.userService.getProfile);
-      expect(apiModule.updateUserProfile).toBe(apiModule.userService.updateProfile);
     });
   });
 });
