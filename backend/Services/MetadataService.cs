@@ -152,9 +152,11 @@ public class MetadataService : IMetadataService
         return null;
     }
 
-    private string? ExtractTitle(IHtmlDocument document)
+    private string? ExtractTitle(IDocument document)
     {
-        return string.IsNullOrWhiteSpace(document.Title) ? null : DecodeHtml(document.Title);
+        var titleElement = document.QuerySelector("title");
+        var title = titleElement?.TextContent;
+        return string.IsNullOrWhiteSpace(title) ? null : DecodeHtml(title);
     }
 
     /// <summary>
